@@ -3,6 +3,7 @@ package fs
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/flimzy/kivik"
 	"github.com/flimzy/kivik/driver"
-	"github.com/flimzy/kivik/driver/common"
 	"github.com/flimzy/kivik/errors"
 )
 
@@ -24,12 +24,19 @@ var _ driver.Driver = &fsDriver{}
 // Identifying constants
 const (
 	Version = "0.0.1"
-	Vendor  = "Kivik Memory Adaptor"
+	Vendor  = "Kivik File System Adaptor"
 )
 
 func init() {
 	kivik.Register("fs", &fsDriver{})
 }
+
+type client struct {
+	version *driver.Version
+	root    string
+}
+
+var _ driver.Client = &client{}
 
 func (d *fsDriver) NewClient(_ context.Context, dir string) (driver.Client, error) {
 	if err := validateRootDir(dir); err != nil {
@@ -39,8 +46,12 @@ func (d *fsDriver) NewClient(_ context.Context, dir string) (driver.Client, erro
 		return nil, err
 	}
 	return &client{
-		Client: common.NewClient(Version, Vendor),
-		root:   dir,
+		version: &driver.Version{
+			Version:     Version,
+			Vendor:      Vendor,
+			RawResponse: json.RawMessage(fmt.Sprintf(`{"version":"%s","vendor":{"name":"%s"}}`, Version, Vendor)),
+		},
+		root: dir,
 	}, nil
 }
 
@@ -71,12 +82,10 @@ func validateRootDir(dir string) error {
 	return nil
 }
 
-type client struct {
-	*common.Client
-	root string
+// Version returns the configured server info.
+func (c *client) Version(_ context.Context) (*driver.Version, error) {
+	return c.version, nil
 }
-
-var _ driver.Client = &client{}
 
 // Taken verbatim from http://docs.couchdb.org/en/2.0.0/api/database/common.html
 var validDBNameRE = regexp.MustCompile("^[a-z][a-z0-9_$()+/-]*$")
