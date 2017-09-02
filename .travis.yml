@@ -22,13 +22,24 @@ os:
 go:
   - 1.7.x
   - 1.8.x
+  - 1.9.x
   - master
+env:
+    matrix:
+        - MODE=standard
 matrix:
     allow_failures:
         - go: master
+    include:
+        - go: 1.9.x
+          os: osx
+        - go: 1.9.x
+          env: MODE=linter
+        - go: 1.9.x
+          env: MODE=coverage
 
 install:
-    - ./travis/install.sh
+    - ./travis/install.sh $MODE
 
 script:
-    - ./travis/test.sh
+    - ./travis/test.sh $MODE
