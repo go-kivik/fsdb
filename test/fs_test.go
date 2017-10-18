@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/flimzy/kivik"
-	_ "github.com/flimzy/kivik/driver/fs"
+	_ "github.com/go-kivik/fsdb"
 	"github.com/go-kivik/kiviktest"
 	"github.com/go-kivik/kiviktest/kt"
 )
