@@ -25,6 +25,8 @@ go:
   - 1.9.x
   - master
 env:
+    global:
+        - HOMEBREW_NO_AUTO_UPDATE=1
     matrix:
         - MODE=standard
 matrix:
