@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/flimzy/kivik"
-	"github.com/flimzy/kivik/errors"
 )
 
 func TestCreateDBUnauthorized(t *testing.T) {
@@ -15,7 +14,7 @@ func TestCreateDBUnauthorized(t *testing.T) {
 		t.Errorf("Expected error attempting to create FS database in '%s'\n", path)
 		return
 	}
-	if errors.StatusCode(err) != kivik.StatusUnauthorized {
+	if kivik.StatusCode(err) != kivik.StatusUnauthorized {
 		t.Errorf("Expected Unauthorized error trying to create FS database in '%s', but got %s\n", path, err)
 	}
 }
