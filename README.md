@@ -13,10 +13,10 @@ This is very much a work in progress; almost nothing is implemented yet.
 ## Usage
 
 This package provides an implementation of the
-[`github.com/flimzy/kivik/driver`](http://godoc.org/github.com/flimzy/kivik/driver)
+[`github.com/go-kivik/kivik/driver`](http://godoc.org/github.com/go-kivik/kivik/driver)
 interface. You must import the driver and can then use the full
-[`Kivik`](http://godoc.org/github.com/flimzy/kivik) API. Please consult the
-[Kivik wiki](https://github.com/flimzy/kivik/wiki) for complete documentation
+[`Kivik`](http://godoc.org/github.com/go-kivik/kivik) API. Please consult the
+[Kivik wiki](https://github.com/go-kivik/kivik/wiki) for complete documentation
 and coding examples.
 
 ```go
@@ -25,7 +25,7 @@ package main
 import (
     "context"
 
-    "github.com/flimzy/kivik"
+    "github.com/go-kivik/kivik"
     _ "github.com/go-kivik/fsdb" // The File system driver
 )
 
