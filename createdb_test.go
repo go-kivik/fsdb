@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/flimzy/kivik"
+	"github.com/go-kivik/kivik"
 )
 
 func TestCreateDBUnauthorized(t *testing.T) {
