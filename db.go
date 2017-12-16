@@ -2,7 +2,6 @@ package fs
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 
 	"github.com/go-kivik/kivik"
@@ -27,9 +26,9 @@ func (d *db) Query(ctx context.Context, ddoc, view string, opts map[string]inter
 	return nil, notYetImplemented
 }
 
-func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (json.RawMessage, error) {
+func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (int64, io.ReadCloser, error) {
 	// FIXME: Unimplemented
-	return nil, notYetImplemented
+	return 0, nil, notYetImplemented
 }
 
 func (d *db) CreateDoc(_ context.Context, doc interface{}) (docID, rev string, err error) {
