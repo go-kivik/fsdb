@@ -15,10 +15,7 @@ case "$1" in
         gopherjs test $(go list ./... | grep -v /vendor/ | grep -Ev 'kivik/(serve|auth|proxy)')
     ;;
     "linter")
-        diff -u <(echo -n) <(gofmt -e -d $(find . -type f -name '*.go' -not -path "./vendor/*"))
-        go install # to make gotype (run by gometalinter) happy
-        gometalinter.v1 --config .linter_test.json
-        gometalinter.v1 --config .linter.json
+        golangci-lint run ./...
     ;;
     "coverage")
         echo "" > coverage.txt
