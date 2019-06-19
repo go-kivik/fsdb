@@ -5,6 +5,8 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -21,6 +23,7 @@ func calculateRev(doc map[string]interface{}) string {
 	seq := 1
 	if rev, ok := doc["_rev"].(string); ok {
 		seq, _ = strconv.Atoi(strings.SplitN(rev, "-", 2)[0])
+		seq++
 	}
 	token := fmt.Sprintf("%d %s", seq, doc["_id"].(string))
 	return fmt.Sprintf("%d-%x", seq, md5.Sum([]byte(token)))
@@ -57,6 +60,32 @@ func compareRevs(doc, opts map[string]interface{}, currev string) error {
 	return nil
 }
 
+func (d *db) archiveDoc(docID, rev string) error {
+	src, err := os.Open(d.path(docID))
+	if err != nil {
+		return err
+	}
+	defer src.Close() // nolint: errcheck
+	if err := os.Mkdir(d.path("."+docID), 0777); err != nil {
+		return err
+	}
+	tmp, err := ioutil.TempFile(d.path("."+docID), ".")
+	if err != nil {
+		return err
+	}
+	defer tmp.Close() // nolint: errcheck
+	if _, err := io.Copy(tmp, src); err != nil {
+		return err
+	}
+	if err := tmp.Sync(); err != nil {
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmp.Name(), d.path("."+docID, rev))
+}
+
 /*
 File naming strategy:
 Current rev lives under {db}/{docid}
@@ -80,13 +109,22 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 	rev := calculateRev(obj)
 	obj["_rev"] = rev
 
-	f, err := os.OpenFile(d.path(docID), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0666)
+	newFile, err := ioutil.TempFile(d.path(), ".")
 	if err != nil {
 		return "", err
 	}
-	defer f.Close()
-	if err := json.NewEncoder(f).Encode(obj); err != nil {
+	defer newFile.Close() // nolint: errcheck
+	if err := json.NewEncoder(newFile).Encode(obj); err != nil {
 		return "", err
 	}
-	return rev, nil
+
+	if err := newFile.Close(); err != nil {
+		return "", err
+	}
+	if currev != "" {
+		if err := d.archiveDoc(docID, currev); err != nil {
+			return "", err
+		}
+	}
+	return rev, os.Rename(newFile.Name(), d.path(docID))
 }

@@ -71,6 +71,34 @@ func TestPut(t *testing.T) {
 		status:  http.StatusBadRequest,
 		err:     "document rev from request body and query string have different values",
 	})
+	tests.Add("new rev", tst{
+		id:       "foo",
+		doc:      map[string]string{"foo": "quxx", "_rev": "1-beea34a62a215ab051862d1e5d93162e"},
+		expected: "2-a1de8ffe0af07dec9193ddf8d4b18135",
+		setup: func(t *testing.T, d *db) {
+			if _, err := d.Put(context.Background(), "foo", map[string]string{"foo": "bar"}, nil); err != nil {
+				t.Fatal(err)
+			}
+		},
+		final: func(t *testing.T, d *db) {
+			expected := map[string]string{
+				"_rev": "2-a1de8ffe0af07dec9193ddf8d4b18135",
+				"_id":  "foo",
+				"foo":  "quxx",
+			}
+			if d := diff.AsJSON(expected, &diff.File{Path: d.path("foo")}); d != nil {
+				t.Error(d)
+			}
+			expected2 := map[string]string{
+				"foo":  "bar",
+				"_id":  "foo",
+				"_rev": "1-beea34a62a215ab051862d1e5d93162e",
+			}
+			if d := diff.AsJSON(expected2, &diff.File{Path: d.path(".foo", "1-beea34a62a215ab051862d1e5d93162e")}); d != nil {
+				t.Error(d)
+			}
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, test tst) {
 		tmpdir := tempDir(t)
