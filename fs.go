@@ -43,7 +43,7 @@ var _ driver.Client = &client{}
 func (d *fsDriver) NewClient(dir string) (driver.Client, error) {
 	if err := validateRootDir(dir); err != nil {
 		if os.IsPermission(errors.Cause(err)) {
-			return nil, &kivik.Error{HTTPStatus: kivik.StatusUnauthorized, Message: "access denied"}
+			return nil, &kivik.Error{HTTPStatus: http.StatusUnauthorized, Message: "access denied"}
 		}
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func (c *client) DestroyDB(ctx context.Context, dbName string, options map[strin
 	return nil
 }
 
-func (c *client) DB(_ context.Context, dbName string, options map[string]interface{}) (driver.DB, error) {
+func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) (driver.DB, error) {
 	return &db{
 		client: c,
 		dbName: dbName,
