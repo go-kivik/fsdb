@@ -99,6 +99,21 @@ func TestPut(t *testing.T) {
 			}
 		},
 	})
+	tests.Add("design doc", tst{
+		id:       "_design/foo",
+		doc:      map[string]string{"foo": "bar"},
+		expected: "1-9c52d211374283d5def378aa0e10709d",
+		final: func(t *testing.T, d *db) {
+			expected := map[string]string{
+				"_rev": "1-9c52d211374283d5def378aa0e10709d",
+				"_id":  "_design/foo",
+				"foo":  "bar",
+			}
+			if d := diff.AsJSON(expected, &diff.File{Path: d.path("_design%2Ffoo")}); d != nil {
+				t.Error(d)
+			}
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, test tst) {
 		tmpdir := tempDir(t)

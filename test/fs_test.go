@@ -13,6 +13,10 @@ import (
 	"github.com/go-kivik/kiviktest/kt"
 )
 
+func init() {
+	RegisterFSSuite()
+}
+
 func TestFS(t *testing.T) {
 	tempDir, err := ioutil.TempDir("", "kivik.test.")
 	if err != nil {

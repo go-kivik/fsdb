@@ -8,12 +8,21 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/go-kivik/kivik"
 )
+
+func id2filename(id string) string {
+	id = url.PathEscape(id)
+	if id[0] == '.' {
+		return "%2E" + id[1:]
+	}
+	return id
+}
 
 type revDoc struct {
 	Rev string `json:"_rev"`
@@ -92,7 +101,8 @@ Current rev lives under {db}/{docid}
 Historical revs live under {db}/.{docid}/{rev}
 */
 func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[string]interface{}) (string, error) {
-	currev, err := d.currentRev(docID)
+	filename := id2filename(docID)
+	currev, err := d.currentRev(filename)
 	if err != nil {
 		return "", err
 	}
@@ -122,9 +132,9 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 		return "", err
 	}
 	if currev != "" {
-		if err := d.archiveDoc(docID, currev); err != nil {
+		if err := d.archiveDoc(filename, currev); err != nil {
 			return "", err
 		}
 	}
-	return rev, os.Rename(newFile.Name(), d.path(docID))
+	return rev, os.Rename(newFile.Name(), d.path(filename))
 }
