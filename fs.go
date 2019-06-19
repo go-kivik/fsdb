@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"regexp"
 
+	"github.com/pkg/errors"
+
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
-	"github.com/go-kivik/kivik/errors"
 )
 
 const dirMode = os.FileMode(0700)
@@ -38,10 +40,10 @@ type client struct {
 
 var _ driver.Client = &client{}
 
-func (d *fsDriver) NewClient(_ context.Context, dir string) (driver.Client, error) {
+func (d *fsDriver) NewClient(dir string) (driver.Client, error) {
 	if err := validateRootDir(dir); err != nil {
 		if os.IsPermission(errors.Cause(err)) {
-			return nil, errors.Status(kivik.StatusUnauthorized, "access denied")
+			return nil, &kivik.Error{HTTPStatus: kivik.StatusUnauthorized, Message: "access denied"}
 		}
 		return nil, err
 	}
@@ -94,7 +96,7 @@ var validDBNameRE = regexp.MustCompile("^[a-z][a-z0-9_$()+/-]*$")
 func (c *client) AllDBs(_ context.Context, _ map[string]interface{}) ([]string, error) {
 	files, err := ioutil.ReadDir(c.root)
 	if err != nil {
-		return nil, errors.WrapStatus(kivik.StatusInternalServerError, err)
+		return nil, err
 	}
 	filenames := make([]string, 0, len(files))
 	for _, file := range files {
@@ -119,10 +121,10 @@ func (c *client) CreateDB(ctx context.Context, dbName string, options map[string
 		return err
 	}
 	if exists {
-		return errors.Status(kivik.StatusPreconditionFailed, "database already exists")
+		return &kivik.Error{HTTPStatus: http.StatusPreconditionFailed, Message: "database already exists"}
 	}
 	if err := os.Mkdir(c.root+"/"+dbName, dirMode); err != nil {
-		return errors.WrapStatus(kivik.StatusInternalServerError, err)
+		return err
 	}
 	return nil
 }
@@ -136,7 +138,7 @@ func (c *client) DBExists(_ context.Context, dbName string, _ map[string]interfa
 	if os.IsNotExist(err) {
 		return false, nil
 	}
-	return false, errors.WrapStatus(kivik.StatusInternalServerError, err)
+	return false, err
 }
 
 // DestroyDB destroys the database
@@ -146,10 +148,10 @@ func (c *client) DestroyDB(ctx context.Context, dbName string, options map[strin
 		return err
 	}
 	if !exists {
-		return errors.Status(kivik.StatusNotFound, "database does not exist")
+		return &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "database does not exist"}
 	}
 	if err = os.RemoveAll(c.root + "/" + dbName); err != nil {
-		return errors.WrapStatus(kivik.StatusInternalServerError, err)
+		return err
 	}
 	return nil
 }
