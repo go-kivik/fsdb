@@ -95,12 +95,29 @@ func (d *db) archiveDoc(docID, rev string) error {
 	return os.Rename(tmp.Name(), d.path("."+docID, rev))
 }
 
+var reservedPrefixes = []string{"_local/", "_design/"}
+
+func validateID(id string) error {
+	if id[0] != '_' {
+		return nil
+	}
+	for _, prefix := range reservedPrefixes {
+		if strings.HasPrefix(id, prefix) && len(id) > len(prefix) {
+			return nil
+		}
+	}
+	return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "only reserved document ids may start with underscore"}
+}
+
 /*
 File naming strategy:
 Current rev lives under {db}/{docid}
 Historical revs live under {db}/.{docid}/{rev}
 */
 func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[string]interface{}) (string, error) {
+	if err := validateID(docID); err != nil {
+		return "", err
+	}
 	filename := id2filename(docID)
 	currev, err := d.currentRev(filename)
 	if err != nil {

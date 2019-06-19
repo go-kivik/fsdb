@@ -114,6 +114,12 @@ func TestPut(t *testing.T) {
 			}
 		},
 	})
+	tests.Add("invalid doc id", tst{
+		id:     "_oink",
+		doc:    map[string]string{"foo": "bar"},
+		status: http.StatusBadRequest,
+		err:    "only reserved document ids may start with underscore",
+	})
 
 	tests.Run(t, func(t *testing.T, test tst) {
 		tmpdir := tempDir(t)
