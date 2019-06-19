@@ -23,9 +23,6 @@ func registerFSSuite() {
 
 		"DestroyDB/RW/Admin/NonExistantDB.status": kivik.StatusNotFound,
 
-		"Log.status":          kivik.StatusNotImplemented,
-		"Log/Admin/HTTP.skip": true,
-
 		"Version.version":        `^0\.0\.1$`,
 		"Version.vendor":         "Kivik",
 		"Version.vendor_version": `^0\.0\.1$`,
