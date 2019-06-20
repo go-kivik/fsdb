@@ -1,0 +1,10 @@
+{
+    "_id": "foo",
+    "_attachments": {
+        "foo.txt": {
+            "content_type": "text/plain",
+            "stub": true
+        }
+    },
+    "foo": "bar"
+}

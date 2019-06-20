@@ -152,3 +152,44 @@ func TestNormalDocMarshalJSON(t *testing.T) {
 		}
 	})
 }
+
+func TestNormalDocUnmarshalJSON(t *testing.T) {
+	tests := testy.NewTable()
+	tests.Add("no extra fields", `{
+        "_id":"foo"
+    }`)
+	tests.Add("extra fields", `{
+        "_id":"foo",
+        "foo":"bar"
+    }`)
+	tests.Add("attachment stub", `{
+        "_id":"foo",
+        "foo":"bar",
+        "_attachments":{
+            "foo.txt":{
+                "content_type":"text/plain",
+                "stub":true
+            }
+        }
+    }`)
+	tests.Add("attachment", `{
+        "_id":"foo",
+        "foo":"bar",
+        "_attachments":{
+            "foo.txt":{
+                "content_type":"text/plain",
+                "data":"VGVzdGluZwo="
+            }
+        }
+    }`)
+
+	tests.Run(t, func(t *testing.T, in string) {
+		result := new(normalDoc)
+		if err := json.Unmarshal([]byte(in), &result); err != nil {
+			t.Fatal(err)
+		}
+		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
+			t.Error(d)
+		}
+	})
+}

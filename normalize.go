@@ -97,13 +97,16 @@ func (a *attachment) UnmarshalJSON(p []byte) error {
 }
 
 func (a *attachment) MarshalJSON() ([]byte, error) {
-	if a.Content == nil {
-		return nil, errors.New("Content required")
-	}
-	defer a.Content.Seek(0, 0) // nolint: errcheck
-	if a.Size == 0 || a.Digest == "" {
-		if err := a.setMetaData(); err != nil {
-			return nil, err
+	if a.Content != nil {
+		defer a.Content.Seek(0, 0) // nolint: errcheck
+		if a.Size == 0 || a.Digest == "" {
+			if err := a.setMetaData(); err != nil {
+				return nil, err
+			}
+		}
+	} else {
+		if !a.Stub {
+			return nil, errors.New("Content required")
 		}
 	}
 	if a.Stub {
@@ -145,7 +148,7 @@ func (a *attachment) stubMarshalJSON() ([]byte, error) {
 
 type normalDoc struct {
 	ID          string                 `json:"_id"`
-	Rev         string                 `json:"_rev"`
+	Rev         string                 `json:"_rev,omitempty"`
 	Attachments attachments            `json:"_attachments,omitempty"`
 	Data        map[string]interface{} `json:"-"`
 }
@@ -172,4 +175,27 @@ func (d *normalDoc) MarshalJSON() ([]byte, error) {
 		return append(doc, data[1:]...), nil
 	}
 	return doc, nil
+}
+
+func (d *normalDoc) UnmarshalJSON(p []byte) error {
+	doc := struct {
+		ID          string      `json:"_id"`
+		Rev         string      `json:"_rev,omitempty"`
+		Attachments attachments `json:"_attachments,omitempty"`
+	}{}
+	if err := json.Unmarshal(p, &doc); err != nil {
+		return err
+	}
+	data := map[string]interface{}{}
+	if err := json.Unmarshal(p, &data); err != nil {
+		return err
+	}
+	delete(data, "_id")
+	delete(data, "_rev")
+	delete(data, "_attachments")
+	d.ID = doc.ID
+	d.Rev = doc.Rev
+	d.Attachments = doc.Attachments
+	d.Data = data
+	return nil
 }
