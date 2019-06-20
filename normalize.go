@@ -146,6 +146,30 @@ func (a *attachment) stubMarshalJSON() ([]byte, error) {
 type normalDoc struct {
 	ID          string                 `json:"_id"`
 	Rev         string                 `json:"_rev"`
-	Attachments attachments            `json:"_attachments"`
+	Attachments attachments            `json:"_attachments,omitempty"`
 	Data        map[string]interface{} `json:"-"`
+}
+
+func (d *normalDoc) MarshalJSON() ([]byte, error) {
+	for _, key := range []string{"_id", "_rev", "_attachments"} {
+		if _, ok := d.Data[key]; ok {
+			return nil, errors.New("Data must not contain _id, _rev, or _attachments keys")
+		}
+	}
+	var data []byte
+	if len(d.Data) > 0 {
+		var err error
+		if data, err = json.Marshal(d.Data); err != nil {
+			return nil, err
+		}
+	}
+	doc, err := json.Marshal(*d)
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > 0 {
+		doc[len(doc)-1] = ','
+		return append(doc, data[1:]...), nil
+	}
+	return doc, nil
 }

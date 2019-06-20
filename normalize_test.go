@@ -113,3 +113,42 @@ func TestAttachmentUnmarshalJSON_file(t *testing.T) {
 		t.Error(d)
 	}
 }
+
+func TestNormalDocMarshalJSON(t *testing.T) {
+	tests := testy.NewTable()
+	tests.Add("no attachments", &normalDoc{
+		ID:  "foo",
+		Rev: "1-xxx",
+		Data: map[string]interface{}{
+			"foo": "bar",
+		},
+	})
+	tests.Add("attachment", func(t *testing.T) interface{} {
+
+		f, err := os.Open("testdata/foo.txt")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &normalDoc{
+			ID:  "foo",
+			Rev: "1-xxx",
+			Attachments: attachments{
+				"foo.txt": &attachment{
+					ContentType: "text/plain",
+					Content:     f,
+				},
+			},
+		}
+	})
+
+	tests.Run(t, func(t *testing.T, doc *normalDoc) {
+		result, err := json.Marshal(doc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
+			t.Error(d)
+		}
+	})
+}
