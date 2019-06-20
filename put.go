@@ -146,16 +146,20 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 	rev := calculateRev(obj)
 	obj["_rev"] = rev
 
-	newFile, err := ioutil.TempFile(d.path(), ".")
+	// map of tmpFile:permFile to be renamed
+	toRename := make(map[string]string)
+
+	tmp, err := ioutil.TempFile(d.path(), ".")
 	if err != nil {
 		return "", err
 	}
-	defer newFile.Close() // nolint: errcheck
-	if err := json.NewEncoder(newFile).Encode(obj); err != nil {
+	defer tmp.Close() // nolint: errcheck
+	toRename[tmp.Name()] = d.path(filename)
+	if err := json.NewEncoder(tmp).Encode(obj); err != nil {
 		return "", err
 	}
 
-	if err := newFile.Close(); err != nil {
+	if err := tmp.Close(); err != nil {
 		return "", err
 	}
 	if currev != "" {
@@ -163,5 +167,10 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 			return "", err
 		}
 	}
-	return rev, os.Rename(newFile.Name(), d.path(filename))
+	for old, new := range toRename {
+		if err := os.Rename(old, new); err != nil {
+			return "", err
+		}
+	}
+	return rev, nil
 }
