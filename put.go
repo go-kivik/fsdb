@@ -131,7 +131,7 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 	if err != nil {
 		return "", err
 	}
-	atts, err := extractAttachments(doc)
+	atts, _, err := extractAttachments(doc)
 	if err != nil {
 		return "", err
 	}
@@ -173,7 +173,7 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 		if err := os.Mkdir(d.path(base), 0777); err != nil {
 			return "", err
 		}
-		for attname, att := range atts {
+		for attname, att := range *atts {
 			tmp, err := ioutil.TempFile(d.path(base), ".")
 			if err != nil {
 				return "", err

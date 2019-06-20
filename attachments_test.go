@@ -20,6 +20,7 @@ func (a customAttachments) MarshalJSON() ([]byte, error) {
 func TestExtractAttachments(t *testing.T) {
 	type tst struct {
 		doc      interface{}
+		inline   bool
 		expected *kivik.Attachments
 		status   int
 		err      string
@@ -27,14 +28,17 @@ func TestExtractAttachments(t *testing.T) {
 	tests := testy.NewTable()
 	tests.Add("nil doc", tst{
 		doc:      nil,
+		inline:   false,
 		expected: nil,
 	})
 	tests.Add("doc is pointer", tst{
 		doc:      &struct{}{},
+		inline:   false,
 		expected: nil,
 	})
 	tests.Add("No attachments", tst{
 		doc:      map[string]string{"foo": "bar"},
+		inline:   false,
 		expected: nil,
 	})
 	tests.Add("*kivik.Attachments in map", tst{
@@ -46,6 +50,7 @@ func TestExtractAttachments(t *testing.T) {
 				},
 			},
 		},
+		inline: true,
 		expected: &kivik.Attachments{
 			"foo.txt": &kivik.Attachment{
 				ContentType: "text/plain",
@@ -62,6 +67,7 @@ func TestExtractAttachments(t *testing.T) {
 				},
 			},
 		},
+		inline: true,
 		expected: &kivik.Attachments{
 			"foo.txt": &kivik.Attachment{
 				ContentType: "text/plain",
@@ -80,6 +86,7 @@ func TestExtractAttachments(t *testing.T) {
 				},
 			},
 		},
+		inline: true,
 		expected: &kivik.Attachments{
 			"foo.txt": &kivik.Attachment{
 				ContentType: "text/plain",
@@ -96,6 +103,7 @@ func TestExtractAttachments(t *testing.T) {
 				},
 			},
 		},
+		inline: false,
 		expected: &kivik.Attachments{
 			"foo.txt": &kivik.Attachment{
 				ContentType: "text/plain",
@@ -107,6 +115,7 @@ func TestExtractAttachments(t *testing.T) {
 		doc: map[string]interface{}{
 			"_attachments": customAttachments{},
 		},
+		inline: false,
 		expected: &kivik.Attachments{
 			"foo.txt": &kivik.Attachment{
 				ContentType: "text/html",
@@ -116,8 +125,11 @@ func TestExtractAttachments(t *testing.T) {
 	})
 
 	tests.Run(t, func(t *testing.T, test tst) {
-		result, err := extractAttachments(test.doc)
+		result, inline, err := extractAttachments(test.doc)
 		testy.StatusError(t, test.err, test.status, err)
+		if inline != test.inline {
+			t.Errorf("Unexpected inline result: %t", inline)
+		}
 		if d := diff.AsJSON(test.expected, result); d != nil {
 			t.Error(d)
 		}

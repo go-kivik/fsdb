@@ -12,9 +12,13 @@ import (
 
 const attachmentsKey = "_attachments"
 
-func extractAttachments(doc interface{}) (kivik.Attachments, error) {
+// extractAttachments extracts the attachments from the document. If the
+// returned *kivik.Attachments object is the same in the document, the bool
+// will be true. If the bool is false, it means the attachment stubs must
+// be re-injected into the document before storage.
+func extractAttachments(doc interface{}) (*kivik.Attachments, bool, error) {
 	if doc == nil {
-		return nil, nil
+		return nil, false, nil
 	}
 	v := reflect.ValueOf(doc)
 	if v.Type().Kind() == reflect.Ptr {
@@ -24,17 +28,17 @@ func extractAttachments(doc interface{}) (kivik.Attachments, error) {
 		return interfaceToAttachments(stdMap[attachmentsKey])
 	}
 	if v.Kind() != reflect.Struct {
-		return nil, nil
+		return nil, false, nil
 	}
 	for i := 0; i < v.NumField(); i++ {
 		if v.Type().Field(i).Tag.Get("json") == attachmentsKey {
 			return interfaceToAttachments(v.Field(i).Interface())
 		}
 	}
-	return nil, nil
+	return nil, false, nil
 }
 
-func interfaceToAttachments(i interface{}) (kivik.Attachments, error) {
+func interfaceToAttachments(i interface{}) (*kivik.Attachments, bool, error) {
 	switch t := i.(type) {
 	case kivik.Attachments:
 		atts := make(kivik.Attachments, len(t))
@@ -42,12 +46,12 @@ func interfaceToAttachments(i interface{}) (kivik.Attachments, error) {
 			atts[k] = v
 			delete(t, k)
 		}
-		return atts, nil
+		return &atts, true, nil
 	case *kivik.Attachments:
 		atts := new(kivik.Attachments)
 		*atts = *t
 		*t = nil
-		return *atts, nil
+		return atts, true, nil
 	case map[string]interface{}:
 		return mapToAttachments(t)
 	}
@@ -55,34 +59,35 @@ func interfaceToAttachments(i interface{}) (kivik.Attachments, error) {
 	if data, err := json.Marshal(i); err == nil {
 		var atts kivik.Attachments
 		if err := json.Unmarshal(data, &atts); err != nil {
-			return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "bad special document member: _attachments"}
+			return nil, false, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "bad special document member: _attachments"}
 		}
-		return atts, nil
+		return &atts, false, nil
 	}
 
-	return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "bad special document member: _attachments"}
+	return nil, false, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "bad special document member: _attachments"}
 }
 
-func mapToAttachments(a map[string]interface{}) (kivik.Attachments, error) {
+func mapToAttachments(a map[string]interface{}) (*kivik.Attachments, bool, error) {
 	atts := make(kivik.Attachments, len(a))
 	for filename, d := range a {
 		data, ok := d.(map[string]interface{})
 		if !ok {
-			return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "bad special document member: _attachments"}
+			return nil, false, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "bad special document member: _attachments"}
 		}
 		ct, ok := data["content_type"].(string)
 		if !ok {
-			return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "bad special document member: _attachments"}
+			return nil, false, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "bad special document member: _attachments"}
 		}
 		content, ok := data["data"].([]byte)
 		if !ok {
-			return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "bad special document member: _attachments"}
+			return nil, false, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "bad special document member: _attachments"}
 		}
 		att := &kivik.Attachment{
 			ContentType: ct,
 			Content:     ioutil.NopCloser(bytes.NewReader(content)),
 		}
 		atts.Set(filename, att)
+		delete(a, filename)
 	}
-	return atts, nil
+	return &atts, false, nil
 }
