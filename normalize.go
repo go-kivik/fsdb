@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/json"
 	"errors"
@@ -20,6 +21,16 @@ type attachment struct {
 	Digest      string   `json:"digest"`
 }
 
+func (a *attachment) cleanup() error {
+	if a == nil || a.Content == nil {
+		return nil
+	}
+	if err := a.Content.Close(); err != nil {
+		return err
+	}
+	return os.Remove(a.Content.Name())
+}
+
 func (a *attachment) setMetaData() error {
 	defer a.Content.Seek(0, 0) // nolint: errcheck
 	h := md5.New()
@@ -29,6 +40,40 @@ func (a *attachment) setMetaData() error {
 	}
 	a.Size = size
 	a.Digest = fmt.Sprintf("md5-%x", h.Sum(nil))
+	return nil
+}
+
+func (a *attachment) UnmarshalJSON(p []byte) error {
+	var att struct {
+		ContentType string `json:"content_type"`
+		Stub        bool   `json:"stub"`
+		Content     []byte `json:"data"`
+		Size        int64  `json:"size"`
+		Digest      string `json:"digest"`
+	}
+	if err := json.Unmarshal(p, &att); err != nil {
+		return err
+	}
+	a.ContentType = att.ContentType
+	a.Size = att.Size
+	a.Digest = att.Digest
+	if att.Stub {
+		a.Stub = true
+		return nil
+	}
+	tmp, err := ioutil.TempFile("", "attachment-")
+	if err != nil {
+		return err
+	}
+	size, err := io.Copy(tmp, bytes.NewReader(att.Content))
+	if err != nil {
+		return err
+	}
+	if _, err := tmp.Seek(0, 0); err != nil {
+		return err
+	}
+	a.Content = tmp
+	a.Size = size
 	return nil
 }
 
