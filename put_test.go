@@ -120,6 +120,15 @@ func TestPut(t *testing.T) {
 		status: http.StatusBadRequest,
 		err:    "only reserved document ids may start with underscore",
 	})
+	tests.Add("invalid attachments", tst{
+		id: "foo",
+		doc: map[string]interface{}{
+			"foo":          "bar",
+			"_attachments": 123,
+		},
+		status: http.StatusBadRequest,
+		err:    "bad special document member: _attachments",
+	})
 
 	tests.Run(t, func(t *testing.T, test tst) {
 		tmpdir := tempDir(t)

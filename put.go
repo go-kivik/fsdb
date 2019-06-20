@@ -114,8 +114,9 @@ func validateID(id string) error {
 
 /*
 File naming strategy:
-Current rev lives under {db}/{docid}
-Historical revs live under {db}/.{docid}/{rev}
+Current rev lives under:    {db}/{docid}.{ext}
+Historical revs live under: {db}/.{docid}/{rev}
+Attachments:                {db}/{docid}/{filename}
 */
 func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[string]interface{}) (string, error) {
 	if err := validateID(docID); err != nil {
@@ -126,10 +127,16 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 	if err != nil {
 		return "", err
 	}
+	_, _, err = extractAttachments(doc)
+	if err != nil {
+		return "", err
+	}
+
 	data, err := json.Marshal(doc)
 	if err != nil {
 		return "", err
 	}
+
 	var obj map[string]interface{}
 	_ = json.Unmarshal(data, &obj)
 	if err := compareRevs(obj, opts, currev); err != nil {
