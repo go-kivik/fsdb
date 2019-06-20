@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 
@@ -19,9 +20,9 @@ import (
 func id2filename(id string) string {
 	id = url.PathEscape(id)
 	if id[0] == '.' {
-		return "%2E" + id[1:]
+		return "%2E" + id[1:] + ".json"
 	}
-	return id
+	return id + ".json"
 }
 
 type revDoc struct {
@@ -69,16 +70,18 @@ func compareRevs(doc, opts map[string]interface{}, currev string) error {
 	return nil
 }
 
-func (d *db) archiveDoc(docID, rev string) error {
-	src, err := os.Open(d.path(docID))
+func (d *db) archiveDoc(filename, rev string) error {
+	ext := path.Ext(filename)
+	base := strings.TrimSuffix(filename, ext)
+	src, err := os.Open(d.path(filename))
 	if err != nil {
 		return err
 	}
 	defer src.Close() // nolint: errcheck
-	if err := os.Mkdir(d.path("."+docID), 0777); err != nil {
+	if err := os.Mkdir(d.path("."+base), 0777); err != nil {
 		return err
 	}
-	tmp, err := ioutil.TempFile(d.path("."+docID), ".")
+	tmp, err := ioutil.TempFile(d.path("."+base), ".")
 	if err != nil {
 		return err
 	}
@@ -92,7 +95,7 @@ func (d *db) archiveDoc(docID, rev string) error {
 	if err := tmp.Close(); err != nil {
 		return err
 	}
-	return os.Rename(tmp.Name(), d.path("."+docID, rev))
+	return os.Rename(tmp.Name(), d.path("."+base, rev)+ext)
 }
 
 var reservedPrefixes = []string{"_local/", "_design/"}

@@ -31,7 +31,7 @@ func TestPut(t *testing.T) {
 				"_id":  "foo",
 				"foo":  "bar",
 			}
-			if d := diff.AsJSON(expected, &diff.File{Path: d.path("foo")}); d != nil {
+			if d := diff.AsJSON(expected, &diff.File{Path: d.path("foo") + ".json"}); d != nil {
 				t.Error(d)
 			}
 		},
@@ -86,7 +86,7 @@ func TestPut(t *testing.T) {
 				"_id":  "foo",
 				"foo":  "quxx",
 			}
-			if d := diff.AsJSON(expected, &diff.File{Path: d.path("foo")}); d != nil {
+			if d := diff.AsJSON(expected, &diff.File{Path: d.path("foo") + ".json"}); d != nil {
 				t.Error(d)
 			}
 			expected2 := map[string]string{
@@ -94,7 +94,7 @@ func TestPut(t *testing.T) {
 				"_id":  "foo",
 				"_rev": "1-beea34a62a215ab051862d1e5d93162e",
 			}
-			if d := diff.AsJSON(expected2, &diff.File{Path: d.path(".foo", "1-beea34a62a215ab051862d1e5d93162e")}); d != nil {
+			if d := diff.AsJSON(expected2, &diff.File{Path: d.path(".foo", "1-beea34a62a215ab051862d1e5d93162e") + ".json"}); d != nil {
 				t.Error(d)
 			}
 		},
@@ -109,7 +109,7 @@ func TestPut(t *testing.T) {
 				"_id":  "_design/foo",
 				"foo":  "bar",
 			}
-			if d := diff.AsJSON(expected, &diff.File{Path: d.path("_design%2Ffoo")}); d != nil {
+			if d := diff.AsJSON(expected, &diff.File{Path: d.path("_design%2Ffoo") + ".json"}); d != nil {
 				t.Error(d)
 			}
 		},
