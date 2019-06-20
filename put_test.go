@@ -129,6 +129,42 @@ func TestPut(t *testing.T) {
 		status: http.StatusBadRequest,
 		err:    "bad special document member: _attachments",
 	})
+	tests.Add("attachment", tst{
+		id: "foo",
+		doc: map[string]interface{}{
+			"foo": "bar",
+			"_attachments": map[string]interface{}{
+				"foo.txt": map[string]interface{}{
+					"content_type": "text/plain",
+					"data":         []byte("Testing"),
+				},
+			},
+		},
+		expected: "1-beea34a62a215ab051862d1e5d93162e",
+		final: func(t *testing.T, d *db) {
+			expected := map[string]interface{}{
+				"_rev": "1-beea34a62a215ab051862d1e5d93162e",
+				"_id":  "foo",
+				"foo":  "bar",
+				"_attachments": map[string]interface{}{
+					"foo.txt": map[string]interface{}{
+						"content_type": "text/plain",
+						"digest":       "md5-xxx",
+						"length":       123,
+						"revpos":       1,
+						"stub":         true,
+					},
+				},
+			}
+			if d := diff.AsJSON(expected, &diff.File{Path: d.path("foo") + ".json"}); d != nil {
+				t.Error(d)
+			}
+			expected2 := "Testing"
+			if d := diff.Text(expected2, &diff.File{Path: d.path("foo", "foo.txt")}); d != nil {
+				t.Error(d)
+			}
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, test tst) {
 		tmpdir := tempDir(t)

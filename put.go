@@ -70,9 +70,13 @@ func compareRevs(doc, opts map[string]interface{}, currev string) error {
 	return nil
 }
 
+func base(p string) string {
+	return strings.TrimSuffix(p, path.Ext(p))
+}
+
 func (d *db) archiveDoc(filename, rev string) error {
 	ext := path.Ext(filename)
-	base := strings.TrimSuffix(filename, ext)
+	base := base(filename)
 	src, err := os.Open(d.path(filename))
 	if err != nil {
 		return err
@@ -127,7 +131,7 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 	if err != nil {
 		return "", err
 	}
-	_, _, err = extractAttachments(doc)
+	atts, err := extractAttachments(doc)
 	if err != nil {
 		return "", err
 	}
@@ -148,6 +152,11 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 
 	// map of tmpFile:permFile to be renamed
 	toRename := make(map[string]string)
+	defer func() {
+		for filename := range toRename {
+			_ = os.Remove(filename)
+		}
+	}()
 
 	tmp, err := ioutil.TempFile(d.path(), ".")
 	if err != nil {
@@ -157,6 +166,23 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 	toRename[tmp.Name()] = d.path(filename)
 	if err := json.NewEncoder(tmp).Encode(obj); err != nil {
 		return "", err
+	}
+
+	if atts != nil {
+		base := base(filename)
+		if err := os.Mkdir(d.path(base), 0777); err != nil {
+			return "", err
+		}
+		for attname, att := range atts {
+			tmp, err := ioutil.TempFile(d.path(base), ".")
+			if err != nil {
+				return "", err
+			}
+			toRename[tmp.Name()] = d.path(base, attname)
+			if _, err := io.Copy(tmp, att.Content); err != nil {
+				return "", err
+			}
+		}
 	}
 
 	if err := tmp.Close(); err != nil {
