@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"sync"
 )
 
 type attachments map[string]*attachment
@@ -43,6 +44,23 @@ func (a *attachment) setMetaData() error {
 	return nil
 }
 
+// copyDigest works the same as io.Copy, but also returns the md5sum of the
+// copied file.
+func copyDigest(tgt io.Writer, dst io.Reader) (int64, string, error) {
+	h := md5.New()
+	tee := io.TeeReader(dst, h)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	var written int64
+	var err error
+	go func() {
+		written, err = io.Copy(tgt, tee)
+		wg.Done()
+	}()
+	wg.Wait()
+	return written, fmt.Sprintf("md5-%x", h.Sum(nil)), err
+}
+
 func (a *attachment) UnmarshalJSON(p []byte) error {
 	var att struct {
 		ContentType string `json:"content_type"`
@@ -65,7 +83,7 @@ func (a *attachment) UnmarshalJSON(p []byte) error {
 	if err != nil {
 		return err
 	}
-	size, err := io.Copy(tmp, bytes.NewReader(att.Content))
+	size, digest, err := copyDigest(tmp, bytes.NewReader(att.Content))
 	if err != nil {
 		return err
 	}
@@ -74,6 +92,7 @@ func (a *attachment) UnmarshalJSON(p []byte) error {
 	}
 	a.Content = tmp
 	a.Size = size
+	a.Digest = digest
 	return nil
 }
 
