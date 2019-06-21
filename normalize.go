@@ -199,3 +199,23 @@ func (d *normalDoc) UnmarshalJSON(p []byte) error {
 	d.Data = data
 	return nil
 }
+
+func (d *normalDoc) cleanup() error {
+	var err error
+	for _, a := range d.Attachments {
+		if e := a.cleanup(); e != nil {
+			err = e
+		}
+	}
+	return err
+}
+
+func normalizeDoc(i interface{}) (*normalDoc, error) {
+	data, err := json.Marshal(i)
+	if err != nil {
+		return nil, err
+	}
+	doc := &normalDoc{}
+	err = json.Unmarshal(data, &doc)
+	return doc, err
+}

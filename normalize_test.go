@@ -193,3 +193,23 @@ func TestNormalDocUnmarshalJSON(t *testing.T) {
 		}
 	})
 }
+
+func TestNormalizeDoc(t *testing.T) {
+	type tst struct {
+		doc    interface{}
+		status int
+		err    string
+	}
+	tests := testy.NewTable()
+	tests.Add("simple doc", tst{
+		doc: map[string]string{"_id": "foo", "foo": "bar"},
+	})
+
+	tests.Run(t, func(t *testing.T, test tst) {
+		result, err := normalizeDoc(test.doc)
+		testy.StatusError(t, test.err, test.status, err)
+		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
+			t.Error(d)
+		}
+	})
+}
