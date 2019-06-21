@@ -2,6 +2,7 @@ package fs
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"os"
 	"testing"
@@ -67,6 +68,23 @@ func TestGet(t *testing.T) {
 			Rev:           "1-xxxxxxxxxx",
 		},
 	})
+	tests.Add("success, attachment stub", tt{
+		path: "testdata/db.foo",
+		id:   "withattach",
+		expected: &driver.Document{
+			ContentLength: 286,
+			Rev:           "1-xxxxxxxxxx",
+		},
+	})
+	tests.Add("success, include attachments", tt{
+		path:    "testdata/db.foo",
+		id:      "withattach",
+		options: map[string]interface{}{"attachments": true},
+		expected: &driver.Document{
+			ContentLength: 286,
+			Rev:           "1-xxxxxxxxxx",
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		dir := tt.path
@@ -86,7 +104,28 @@ func TestGet(t *testing.T) {
 		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, doc.Body); d != nil {
 			t.Errorf("document:\n%s", d)
 		}
+		if doc.Attachments != nil {
+			defer doc.Attachments.Close() // nolint: errcheck
+			att := &driver.Attachment{}
+			for {
+				if err := doc.Attachments.Next(att); err != nil {
+					if err == io.EOF {
+						break
+					}
+					t.Fatal(err)
+				}
+				if d := diff.Text(&diff.File{Path: "testdata/" + testy.Stub(t) + "_" + att.Filename}, att.Content); d != nil {
+					t.Errorf("Attachment %s content:\n%s", att.Filename, d)
+				}
+				_ = att.Content.Close()
+				att.Content = nil
+				if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t) + "_" + att.Filename + "_struct"}, att); d != nil {
+					t.Errorf("Attachment %s struct:\n%s", att.Filename, d)
+				}
+			}
+		}
 		doc.Body = nil
+		doc.Attachments = nil
 		if d := diff.Interface(tt.expected, doc); d != nil {
 			t.Error(d)
 		}

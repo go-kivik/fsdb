@@ -11,26 +11,12 @@ import (
 	"github.com/go-kivik/kivik/driver"
 )
 
-// This should be optimized to only read the first few bytes of the file.
-func readRev(f io.ReadSeeker) (rev string, err error) {
-	doc := struct {
-		Rev string `json:"_rev"`
-	}{}
-	defer func() {
-		_, e := f.Seek(0, 0)
-		if err == nil {
-			err = e
-		}
-	}()
-	err = json.NewDecoder(f).Decode(&doc)
-	return doc.Rev, err
-}
-
 func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
 	if docID == "" {
 		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no docid specified"}
 	}
 	filename := id2filename(docID)
+	base := base(filename)
 	f, err := os.Open(d.path(filename))
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -45,13 +31,43 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 	if err != nil {
 		return nil, err
 	}
-	rev, err := readRev(f)
-	if err != nil {
+	ndoc := new(normalDoc)
+	if err := json.NewDecoder(f).Decode(&ndoc); err != nil {
 		return nil, err
 	}
-	return &driver.Document{
+	if _, err := f.Seek(0, 0); err != nil {
+		return nil, err
+	}
+	doc := &driver.Document{
 		ContentLength: stat.Size(),
 		Body:          f,
-		Rev:           rev,
-	}, nil
+		Rev:           ndoc.Rev,
+	}
+	if ok, _ := opts["attachments"].(bool); ok {
+		_ = f.Close()
+		atts := make(attachments)
+		for filename, att := range ndoc.Attachments {
+			f, err := os.Open(d.path(base, filename))
+			if err != nil {
+				return nil, err
+			}
+			att.Stub = false
+			att.Follows = true
+			att.Content = f
+			atts[filename] = &attachment{
+				Content:     f,
+				Size:        att.Size,
+				ContentType: att.ContentType,
+				Digest:      att.ContentType,
+			}
+		}
+		r, w := io.Pipe()
+		go func() {
+			err := json.NewEncoder(w).Encode(ndoc)
+			w.CloseWithError(err) // nolint: errcheck
+		}()
+		doc.Body = r
+		doc.Attachments = atts
+	}
+	return doc, nil
 }
