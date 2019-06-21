@@ -149,9 +149,8 @@ func TestPut(t *testing.T) {
 				"_attachments": map[string]interface{}{
 					"foo.txt": map[string]interface{}{
 						"content_type": "text/plain",
-						"digest":       "md5-xxx",
-						"length":       123,
-						"revpos":       1,
+						"digest":       "md5-fa6a5a3224d7da66d9e0bdec25f62cf0",
+						"length":       7,
 						"stub":         true,
 					},
 				},

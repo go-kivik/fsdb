@@ -21,7 +21,7 @@ type attachment struct {
 	ContentType string   `json:"content_type"`
 	Stub        bool     `json:"stub,omitempty"`
 	Content     *os.File `json:"data,omitempty"`
-	Size        int64    `json:"size"`
+	Size        int64    `json:"length"`
 	Digest      string   `json:"digest"`
 }
 
@@ -69,7 +69,7 @@ func (a *attachment) UnmarshalJSON(p []byte) error {
 		ContentType string `json:"content_type"`
 		Stub        bool   `json:"stub"`
 		Content     []byte `json:"data"`
-		Size        int64  `json:"size"`
+		Size        int64  `json:"length"`
 		Digest      string `json:"digest"`
 	}
 	if err := json.Unmarshal(p, &att); err != nil {
@@ -119,7 +119,7 @@ func (a *attachment) MarshalJSON() ([]byte, error) {
 	type att struct {
 		ContentType string `json:"content_type"`
 		Data        []byte `json:"data"`
-		Size        int64  `json:"size"`
+		Size        int64  `json:"length"`
 		Digest      string `json:"digest"`
 	}
 	content, err := ioutil.ReadAll(a.Content)
@@ -138,7 +138,7 @@ func (a *attachment) stubMarshalJSON() ([]byte, error) {
 	type stub struct {
 		ContentType string `json:"content_type"`
 		Stub        bool   `json:"stub"`
-		Size        int64  `json:"size,omitempty"`
+		Size        int64  `json:"length,omitempty"`
 		Digest      string `json:"digest,omitempty"`
 	}
 	return json.Marshal(stub{

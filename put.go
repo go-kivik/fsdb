@@ -131,6 +131,7 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 	if err != nil {
 		return "", err
 	}
+	defer ndoc.cleanup() // nolint: errcheck
 	currev, err := d.currentRev(filename)
 	if err != nil {
 		return "", err
@@ -151,16 +152,6 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 		}
 	}()
 
-	tmp, err := ioutil.TempFile(d.path(), ".")
-	if err != nil {
-		return "", err
-	}
-	defer tmp.Close() // nolint: errcheck
-	toRename[tmp.Name()] = d.path(filename)
-	if err := json.NewEncoder(tmp).Encode(ndoc); err != nil {
-		return "", err
-	}
-
 	if atts != nil {
 		base := base(filename)
 		if err := os.Mkdir(d.path(base), 0777); err != nil {
@@ -175,7 +166,18 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 			if _, err := io.Copy(tmp, att.Content); err != nil {
 				return "", err
 			}
+			att.Stub = true
 		}
+	}
+
+	tmp, err := ioutil.TempFile(d.path(), ".")
+	if err != nil {
+		return "", err
+	}
+	defer tmp.Close() // nolint: errcheck
+	toRename[tmp.Name()] = d.path(filename)
+	if err := json.NewEncoder(tmp).Encode(ndoc); err != nil {
+		return "", err
 	}
 
 	if err := tmp.Close(); err != nil {

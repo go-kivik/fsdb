@@ -66,7 +66,7 @@ func TestAttachmentUnmarshalJSON_stub(t *testing.T) {
         "data": "VGVzdGluZwo=",
         "stub": true,
         "digest": "md5-ec4d59b2732f2f153240a8ff746282a6",
-        "size": 8
+        "length": 8
     }`
 	result := attachment{}
 	if err := json.Unmarshal([]byte(in), &result); err != nil {
@@ -89,7 +89,7 @@ func TestAttachmentUnmarshalJSON_file(t *testing.T) {
         "content_type": "text/plain",
         "data": "VGVzdGluZwo=",
         "digest": "md5-ec4d59b2732f2f153240a8ff746282a6",
-        "size": 8
+        "length": 8
     }`
 	result := attachment{}
 	if err := json.Unmarshal([]byte(in), &result); err != nil {
