@@ -59,6 +59,21 @@ func TestPut(t *testing.T) {
 		status:  http.StatusConflict,
 		err:     "document update conflict",
 	})
+	tests.Add("duplicate", func(t *testing.T) interface{} {
+		doc := map[string]string{"foo": "bar"}
+
+		return tst{
+			id:  "foo",
+			doc: doc,
+			setup: func(t *testing.T, d *db) {
+				if _, err := d.Put(context.Background(), "foo", doc, nil); err != nil {
+					t.Fatal(err)
+				}
+			},
+			status: http.StatusConflict,
+			err:    "document update conflict",
+		}
+	})
 	tests.Add("revs mismatch", tst{
 		id:  "foo",
 		doc: map[string]string{"foo": "bar", "_rev": "2-asdf"},

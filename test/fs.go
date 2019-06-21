@@ -1,6 +1,8 @@
 package test
 
 import (
+	"net/http"
+
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kiviktest"
 	"github.com/go-kivik/kiviktest/kt"
@@ -32,6 +34,7 @@ func registerFSSuite() {
 		"Replicate.skip":       true,
 
 		"Get.skip":               true,                       // FIXME: Unimplemented
+		"GetMeta.skip":           true,                       // FIXME: Unimplemented
 		"Flush.skip":             true,                       // FIXME: Unimplemented
 		"Delete.skip":            true,                       // FIXME: Unimplemented
 		"Stats.skip":             true,                       // FIXME: Unimplemented
@@ -52,7 +55,13 @@ func registerFSSuite() {
 		"CreateIndex.skip":       true,                       // FIXME: Unimplemented
 		"GetIndexes.skip":        true,                       // FIXME: Unimplemented
 		"DeleteIndex.skip":       true,                       // FIXME: Unimplemented
-		// "Put.skip":               true,                       // FIXME: Unimplemented
+
+		"Put/RW/Admin/group/LeadingUnderscoreInID.status":  http.StatusBadRequest,
+		"Put/RW/Admin/group/Conflict.status":               http.StatusConflict,
+		"Put/RW/NoAuth/group/LeadingUnderscoreInID.status": http.StatusBadRequest,
+		"Put/RW/NoAuth/group/DesignDoc.status":             http.StatusUnauthorized,
+		"Put/RW/NoAuth/group/Conflict.status":              http.StatusConflict,
+
 		"SetSecurity.skip": true, // FIXME: Unimplemented
 		"ViewCleanup.skip": true, // FIXME: Unimplemented
 		"Rev.skip":         true, // FIXME: Unimplemented

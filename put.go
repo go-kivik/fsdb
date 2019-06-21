@@ -61,10 +61,11 @@ func compareRevs(doc *normalDoc, opts map[string]interface{}, currev string) err
 	if currev == "" {
 		return nil
 	}
-	if optsrev != "" && optsrev != currev {
-		return &kivik.Error{HTTPStatus: http.StatusConflict, Message: "document update conflict"}
+	newrev := optsrev
+	if newrev == "" {
+		newrev = docrev
 	}
-	if docrev != "" && docrev != currev {
+	if newrev != currev {
 		return &kivik.Error{HTTPStatus: http.StatusConflict, Message: "document update conflict"}
 	}
 	return nil
