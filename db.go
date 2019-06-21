@@ -2,6 +2,7 @@ package fs
 
 import (
 	"context"
+	"path/filepath"
 
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
@@ -16,6 +17,10 @@ type db struct {
 var _ driver.DB = &db{}
 
 var notYetImplemented = errors.Status(kivik.StatusNotImplemented, "kivik: not yet implemented in fs driver")
+
+func (d *db) path(parts ...string) string {
+	return filepath.Join(append([]string{d.client.root, d.dbName}, parts...)...)
+}
 
 func (d *db) AllDocs(_ context.Context, _ map[string]interface{}) (driver.Rows, error) {
 	// FIXME: Unimplemented
@@ -35,11 +40,6 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 func (d *db) CreateDoc(_ context.Context, doc interface{}, opts map[string]interface{}) (docID, rev string, err error) {
 	// FIXME: Unimplemented
 	return "", "", notYetImplemented
-}
-
-func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[string]interface{}) (rev string, err error) {
-	// FIXME: Unimplemented
-	return "", notYetImplemented
 }
 
 func (d *db) Delete(_ context.Context, docID, rev string, opts map[string]interface{}) (newRev string, err error) {
