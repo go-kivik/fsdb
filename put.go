@@ -29,13 +29,13 @@ type revDoc struct {
 	Rev string `json:"_rev"`
 }
 
-func calculateRev(doc map[string]interface{}) string {
+func calculateRev(doc *normalDoc) string {
 	seq := 1
-	if rev, ok := doc["_rev"].(string); ok {
-		seq, _ = strconv.Atoi(strings.SplitN(rev, "-", 2)[0])
+	if doc.Rev != "" {
+		seq, _ = strconv.Atoi(strings.SplitN(doc.Rev, "-", 2)[0])
 		seq++
 	}
-	token := fmt.Sprintf("%d %s", seq, doc["_id"].(string))
+	token := fmt.Sprintf("%d %s", seq, doc.ID)
 	return fmt.Sprintf("%d-%x", seq, md5.Sum([]byte(token)))
 }
 
@@ -52,9 +52,9 @@ func (d *db) currentRev(docID string) (string, error) {
 	return rd.Rev, err
 }
 
-func compareRevs(doc, opts map[string]interface{}, currev string) error {
+func compareRevs(doc *normalDoc, opts map[string]interface{}, currev string) error {
 	optsrev, _ := opts["rev"].(string)
-	docrev, _ := doc["_rev"].(string)
+	docrev := doc.Rev
 	if optsrev != "" && docrev != "" && optsrev != docrev {
 		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document rev from request body and query string have different values"}
 	}
@@ -127,6 +127,10 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 		return "", err
 	}
 	filename := id2filename(docID)
+	ndoc, err := normalizeDoc(doc)
+	if err != nil {
+		return "", err
+	}
 	currev, err := d.currentRev(filename)
 	if err != nil {
 		return "", err
@@ -136,19 +140,11 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 		return "", err
 	}
 
-	data, err := json.Marshal(doc)
-	if err != nil {
+	if err := compareRevs(ndoc, opts, currev); err != nil {
 		return "", err
 	}
-
-	var obj map[string]interface{}
-	_ = json.Unmarshal(data, &obj)
-	if err := compareRevs(obj, opts, currev); err != nil {
-		return "", err
-	}
-	obj["_id"] = docID
-	rev := calculateRev(obj)
-	obj["_rev"] = rev
+	ndoc.ID = docID
+	ndoc.Rev = calculateRev(ndoc)
 
 	// map of tmpFile:permFile to be renamed
 	toRename := make(map[string]string)
@@ -164,7 +160,7 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 	}
 	defer tmp.Close() // nolint: errcheck
 	toRename[tmp.Name()] = d.path(filename)
-	if err := json.NewEncoder(tmp).Encode(obj); err != nil {
+	if err := json.NewEncoder(tmp).Encode(ndoc); err != nil {
 		return "", err
 	}
 
@@ -198,5 +194,5 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 			return "", err
 		}
 	}
-	return rev, nil
+	return ndoc.Rev, nil
 }

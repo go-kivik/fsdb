@@ -8,8 +8,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"sync"
+
+	"github.com/go-kivik/kivik"
 )
 
 type attachments map[string]*attachment
@@ -216,6 +219,8 @@ func normalizeDoc(i interface{}) (*normalDoc, error) {
 		return nil, err
 	}
 	doc := &normalDoc{}
-	err = json.Unmarshal(data, &doc)
-	return doc, err
+	if err := json.Unmarshal(data, &doc); err != nil {
+		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
+	}
+	return doc, nil
 }

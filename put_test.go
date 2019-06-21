@@ -127,7 +127,7 @@ func TestPut(t *testing.T) {
 			"_attachments": 123,
 		},
 		status: http.StatusBadRequest,
-		err:    "bad special document member: _attachments",
+		err:    "json: cannot unmarshal number into Go struct field ._attachments of type fs.attachments",
 	})
 	tests.Add("attachment", tst{
 		id: "foo",
