@@ -13,13 +13,44 @@ import (
 	"sync"
 
 	"github.com/go-kivik/kivik"
+	"github.com/go-kivik/kivik/driver"
 )
 
 type attachments map[string]*attachment
 
+var _ driver.Attachments = attachments{}
+
+func (a attachments) Close() error {
+	for filename, att := range a {
+		if err := att.Content.Close(); err != nil {
+			return err
+		}
+		delete(a, filename)
+	}
+	return nil
+}
+
+func (a attachments) Next(driverAtt *driver.Attachment) error {
+	for filename, att := range a {
+		x := &driver.Attachment{
+			Filename:    filename,
+			ContentType: att.ContentType,
+			Stub:        att.Stub,
+			Content:     att.Content,
+			Size:        att.Size,
+			Digest:      att.Digest,
+		}
+		*driverAtt = *x
+		delete(a, filename)
+		return nil
+	}
+	return io.EOF
+}
+
 type attachment struct {
 	ContentType string   `json:"content_type"`
 	Stub        bool     `json:"stub,omitempty"`
+	Follows     bool     `json:"follows,omitempty"`
 	Content     *os.File `json:"data,omitempty"`
 	Size        int64    `json:"length"`
 	Digest      string   `json:"digest"`
@@ -115,6 +146,9 @@ func (a *attachment) MarshalJSON() ([]byte, error) {
 	if a.Stub {
 		return a.stubMarshalJSON()
 	}
+	if a.Follows {
+		return a.followsMarshalJSON()
+	}
 
 	type att struct {
 		ContentType string `json:"content_type"`
@@ -144,6 +178,21 @@ func (a *attachment) stubMarshalJSON() ([]byte, error) {
 	return json.Marshal(stub{
 		ContentType: a.ContentType,
 		Stub:        true,
+		Size:        a.Size,
+		Digest:      a.Digest,
+	})
+}
+
+func (a *attachment) followsMarshalJSON() ([]byte, error) {
+	type stub struct {
+		ContentType string `json:"content_type"`
+		Follows     bool   `json:"follows"`
+		Size        int64  `json:"length,omitempty"`
+		Digest      string `json:"digest,omitempty"`
+	}
+	return json.Marshal(stub{
+		ContentType: a.ContentType,
+		Follows:     true,
 		Size:        a.Size,
 		Digest:      a.Digest,
 	})

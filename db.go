@@ -32,11 +32,6 @@ func (d *db) Query(ctx context.Context, ddoc, view string, opts map[string]inter
 	return nil, notYetImplemented
 }
 
-func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
-	// FIXME: Unimplemented
-	return nil, notYetImplemented
-}
-
 func (d *db) CreateDoc(_ context.Context, doc interface{}, opts map[string]interface{}) (docID, rev string, err error) {
 	// FIXME: Unimplemented
 	return "", "", notYetImplemented
