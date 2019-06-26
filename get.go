@@ -6,17 +6,32 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
 )
 
+// TODO:
+// - atts_since
+// - conflicts
+// - deleted_conflicts
+// - latest
+// - local_seq
+// - meta
+// - open_revs
+// - rev
+// - revs
+// - revs_info
 func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
 	if docID == "" {
 		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no docid specified"}
 	}
 	filename := id2filename(docID)
 	base := base(filename)
+	if rev, ok := opts["rev"].(string); ok {
+		filename = "." + base + "/" + rev + path.Ext(filename)
+	}
 	f, err := os.Open(d.path(filename))
 	if err != nil {
 		if os.IsNotExist(err) {
