@@ -1,3 +1,9 @@
+// Changes feed support
+//
+// At present, this driver provides only rudamentary Changes feed support. It
+// supports only one-off changes feeds (no continuous support), and this is
+// implemented by scanning the database directory, and returning each document
+// and its most recent revision only.
 package fs
 
 import (
