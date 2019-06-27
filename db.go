@@ -72,11 +72,6 @@ func (d *db) SetSecurity(_ context.Context, _ *driver.Security) error {
 	return notYetImplemented
 }
 
-func (d *db) Changes(_ context.Context, _ map[string]interface{}) (driver.Changes, error) {
-	// FIXME: Unimplemented
-	return nil, notYetImplemented
-}
-
 func (d *db) BulkDocs(_ context.Context, _ []interface{}) (driver.BulkResults, error) {
 	// FIXME: Unimplemented
 	return nil, notYetImplemented
