@@ -1,4 +1,3 @@
-// Package fs provides a filesystem-backed Kivik driver.
 package fs
 
 import (
