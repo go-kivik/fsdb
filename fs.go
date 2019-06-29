@@ -17,7 +17,6 @@ import (
 )
 
 const dirMode = os.FileMode(0700)
-const fileMode = os.FileMode(0600)
 
 type fsDriver struct{}
 
@@ -63,24 +62,8 @@ func validateRootDir(dir string) error {
 		if err = os.MkdirAll(dir, dirMode); err != nil {
 			return errors.Wrapf(err, "failed to create dir '%s'", dir)
 		}
-		if _, err = os.Create(dir + "/.kivik"); err != nil {
-			return errors.Wrapf(err, "failed to create file '%s/.kivik'", dir)
-		}
-		if err = os.Chmod(dir+"/.kivik", fileMode); err != nil {
-			return errors.Wrapf(err, "failed to set mode %s on '%s/.kivik'", fileMode, dir)
-		}
 		return nil
 	}
-	// Ensure this is a .kivik directory
-	if _, err := os.Stat(dir + "/.kivik"); os.IsNotExist(err) {
-		return fmt.Errorf("kivik: '%s' is not a kivik data store (.kivik file missing)", dir)
-	}
-	// Ensure we have write access
-	tmpF, err := ioutil.TempFile(dir, ".kivik-test")
-	if err != nil {
-		return errors.Wrapf(err, "failed to write to '%s'", dir)
-	}
-	_ = os.Remove(tmpF.Name())
 	return nil
 }
 
