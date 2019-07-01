@@ -1,6 +1,6 @@
 {
     "_id": "noattach",
-    "_rev": "1-xxxxxxxxxx",
+    "_rev": "2-yyyyyyyyy",
     "_attachments": {
         "foo.txt": {
             "content_type": "text/plain",

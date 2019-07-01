@@ -74,8 +74,8 @@ func TestGet(t *testing.T) {
 		dbname: "db.foo",
 		id:     "withattach",
 		expected: &driver.Document{
-			ContentLength: 286,
-			Rev:           "1-xxxxxxxxxx",
+			ContentLength: 285,
+			Rev:           "2-yyyyyyyyy",
 		},
 	})
 	tests.Add("success, include attachments", tt{
@@ -84,8 +84,8 @@ func TestGet(t *testing.T) {
 		id:      "withattach",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{
-			ContentLength: 286,
-			Rev:           "1-xxxxxxxxxx",
+			ContentLength: 285,
+			Rev:           "2-yyyyyyyyy",
 		},
 	})
 	tests.Add("specify current rev", tt{
@@ -95,6 +95,16 @@ func TestGet(t *testing.T) {
 		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
 		expected: &driver.Document{
 			ContentLength: 72,
+			Rev:           "1-xxxxxxxxxx",
+		},
+	})
+	tests.Add("specify old rev", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "withattach",
+		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
+		expected: &driver.Document{
+			ContentLength: 286,
 			Rev:           "1-xxxxxxxxxx",
 		},
 	})
