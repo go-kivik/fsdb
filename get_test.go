@@ -14,14 +14,14 @@ import (
 
 func TestGet(t *testing.T) {
 	type tt struct {
-		setup    func(*testing.T, *db)
-		final    func(*testing.T, *db)
-		path     string
-		id       string
-		options  map[string]interface{}
-		expected *driver.Document
-		status   int
-		err      string
+		setup        func(*testing.T, *db)
+		final        func(*testing.T, *db)
+		path, dbname string
+		id           string
+		options      map[string]interface{}
+		expected     *driver.Document
+		status       int
+		err          string
 	}
 	tests := testy.NewTable()
 	tests.Add("no id", tt{
@@ -61,25 +61,48 @@ func TestGet(t *testing.T) {
 		}
 	})
 	tests.Add("success, no attachments", tt{
-		path: "testdata/db.foo",
-		id:   "noattach",
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "noattach",
 		expected: &driver.Document{
 			ContentLength: 72,
 			Rev:           "1-xxxxxxxxxx",
 		},
 	})
 	tests.Add("success, attachment stub", tt{
-		path: "testdata/db.foo",
-		id:   "withattach",
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "withattach",
 		expected: &driver.Document{
-			ContentLength: 286,
-			Rev:           "1-xxxxxxxxxx",
+			ContentLength: 285,
+			Rev:           "2-yyyyyyyyy",
 		},
 	})
 	tests.Add("success, include attachments", tt{
-		path:    "testdata/db.foo",
+		path:    "testdata",
+		dbname:  "db.foo",
 		id:      "withattach",
 		options: map[string]interface{}{"attachments": true},
+		expected: &driver.Document{
+			ContentLength: 285,
+			Rev:           "2-yyyyyyyyy",
+		},
+	})
+	tests.Add("specify current rev", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "noattach",
+		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
+		expected: &driver.Document{
+			ContentLength: 72,
+			Rev:           "1-xxxxxxxxxx",
+		},
+	})
+	tests.Add("specify old rev", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "withattach",
+		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
 		expected: &driver.Document{
 			ContentLength: 286,
 			Rev:           "1-xxxxxxxxxx",
@@ -94,6 +117,7 @@ func TestGet(t *testing.T) {
 		}
 		db := &db{
 			client: &client{root: dir},
+			dbName: tt.dbname,
 		}
 		if tt.setup != nil {
 			tt.setup(t, db)

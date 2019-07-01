@@ -3,11 +3,11 @@
         "foo.txt": {
             "content_type": "text/plain",
             "digest": "md5-ec4d59b2732f2f153240a8ff746282a6",
-            "length": 8,
-            "follows": true
+            "follows": true,
+            "length": 8
         }
     },
     "_id": "noattach",
-    "_rev": "1-xxxxxxxxxx",
+    "_rev": "2-yyyyyyyyy",
     "foo": "bar"
 }
