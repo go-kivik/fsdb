@@ -8,6 +8,7 @@ import (
 
 	"github.com/flimzy/diff"
 	"github.com/flimzy/testy"
+	"github.com/go-kivik/fsdb/internal"
 )
 
 func TestAttachmentMarshalJSON(t *testing.T) {
@@ -118,7 +119,7 @@ func TestNormalDocMarshalJSON(t *testing.T) {
 	tests := testy.NewTable()
 	tests.Add("no attachments", &normalDoc{
 		ID:  "foo",
-		Rev: Rev{seq: 1, sum: "xxx"},
+		Rev: internal.Rev{Seq: 1, Sum: "xxx"},
 		Data: map[string]interface{}{
 			"foo": "bar",
 		},
@@ -132,7 +133,7 @@ func TestNormalDocMarshalJSON(t *testing.T) {
 
 		return &normalDoc{
 			ID:  "foo",
-			Rev: Rev{seq: 1, sum: "xxx"},
+			Rev: internal.Rev{Seq: 1, Sum: "xxx"},
 			Attachments: attachments{
 				"foo.txt": &attachment{
 					ContentType: "text/plain",

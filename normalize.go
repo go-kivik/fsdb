@@ -14,6 +14,7 @@ import (
 
 	"github.com/flimzy/log"
 	"github.com/go-kivik/fsdb/decoder"
+	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
 	"gitlab.com/flimzy/ale/httperr"
@@ -203,7 +204,7 @@ func (a *attachment) followsMarshalJSON() ([]byte, error) {
 
 type normalDoc struct {
 	ID          string                 `json:"_id"`
-	Rev         Rev                    `json:"_rev,omitempty"`
+	Rev         internal.Rev           `json:"_rev,omitempty"`
 	Attachments attachments            `json:"_attachments,omitempty"`
 	Data        map[string]interface{} `json:"-"`
 	modified    bool
@@ -236,9 +237,9 @@ func (d *normalDoc) MarshalJSON() ([]byte, error) {
 
 func (d *normalDoc) UnmarshalJSON(p []byte) error {
 	doc := struct {
-		ID          string      `json:"_id"`
-		Rev         Rev         `json:"_rev,omitempty"`
-		Attachments attachments `json:"_attachments,omitempty"`
+		ID          string       `json:"_id"`
+		Rev         internal.Rev `json:"_rev,omitempty"`
+		Attachments attachments  `json:"_attachments,omitempty"`
 	}{}
 	if err := json.Unmarshal(p, &doc); err != nil {
 		return err
@@ -285,7 +286,7 @@ func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
 		filename := base + "." + ext
 		log.Debugf("Trying to open: %s", filename)
 		if rev != "" {
-			currev, err := d.currentRev(filename)
+			currev, err := d.currentRev(filename, ext)
 			if err != nil && !os.IsNotExist(err) {
 				return nil, "", err
 			}
