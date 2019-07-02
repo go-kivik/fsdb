@@ -73,13 +73,16 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 				Digest:      att.ContentType,
 			}
 		}
+		ndoc.modified = true
+		doc.Attachments = atts
+	}
+	if ndoc.modified {
 		r, w := io.Pipe()
 		go func() {
 			err := json.NewEncoder(w).Encode(ndoc)
 			w.CloseWithError(err) // nolint: errcheck
 		}()
 		doc.Body = r
-		doc.Attachments = atts
 	}
 	return doc, nil
 }
