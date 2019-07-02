@@ -17,12 +17,12 @@ import (
 	"github.com/go-kivik/kivik"
 )
 
-func id2filename(id string) string {
+func id2basename(id string) string {
 	id = url.PathEscape(id)
 	if id[0] == '.' {
-		return "%2E" + id[1:] + ".json"
+		return "%2E" + id[1:]
 	}
-	return id + ".json"
+	return id
 }
 
 type revDoc struct {
@@ -177,7 +177,7 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 	if err := validateID(docID); err != nil {
 		return "", err
 	}
-	filename := id2filename(docID)
+	filename := id2basename(docID) + ".json"
 	ndoc, err := normalizeDoc(doc)
 	if err != nil {
 		return "", err

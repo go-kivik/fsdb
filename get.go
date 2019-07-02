@@ -101,8 +101,8 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 }
 
 func (d *db) openDoc(docID, rev string) (*os.File, error) {
-	filename := id2filename(docID)
-	base := base(filename)
+	base := id2basename(docID)
+	filename := base + ".json"
 	if rev != "" {
 		currev, err := d.currentRev(filename)
 		if err != nil && !os.IsNotExist(err) {
