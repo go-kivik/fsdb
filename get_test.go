@@ -158,7 +158,7 @@ func TestGet(t *testing.T) {
 		dbname: "db.foo",
 		id:     "yamltest",
 		expected: &driver.Document{
-			ContentLength: 62,
+			ContentLength: 43,
 			Rev:           "3-",
 		},
 	})

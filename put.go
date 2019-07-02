@@ -26,20 +26,20 @@ func id2basename(id string) string {
 }
 
 type revDoc struct {
-	Rev rev `json:"_rev"`
+	Rev Rev `json:"_rev"`
 }
 
-type rev struct {
+type Rev struct {
 	seq      int64
 	sum      string
 	original string
 }
 
-func (r *rev) Changed() bool {
+func (r *Rev) Changed() bool {
 	return r.String() != r.original
 }
 
-func (r *rev) UnmarshalJSON(p []byte) error {
+func (r *Rev) UnmarshalJSON(p []byte) error {
 	if p[0] == '"' {
 		var str string
 		if e := json.Unmarshal(p, &str); e != nil {
@@ -62,22 +62,22 @@ func (r *rev) UnmarshalJSON(p []byte) error {
 	return json.Unmarshal(p, &r.seq)
 }
 
-func (r rev) MarshalText() ([]byte, error) {
+func (r Rev) MarshalText() ([]byte, error) {
 	return []byte(r.String()), nil
 }
 
-func (r rev) String() string {
+func (r Rev) String() string {
 	if r.seq == 0 {
 		return ""
 	}
 	return fmt.Sprintf("%d-%s", r.seq, r.sum)
 }
 
-func (r rev) IsZero() bool {
+func (r *Rev) IsZero() bool {
 	return r.seq == 0
 }
 
-func (r *rev) Increment(payload ...string) {
+func (r *Rev) Increment(payload ...string) {
 	r.seq++
 	if len(payload) == 0 {
 		r.sum = ""

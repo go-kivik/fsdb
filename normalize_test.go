@@ -118,7 +118,7 @@ func TestNormalDocMarshalJSON(t *testing.T) {
 	tests := testy.NewTable()
 	tests.Add("no attachments", &normalDoc{
 		ID:  "foo",
-		Rev: rev{seq: 1, sum: "xxx"},
+		Rev: Rev{seq: 1, sum: "xxx"},
 		Data: map[string]interface{}{
 			"foo": "bar",
 		},
@@ -132,7 +132,7 @@ func TestNormalDocMarshalJSON(t *testing.T) {
 
 		return &normalDoc{
 			ID:  "foo",
-			Rev: rev{seq: 1, sum: "xxx"},
+			Rev: Rev{seq: 1, sum: "xxx"},
 			Attachments: attachments{
 				"foo.txt": &attachment{
 					ContentType: "text/plain",

@@ -203,7 +203,7 @@ func (a *attachment) followsMarshalJSON() ([]byte, error) {
 
 type normalDoc struct {
 	ID          string                 `json:"_id"`
-	Rev         rev                    `json:"_rev,omitempty"`
+	Rev         Rev                    `json:"_rev,omitempty"`
 	Attachments attachments            `json:"_attachments,omitempty"`
 	Data        map[string]interface{} `json:"-"`
 	modified    bool
@@ -237,7 +237,7 @@ func (d *normalDoc) MarshalJSON() ([]byte, error) {
 func (d *normalDoc) UnmarshalJSON(p []byte) error {
 	doc := struct {
 		ID          string      `json:"_id"`
-		Rev         rev         `json:"_rev,omitempty"`
+		Rev         Rev         `json:"_rev,omitempty"`
 		Attachments attachments `json:"_attachments,omitempty"`
 	}{}
 	if err := json.Unmarshal(p, &doc); err != nil {
