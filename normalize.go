@@ -10,12 +10,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
 	"sync"
 
+	"github.com/flimzy/log"
 	"github.com/go-kivik/fsdb/decoder"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
+	"gitlab.com/flimzy/ale/httperr"
 )
 
 type attachments map[string]*attachment
@@ -278,29 +279,39 @@ func normalizeDoc(i interface{}) (*normalDoc, error) {
 	return doc, nil
 }
 
-func (d *db) openDoc(docID, rev string) (*os.File, error) {
+func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
 	base := id2basename(docID)
-	filename := base + ".json"
-	if rev != "" {
-		currev, err := d.currentRev(filename)
-		if err != nil && !os.IsNotExist(err) {
-			return nil, err
+	for _, ext := range decoder.Extensions() {
+		filename := base + "." + ext
+		log.Debugf("Trying to open: %s", filename)
+		if rev != "" {
+			currev, err := d.currentRev(filename)
+			if err != nil && !os.IsNotExist(err) {
+				return nil, "", err
+			}
+			if currev != rev {
+				revFilename := "." + base + "/" + rev + "." + ext
+				f, err := os.Open(d.path(revFilename))
+				if !os.IsNotExist(err) {
+					return f, ext, err
+				}
+			}
 		}
-		if currev != rev {
-			revFilename := "." + base + "/" + rev + path.Ext(filename)
-			return os.Open(d.path(revFilename))
+		f, err := os.Open(d.path(filename))
+		if !os.IsNotExist(err) {
+			return f, ext, err
 		}
 	}
-	return os.Open(d.path(filename))
+	return nil, "", httperr.New(http.StatusNotFound, "missing")
 }
 
 func (d *db) readDoc(docID, rev string) (*normalDoc, error) {
-	f, err := d.openDoc(docID, rev)
+	f, ext, err := d.openDoc(docID, rev)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close() // nolint: errcheck
-	i, err := decoder.Decode(f, "json")
+	i, err := decoder.Decode(f, ext)
 	if err != nil {
 		return nil, err
 	}

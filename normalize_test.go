@@ -226,6 +226,11 @@ func TestReadDoc(t *testing.T) {
 		dbname: "db.foo",
 		docID:  "noattach",
 	})
+	tests.Add("yaml", tt{
+		root:   "testdata",
+		dbname: "db.foo",
+		docID:  "yamltest",
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		db := &db{

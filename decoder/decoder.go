@@ -3,6 +3,7 @@ package decoder
 import (
 	"fmt"
 	"io"
+	"sort"
 )
 
 type Decoder interface {
@@ -22,6 +23,7 @@ func Register(dec Decoder) {
 		decoders[ext] = dec
 	}
 	extensions = append(extensions, exts...)
+	sort.Strings(extensions)
 }
 
 func Decode(r io.Reader, ext string) (map[string]interface{}, error) {
@@ -30,4 +32,8 @@ func Decode(r io.Reader, ext string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("No decoder for ext '%s'", ext)
 	}
 	return dec.Decode(r)
+}
+
+func Extensions() []string {
+	return extensions
 }

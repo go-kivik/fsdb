@@ -31,7 +31,7 @@ func TestGet(t *testing.T) {
 	tests.Add("not found", tt{
 		id:     "foo",
 		status: http.StatusNotFound,
-		err:    `/foo.json: no such file or directory$`,
+		err:    `^missing$`,
 	})
 	tests.Add("forbidden", func(t *testing.T) interface{} {
 		var mode os.FileMode
