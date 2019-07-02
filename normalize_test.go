@@ -213,3 +213,29 @@ func TestNormalizeDoc(t *testing.T) {
 		}
 	})
 }
+
+func TestReadDoc(t *testing.T) {
+	type tt struct {
+		root, dbname, docID, rev string
+		status                   int
+		err                      string
+	}
+	tests := testy.NewTable()
+	tests.Add("json", tt{
+		root:   "testdata",
+		dbname: "db.foo",
+		docID:  "noattach",
+	})
+
+	tests.Run(t, func(t *testing.T, tt tt) {
+		db := &db{
+			client: &client{root: tt.root},
+			dbName: tt.dbname,
+		}
+		result, err := db.readDoc(tt.docID, tt.rev)
+		testy.StatusError(t, tt.err, tt.status, err)
+		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
+			t.Error(d)
+		}
+	})
+}

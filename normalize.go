@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"sync"
 
 	"github.com/go-kivik/kivik"
@@ -204,6 +205,7 @@ type normalDoc struct {
 	Attachments attachments            `json:"_attachments,omitempty"`
 	Data        map[string]interface{} `json:"-"`
 	modified    bool
+	Path        string `json:"-"`
 }
 
 func (d *normalDoc) MarshalJSON() ([]byte, error) {
@@ -272,5 +274,39 @@ func normalizeDoc(i interface{}) (*normalDoc, error) {
 	if err := json.Unmarshal(data, &doc); err != nil {
 		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
 	}
+	return doc, nil
+}
+
+func (d *db) openDoc(docID, rev string) (*os.File, error) {
+	base := id2basename(docID)
+	filename := base + ".json"
+	if rev != "" {
+		currev, err := d.currentRev(filename)
+		if err != nil && !os.IsNotExist(err) {
+			return nil, err
+		}
+		if currev != rev {
+			revFilename := "." + base + "/" + rev + path.Ext(filename)
+			return os.Open(d.path(revFilename))
+		}
+	}
+	return os.Open(d.path(filename))
+}
+
+func (d *db) readDoc(docID, rev string) (*normalDoc, error) {
+	f, err := d.openDoc(docID, rev)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close() // nolint: errcheck
+	var i interface{}
+	if err := json.NewDecoder(f).Decode(&i); err != nil {
+		return nil, err
+	}
+	doc, err := normalizeDoc(i)
+	if err != nil {
+		return nil, err
+	}
+	doc.Path = f.Name()
 	return doc, nil
 }

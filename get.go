@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/go-kivik/kivik"
@@ -29,7 +28,7 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no docid specified"}
 	}
 	rev, _ := opts["rev"].(string)
-	f, err := d.openDoc(docID, rev)
+	ndoc, err := d.readDoc(docID, rev)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, &kivik.Error{HTTPStatus: http.StatusNotFound, Err: err}
@@ -39,25 +38,11 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 		}
 		return nil, err
 	}
-	defer f.Close()
-	stat, err := f.Stat()
-	if err != nil {
-		return nil, err
-	}
-	ndoc := new(normalDoc)
-	if err := json.NewDecoder(f).Decode(&ndoc); err != nil {
-		return nil, err
-	}
-	if _, err := f.Seek(0, 0); err != nil {
-		return nil, err
-	}
 	doc := &driver.Document{
-		ContentLength: stat.Size(),
-		Body:          f,
-		Rev:           ndoc.Rev.String(),
+		Rev: ndoc.Rev.String(),
 	}
 	if ok, _ := opts["attachments"].(bool); ok {
-		base := strings.TrimPrefix(base(f.Name()), d.path())
+		base := strings.TrimPrefix(base(ndoc.Path), d.path())
 		atts := make(attachments)
 		for filename, att := range ndoc.Attachments {
 			f, err := os.Open(d.path(base, filename))
@@ -90,20 +75,4 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 	doc.Rev = ndoc.Rev.String()
 	doc.ContentLength = int64(buf.Len())
 	return doc, nil
-}
-
-func (d *db) openDoc(docID, rev string) (*os.File, error) {
-	base := id2basename(docID)
-	filename := base + ".json"
-	if rev != "" {
-		currev, err := d.currentRev(filename)
-		if err != nil && !os.IsNotExist(err) {
-			return nil, err
-		}
-		if currev != rev {
-			revFilename := "." + base + "/" + rev + path.Ext(filename)
-			return os.Open(d.path(revFilename))
-		}
-	}
-	return os.Open(d.path(filename))
 }
