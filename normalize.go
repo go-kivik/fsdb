@@ -207,8 +207,7 @@ type normalDoc struct {
 	Rev         internal.Rev           `json:"_rev,omitempty"`
 	Attachments attachments            `json:"_attachments,omitempty"`
 	Data        map[string]interface{} `json:"-"`
-	modified    bool
-	Path        string `json:"-"`
+	Path        string                 `json:"-"`
 }
 
 func (d *normalDoc) MarshalJSON() ([]byte, error) {

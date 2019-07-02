@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/go-kivik/fsdb/decoder"
-	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
 )
 
@@ -23,10 +22,6 @@ func id2basename(id string) string {
 		return "%2E" + id[1:]
 	}
 	return id
-}
-
-type revDoc struct {
-	Rev internal.Rev `json:"_rev"`
 }
 
 func (d *db) currentRev(docID, ext string) (string, error) {
