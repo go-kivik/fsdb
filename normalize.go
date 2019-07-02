@@ -13,6 +13,7 @@ import (
 	"path"
 	"sync"
 
+	"github.com/go-kivik/fsdb/decoder"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
 )
@@ -299,8 +300,8 @@ func (d *db) readDoc(docID, rev string) (*normalDoc, error) {
 		return nil, err
 	}
 	defer f.Close() // nolint: errcheck
-	var i interface{}
-	if err := json.NewDecoder(f).Decode(&i); err != nil {
+	i, err := decoder.Decode(f, "json")
+	if err != nil {
 		return nil, err
 	}
 	doc, err := normalizeDoc(i)
