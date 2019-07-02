@@ -153,6 +153,15 @@ func TestGet(t *testing.T) {
 			Rev:           "6-",
 		},
 	})
+	tests.Add("yaml", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "yamltest",
+		expected: &driver.Document{
+			ContentLength: 62,
+			Rev:           "3-",
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		dir := tt.path
