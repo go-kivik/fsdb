@@ -3,7 +3,7 @@ package fs
 import (
 	"context"
 	"encoding/json"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -56,7 +56,6 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 	}
 	if ok, _ := opts["attachments"].(bool); ok {
 		base := strings.TrimPrefix(base(f.Name()), d.path())
-		_ = f.Close()
 		atts := make(attachments)
 		for filename, att := range ndoc.Attachments {
 			f, err := os.Open(d.path(base, filename))
@@ -76,13 +75,32 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 		ndoc.modified = true
 		doc.Attachments = atts
 	}
+	if ndoc.Rev.IsZero() {
+		ndoc.Rev.Increment()
+		ndoc.modified = true
+	}
+	if ndoc.Rev.Changed() {
+		ndoc.modified = true
+	}
 	if ndoc.modified {
-		r, w := io.Pipe()
-		go func() {
-			err := json.NewEncoder(w).Encode(ndoc)
-			w.CloseWithError(err) // nolint: errcheck
-		}()
-		doc.Body = r
+		_ = f.Close()
+		f, err := ioutil.TempFile("", "."+ndoc.ID+"-*")
+		if err != nil {
+			return nil, err
+		}
+		if err := json.NewEncoder(f).Encode(ndoc); err != nil {
+			return nil, err
+		}
+		stat, err := f.Stat()
+		if err != nil {
+			return nil, err
+		}
+		if _, err := f.Seek(0, 0); err != nil {
+			return nil, err
+		}
+		doc.Body = f
+		doc.Rev = ndoc.Rev.String()
+		doc.ContentLength = stat.Size()
 	}
 	return doc, nil
 }

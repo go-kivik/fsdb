@@ -30,8 +30,13 @@ type revDoc struct {
 }
 
 type rev struct {
-	seq int64
-	sum string
+	seq      int64
+	sum      string
+	original string
+}
+
+func (r *rev) Changed() bool {
+	return r.String() != r.original
 }
 
 func (r *rev) UnmarshalJSON(p []byte) error {
@@ -40,6 +45,7 @@ func (r *rev) UnmarshalJSON(p []byte) error {
 		if e := json.Unmarshal(p, &str); e != nil {
 			return e
 		}
+		r.original = str
 		parts := strings.SplitN(str, "-", 2)
 		seq, err := strconv.ParseInt(parts[0], 10, 64)
 		if err != nil {
@@ -51,8 +57,9 @@ func (r *rev) UnmarshalJSON(p []byte) error {
 		}
 		return nil
 	}
+	r.original = string(p)
 	r.sum = ""
-	return json.Unmarshal(p, &r.sum)
+	return json.Unmarshal(p, &r.seq)
 }
 
 func (r rev) MarshalText() ([]byte, error) {
@@ -70,13 +77,14 @@ func (r rev) IsZero() bool {
 	return r.seq == 0
 }
 
-func (r *rev) Increment(payload string) {
+func (r *rev) Increment(payload ...string) {
 	r.seq++
-	if payload == "" {
+	if len(payload) == 0 {
 		r.sum = ""
 		return
 	}
-	r.sum = fmt.Sprintf("%x", md5.Sum([]byte(payload)))
+	data := strings.Join(payload, "")
+	r.sum = fmt.Sprintf("%x", md5.Sum([]byte(data)))
 }
 
 func (d *db) currentRev(docID string) (string, error) {
