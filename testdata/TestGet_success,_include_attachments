@@ -7,7 +7,7 @@
             "length": 8
         }
     },
-    "_id": "noattach",
+    "_id": "withattach",
     "_rev": "2-yyyyyyyyy",
     "foo": "bar"
 }

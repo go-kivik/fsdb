@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io/ioutil"
@@ -82,25 +83,19 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 	if ndoc.Rev.Changed() {
 		ndoc.modified = true
 	}
+	if ndoc.ID != docID {
+		ndoc.modified = true
+		ndoc.ID = docID
+	}
 	if ndoc.modified {
 		_ = f.Close()
-		f, err := ioutil.TempFile("", "."+ndoc.ID+"-*")
-		if err != nil {
+		buf := &bytes.Buffer{}
+		if err := json.NewEncoder(buf).Encode(ndoc); err != nil {
 			return nil, err
 		}
-		if err := json.NewEncoder(f).Encode(ndoc); err != nil {
-			return nil, err
-		}
-		stat, err := f.Stat()
-		if err != nil {
-			return nil, err
-		}
-		if _, err := f.Seek(0, 0); err != nil {
-			return nil, err
-		}
-		doc.Body = f
+		doc.Body = ioutil.NopCloser(buf)
 		doc.Rev = ndoc.Rev.String()
-		doc.ContentLength = stat.Size()
+		doc.ContentLength = int64(buf.Len())
 	}
 	return doc, nil
 }

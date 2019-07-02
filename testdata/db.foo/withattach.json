@@ -1,5 +1,5 @@
 {
-    "_id": "noattach",
+    "_id": "withattach",
     "_rev": "2-yyyyyyyyy",
     "_attachments": {
         "foo.txt": {
