@@ -43,6 +43,9 @@ func (c *changes) Next(ch *driver.Change) error {
 			if err != nil {
 				return err
 			}
+			if rev == "" {
+				rev = "1-"
+			}
 			ch.ID = docid
 			ch.Changes = []string{rev}
 			return nil

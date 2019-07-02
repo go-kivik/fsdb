@@ -1,8 +1,23 @@
 {
+    "autorev": [
+        "6-"
+    ],
+    "intrev": [
+        "6-"
+    ],
     "noattach": [
         "1-xxxxxxxxxx"
     ],
+    "noid": [
+        "6-"
+    ],
+    "norev": [
+        "1-"
+    ],
     "withattach": [
         "2-yyyyyyyyy"
+    ],
+    "wrongid": [
+        "6-"
     ]
 }

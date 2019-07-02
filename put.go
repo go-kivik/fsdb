@@ -26,17 +26,65 @@ func id2filename(id string) string {
 }
 
 type revDoc struct {
-	Rev string `json:"_rev"`
+	Rev rev `json:"_rev"`
 }
 
-func calculateRev(doc *normalDoc) string {
-	seq := 1
-	if doc.Rev != "" {
-		seq, _ = strconv.Atoi(strings.SplitN(doc.Rev, "-", 2)[0])
-		seq++
+type rev struct {
+	seq      int64
+	sum      string
+	original string
+}
+
+func (r *rev) Changed() bool {
+	return r.String() != r.original
+}
+
+func (r *rev) UnmarshalJSON(p []byte) error {
+	if p[0] == '"' {
+		var str string
+		if e := json.Unmarshal(p, &str); e != nil {
+			return e
+		}
+		r.original = str
+		parts := strings.SplitN(str, "-", 2)
+		seq, err := strconv.ParseInt(parts[0], 10, 64)
+		if err != nil {
+			return err
+		}
+		r.seq = seq
+		if len(parts) > 1 {
+			r.sum = parts[1]
+		}
+		return nil
 	}
-	token := fmt.Sprintf("%d %s", seq, doc.ID)
-	return fmt.Sprintf("%d-%x", seq, md5.Sum([]byte(token)))
+	r.original = string(p)
+	r.sum = ""
+	return json.Unmarshal(p, &r.seq)
+}
+
+func (r rev) MarshalText() ([]byte, error) {
+	return []byte(r.String()), nil
+}
+
+func (r rev) String() string {
+	if r.seq == 0 {
+		return ""
+	}
+	return fmt.Sprintf("%d-%s", r.seq, r.sum)
+}
+
+func (r rev) IsZero() bool {
+	return r.seq == 0
+}
+
+func (r *rev) Increment(payload ...string) {
+	r.seq++
+	if len(payload) == 0 {
+		r.sum = ""
+		return
+	}
+	data := strings.Join(payload, "")
+	r.sum = fmt.Sprintf("%x", md5.Sum([]byte(data)))
 }
 
 func (d *db) currentRev(docID string) (string, error) {
@@ -48,13 +96,15 @@ func (d *db) currentRev(docID string) (string, error) {
 		return "", err
 	}
 	var rd revDoc
-	err = json.NewDecoder(f).Decode(&rd)
-	return rd.Rev, err
+	if e := json.NewDecoder(f).Decode(&rd); e != nil {
+		return "", e
+	}
+	return rd.Rev.String(), nil
 }
 
 func compareRevs(doc *normalDoc, opts map[string]interface{}, currev string) error {
 	optsrev, _ := opts["rev"].(string)
-	docrev := doc.Rev
+	docrev := doc.Rev.String()
 	if optsrev != "" && docrev != "" && optsrev != docrev {
 		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document rev from request body and query string have different values"}
 	}
@@ -143,7 +193,7 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 		return "", err
 	}
 	ndoc.ID = docID
-	ndoc.Rev = calculateRev(ndoc)
+	ndoc.Rev.Increment(fmt.Sprintf("%d %s", ndoc.Rev.seq+1, ndoc.ID))
 
 	// map of tmpFile:permFile to be renamed
 	toRename := make(map[string]string)
@@ -194,5 +244,5 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 			return "", err
 		}
 	}
-	return ndoc.Rev, nil
+	return ndoc.Rev.String(), nil
 }

@@ -74,7 +74,7 @@ func TestGet(t *testing.T) {
 		dbname: "db.foo",
 		id:     "withattach",
 		expected: &driver.Document{
-			ContentLength: 285,
+			ContentLength: 287,
 			Rev:           "2-yyyyyyyyy",
 		},
 	})
@@ -84,7 +84,7 @@ func TestGet(t *testing.T) {
 		id:      "withattach",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{
-			ContentLength: 285,
+			ContentLength: 185,
 			Rev:           "2-yyyyyyyyy",
 		},
 	})
@@ -104,8 +104,53 @@ func TestGet(t *testing.T) {
 		id:      "withattach",
 		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
 		expected: &driver.Document{
-			ContentLength: 286,
+			ContentLength: 183,
 			Rev:           "1-xxxxxxxxxx",
+		},
+	})
+	tests.Add("autorev", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "autorev",
+		expected: &driver.Document{
+			ContentLength: 42,
+			Rev:           "6-",
+		},
+	})
+	tests.Add("intrev", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "intrev",
+		expected: &driver.Document{
+			ContentLength: 41,
+			Rev:           "6-",
+		},
+	})
+	tests.Add("norev", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "norev",
+		expected: &driver.Document{
+			ContentLength: 40,
+			Rev:           "1-",
+		},
+	})
+	tests.Add("noid", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "noid",
+		expected: &driver.Document{
+			ContentLength: 39,
+			Rev:           "6-",
+		},
+	})
+	tests.Add("wrong id", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "wrongid",
+		expected: &driver.Document{
+			ContentLength: 42,
+			Rev:           "6-",
 		},
 	})
 

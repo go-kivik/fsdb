@@ -1,9 +1,10 @@
 package fs
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -52,11 +53,10 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 	doc := &driver.Document{
 		ContentLength: stat.Size(),
 		Body:          f,
-		Rev:           ndoc.Rev,
+		Rev:           ndoc.Rev.String(),
 	}
 	if ok, _ := opts["attachments"].(bool); ok {
 		base := strings.TrimPrefix(base(f.Name()), d.path())
-		_ = f.Close()
 		atts := make(attachments)
 		for filename, att := range ndoc.Attachments {
 			f, err := os.Open(d.path(base, filename))
@@ -73,13 +73,29 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 				Digest:      att.ContentType,
 			}
 		}
-		r, w := io.Pipe()
-		go func() {
-			err := json.NewEncoder(w).Encode(ndoc)
-			w.CloseWithError(err) // nolint: errcheck
-		}()
-		doc.Body = r
+		ndoc.modified = true
 		doc.Attachments = atts
+	}
+	if ndoc.Rev.IsZero() {
+		ndoc.Rev.Increment()
+		ndoc.modified = true
+	}
+	if ndoc.Rev.Changed() {
+		ndoc.modified = true
+	}
+	if ndoc.ID != docID {
+		ndoc.modified = true
+		ndoc.ID = docID
+	}
+	if ndoc.modified {
+		_ = f.Close()
+		buf := &bytes.Buffer{}
+		if err := json.NewEncoder(buf).Encode(ndoc); err != nil {
+			return nil, err
+		}
+		doc.Body = ioutil.NopCloser(buf)
+		doc.Rev = ndoc.Rev.String()
+		doc.ContentLength = int64(buf.Len())
 	}
 	return doc, nil
 }
