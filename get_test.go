@@ -65,7 +65,7 @@ func TestGet(t *testing.T) {
 		dbname: "db.foo",
 		id:     "noattach",
 		expected: &driver.Document{
-			ContentLength: 72,
+			ContentLength: 53,
 			Rev:           "1-xxxxxxxxxx",
 		},
 	})
@@ -74,7 +74,7 @@ func TestGet(t *testing.T) {
 		dbname: "db.foo",
 		id:     "withattach",
 		expected: &driver.Document{
-			ContentLength: 287,
+			ContentLength: 182,
 			Rev:           "2-yyyyyyyyy",
 		},
 	})
@@ -94,7 +94,7 @@ func TestGet(t *testing.T) {
 		id:      "noattach",
 		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
 		expected: &driver.Document{
-			ContentLength: 72,
+			ContentLength: 53,
 			Rev:           "1-xxxxxxxxxx",
 		},
 	})

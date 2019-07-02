@@ -39,6 +39,7 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 		}
 		return nil, err
 	}
+	defer f.Close()
 	stat, err := f.Stat()
 	if err != nil {
 		return nil, err
@@ -73,30 +74,21 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 				Digest:      att.ContentType,
 			}
 		}
-		ndoc.modified = true
 		doc.Attachments = atts
 	}
 	if ndoc.Rev.IsZero() {
 		ndoc.Rev.Increment()
-		ndoc.modified = true
-	}
-	if ndoc.Rev.Changed() {
-		ndoc.modified = true
 	}
 	if ndoc.ID != docID {
-		ndoc.modified = true
 		ndoc.ID = docID
 	}
-	if ndoc.modified {
-		_ = f.Close()
-		buf := &bytes.Buffer{}
-		if err := json.NewEncoder(buf).Encode(ndoc); err != nil {
-			return nil, err
-		}
-		doc.Body = ioutil.NopCloser(buf)
-		doc.Rev = ndoc.Rev.String()
-		doc.ContentLength = int64(buf.Len())
+	buf := &bytes.Buffer{}
+	if err := json.NewEncoder(buf).Encode(ndoc); err != nil {
+		return nil, err
 	}
+	doc.Body = ioutil.NopCloser(buf)
+	doc.Rev = ndoc.Rev.String()
+	doc.ContentLength = int64(buf.Len())
 	return doc, nil
 }
 
