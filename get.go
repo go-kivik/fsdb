@@ -52,7 +52,7 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 	doc := &driver.Document{
 		ContentLength: stat.Size(),
 		Body:          f,
-		Rev:           ndoc.Rev,
+		Rev:           ndoc.Rev.String(),
 	}
 	if ok, _ := opts["attachments"].(bool); ok {
 		base := strings.TrimPrefix(base(f.Name()), d.path())
