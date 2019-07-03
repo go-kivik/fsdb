@@ -30,9 +30,6 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 	rev, _ := opts["rev"].(string)
 	ndoc, err := d.readDoc(docID, rev)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, &kivik.Error{HTTPStatus: http.StatusNotFound, Err: err}
-		}
 		if os.IsPermission(err) {
 			return nil, &kivik.Error{HTTPStatus: http.StatusForbidden, Err: err}
 		}
