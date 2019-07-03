@@ -17,7 +17,6 @@ import (
 	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
-	"gitlab.com/flimzy/ale/httperr"
 )
 
 type attachments map[string]*attachment
@@ -302,7 +301,7 @@ func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
 			return f, ext, err
 		}
 	}
-	return nil, "", httperr.New(http.StatusNotFound, "missing")
+	return nil, "", &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "missing"}
 }
 
 func (d *db) readDoc(docID, rev string) (*normalDoc, error) {
