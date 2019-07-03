@@ -12,8 +12,12 @@ import (
 	"os"
 	"sync"
 
+	"github.com/flimzy/log"
+	"github.com/go-kivik/fsdb/decoder"
+	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
+	"gitlab.com/flimzy/ale/httperr"
 )
 
 type attachments map[string]*attachment
@@ -200,10 +204,10 @@ func (a *attachment) followsMarshalJSON() ([]byte, error) {
 
 type normalDoc struct {
 	ID          string                 `json:"_id"`
-	Rev         rev                    `json:"_rev,omitempty"`
+	Rev         internal.Rev           `json:"_rev,omitempty"`
 	Attachments attachments            `json:"_attachments,omitempty"`
 	Data        map[string]interface{} `json:"-"`
-	modified    bool
+	Path        string                 `json:"-"`
 }
 
 func (d *normalDoc) MarshalJSON() ([]byte, error) {
@@ -232,9 +236,9 @@ func (d *normalDoc) MarshalJSON() ([]byte, error) {
 
 func (d *normalDoc) UnmarshalJSON(p []byte) error {
 	doc := struct {
-		ID          string      `json:"_id"`
-		Rev         rev         `json:"_rev,omitempty"`
-		Attachments attachments `json:"_attachments,omitempty"`
+		ID          string       `json:"_id"`
+		Rev         internal.Rev `json:"_rev,omitempty"`
+		Attachments attachments  `json:"_attachments,omitempty"`
 	}{}
 	if err := json.Unmarshal(p, &doc); err != nil {
 		return err
@@ -272,5 +276,49 @@ func normalizeDoc(i interface{}) (*normalDoc, error) {
 	if err := json.Unmarshal(data, &doc); err != nil {
 		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
 	}
+	return doc, nil
+}
+
+func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
+	base := id2basename(docID)
+	for _, ext := range decoder.Extensions() {
+		filename := base + "." + ext
+		log.Debugf("Trying to open: %s", filename)
+		if rev != "" {
+			currev, err := d.currentRev(filename, ext)
+			if err != nil && !os.IsNotExist(err) {
+				return nil, "", err
+			}
+			if currev != rev {
+				revFilename := "." + base + "/" + rev + "." + ext
+				f, err := os.Open(d.path(revFilename))
+				if !os.IsNotExist(err) {
+					return f, ext, err
+				}
+			}
+		}
+		f, err := os.Open(d.path(filename))
+		if !os.IsNotExist(err) {
+			return f, ext, err
+		}
+	}
+	return nil, "", httperr.New(http.StatusNotFound, "missing")
+}
+
+func (d *db) readDoc(docID, rev string) (*normalDoc, error) {
+	f, ext, err := d.openDoc(docID, rev)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close() // nolint: errcheck
+	i, err := decoder.Decode(f, ext)
+	if err != nil {
+		return nil, err
+	}
+	doc, err := normalizeDoc(i)
+	if err != nil {
+		return nil, err
+	}
+	doc.Path = f.Name()
 	return doc, nil
 }

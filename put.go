@@ -2,7 +2,6 @@ package fs
 
 import (
 	"context"
-	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,83 +10,21 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 
+	"github.com/go-kivik/fsdb/decoder"
 	"github.com/go-kivik/kivik"
 )
 
-func id2filename(id string) string {
+func id2basename(id string) string {
 	id = url.PathEscape(id)
 	if id[0] == '.' {
-		return "%2E" + id[1:] + ".json"
+		return "%2E" + id[1:]
 	}
-	return id + ".json"
+	return id
 }
 
-type revDoc struct {
-	Rev rev `json:"_rev"`
-}
-
-type rev struct {
-	seq      int64
-	sum      string
-	original string
-}
-
-func (r *rev) Changed() bool {
-	return r.String() != r.original
-}
-
-func (r *rev) UnmarshalJSON(p []byte) error {
-	if p[0] == '"' {
-		var str string
-		if e := json.Unmarshal(p, &str); e != nil {
-			return e
-		}
-		r.original = str
-		parts := strings.SplitN(str, "-", 2)
-		seq, err := strconv.ParseInt(parts[0], 10, 64)
-		if err != nil {
-			return err
-		}
-		r.seq = seq
-		if len(parts) > 1 {
-			r.sum = parts[1]
-		}
-		return nil
-	}
-	r.original = string(p)
-	r.sum = ""
-	return json.Unmarshal(p, &r.seq)
-}
-
-func (r rev) MarshalText() ([]byte, error) {
-	return []byte(r.String()), nil
-}
-
-func (r rev) String() string {
-	if r.seq == 0 {
-		return ""
-	}
-	return fmt.Sprintf("%d-%s", r.seq, r.sum)
-}
-
-func (r rev) IsZero() bool {
-	return r.seq == 0
-}
-
-func (r *rev) Increment(payload ...string) {
-	r.seq++
-	if len(payload) == 0 {
-		r.sum = ""
-		return
-	}
-	data := strings.Join(payload, "")
-	r.sum = fmt.Sprintf("%x", md5.Sum([]byte(data)))
-}
-
-func (d *db) currentRev(docID string) (string, error) {
+func (d *db) currentRev(docID, ext string) (string, error) {
 	f, err := os.Open(d.path(docID))
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -95,11 +32,7 @@ func (d *db) currentRev(docID string) (string, error) {
 		}
 		return "", err
 	}
-	var rd revDoc
-	if e := json.NewDecoder(f).Decode(&rd); e != nil {
-		return "", e
-	}
-	return rd.Rev.String(), nil
+	return decoder.Rev(f, ext)
 }
 
 func compareRevs(doc *normalDoc, opts map[string]interface{}, currev string) error {
@@ -177,13 +110,13 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 	if err := validateID(docID); err != nil {
 		return "", err
 	}
-	filename := id2filename(docID)
+	filename := id2basename(docID) + ".json"
 	ndoc, err := normalizeDoc(doc)
 	if err != nil {
 		return "", err
 	}
 	defer ndoc.cleanup() // nolint: errcheck
-	currev, err := d.currentRev(filename)
+	currev, err := d.currentRev(filename, "json")
 	if err != nil {
 		return "", err
 	}
@@ -193,7 +126,7 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 		return "", err
 	}
 	ndoc.ID = docID
-	ndoc.Rev.Increment(fmt.Sprintf("%d %s", ndoc.Rev.seq+1, ndoc.ID))
+	ndoc.Rev.Increment(fmt.Sprintf("%d %s", ndoc.Rev.Seq+1, ndoc.ID))
 
 	// map of tmpFile:permFile to be renamed
 	toRename := make(map[string]string)

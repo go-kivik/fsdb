@@ -12,6 +12,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/flimzy/log"
+	"github.com/go-kivik/fsdb/decoder"
 	"github.com/go-kivik/kivik/driver"
 )
 
@@ -37,18 +39,22 @@ func (c *changes) Next(ch *driver.Change) error {
 		if candidate.IsDir() {
 			continue
 		}
-		if strings.HasSuffix(candidate.Name(), ".json") {
-			docid := strings.TrimSuffix(candidate.Name(), ".json")
-			rev, err := c.db.currentRev(candidate.Name())
-			if err != nil {
-				return err
+		for _, ext := range decoder.Extensions() {
+			if strings.HasSuffix(candidate.Name(), "."+ext) {
+				log.Debugf("checking for %s\n", candidate.Name())
+				docid := strings.TrimSuffix(candidate.Name(), "."+ext)
+				rev, err := c.db.currentRev(candidate.Name(), ext)
+				log.Debugf("rev =%s, er = %s\n", rev, err)
+				if err != nil {
+					return err
+				}
+				if rev == "" {
+					rev = "1-"
+				}
+				ch.ID = docid
+				ch.Changes = []string{rev}
+				return nil
 			}
-			if rev == "" {
-				rev = "1-"
-			}
-			ch.ID = docid
-			ch.Changes = []string{rev}
-			return nil
 		}
 	}
 }

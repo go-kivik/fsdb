@@ -31,7 +31,7 @@ func TestGet(t *testing.T) {
 	tests.Add("not found", tt{
 		id:     "foo",
 		status: http.StatusNotFound,
-		err:    `/foo.json: no such file or directory$`,
+		err:    `^missing$`,
 	})
 	tests.Add("forbidden", func(t *testing.T) interface{} {
 		var mode os.FileMode
@@ -65,7 +65,7 @@ func TestGet(t *testing.T) {
 		dbname: "db.foo",
 		id:     "noattach",
 		expected: &driver.Document{
-			ContentLength: 72,
+			ContentLength: 53,
 			Rev:           "1-xxxxxxxxxx",
 		},
 	})
@@ -74,7 +74,7 @@ func TestGet(t *testing.T) {
 		dbname: "db.foo",
 		id:     "withattach",
 		expected: &driver.Document{
-			ContentLength: 287,
+			ContentLength: 182,
 			Rev:           "2-yyyyyyyyy",
 		},
 	})
@@ -94,7 +94,7 @@ func TestGet(t *testing.T) {
 		id:      "noattach",
 		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
 		expected: &driver.Document{
-			ContentLength: 72,
+			ContentLength: 53,
 			Rev:           "1-xxxxxxxxxx",
 		},
 	})
@@ -151,6 +151,15 @@ func TestGet(t *testing.T) {
 		expected: &driver.Document{
 			ContentLength: 42,
 			Rev:           "6-",
+		},
+	})
+	tests.Add("yaml", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "yamltest",
+		expected: &driver.Document{
+			ContentLength: 43,
+			Rev:           "3-",
 		},
 	})
 

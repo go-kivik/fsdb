@@ -8,6 +8,7 @@ import (
 
 	"github.com/flimzy/diff"
 	"github.com/flimzy/testy"
+	"github.com/go-kivik/fsdb/internal"
 )
 
 func TestAttachmentMarshalJSON(t *testing.T) {
@@ -118,7 +119,7 @@ func TestNormalDocMarshalJSON(t *testing.T) {
 	tests := testy.NewTable()
 	tests.Add("no attachments", &normalDoc{
 		ID:  "foo",
-		Rev: rev{seq: 1, sum: "xxx"},
+		Rev: internal.Rev{Seq: 1, Sum: "xxx"},
 		Data: map[string]interface{}{
 			"foo": "bar",
 		},
@@ -132,7 +133,7 @@ func TestNormalDocMarshalJSON(t *testing.T) {
 
 		return &normalDoc{
 			ID:  "foo",
-			Rev: rev{seq: 1, sum: "xxx"},
+			Rev: internal.Rev{Seq: 1, Sum: "xxx"},
 			Attachments: attachments{
 				"foo.txt": &attachment{
 					ContentType: "text/plain",
@@ -208,6 +209,37 @@ func TestNormalizeDoc(t *testing.T) {
 	tests.Run(t, func(t *testing.T, test tst) {
 		result, err := normalizeDoc(test.doc)
 		testy.StatusError(t, test.err, test.status, err)
+		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
+			t.Error(d)
+		}
+	})
+}
+
+func TestReadDoc(t *testing.T) {
+	type tt struct {
+		root, dbname, docID, rev string
+		status                   int
+		err                      string
+	}
+	tests := testy.NewTable()
+	tests.Add("json", tt{
+		root:   "testdata",
+		dbname: "db.foo",
+		docID:  "noattach",
+	})
+	tests.Add("yaml", tt{
+		root:   "testdata",
+		dbname: "db.foo",
+		docID:  "yamltest",
+	})
+
+	tests.Run(t, func(t *testing.T, tt tt) {
+		db := &db{
+			client: &client{root: tt.root},
+			dbName: tt.dbname,
+		}
+		result, err := db.readDoc(tt.docID, tt.rev)
+		testy.StatusError(t, tt.err, tt.status, err)
 		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
 			t.Error(d)
 		}
