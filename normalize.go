@@ -12,7 +12,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/flimzy/log"
 	"github.com/go-kivik/fsdb/decoder"
 	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
@@ -282,7 +281,6 @@ func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
 	base := id2basename(docID)
 	for _, ext := range decoder.Extensions() {
 		filename := base + "." + ext
-		log.Debugf("Trying to open: %s", filename)
 		if rev != "" {
 			currev, err := d.currentRev(filename, ext)
 			if err != nil && !os.IsNotExist(err) {
