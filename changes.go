@@ -8,6 +8,7 @@ package fs
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -40,13 +41,17 @@ func (c *changes) Next(ch *driver.Change) error {
 		}
 		for _, ext := range decoder.Extensions() {
 			if strings.HasSuffix(candidate.Name(), "."+ext) {
-				docid := strings.TrimSuffix(candidate.Name(), "."+ext)
+				base := strings.TrimSuffix(candidate.Name(), "."+ext)
 				rev, err := c.db.currentRev(candidate.Name(), ext)
 				if err != nil {
 					return err
 				}
 				if rev == "" {
 					rev = "1-"
+				}
+				docid, err := filename2id(base)
+				if err != nil {
+					return fmt.Errorf("Invalid docid: %s", candidate.Name())
 				}
 				ch.ID = docid
 				ch.Changes = []string{rev}

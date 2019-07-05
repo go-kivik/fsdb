@@ -24,6 +24,10 @@ func id2basename(id string) string {
 	return id
 }
 
+func filename2id(filename string) (string, error) {
+	return url.PathUnescape(filename)
+}
+
 func (d *db) currentRev(docID, ext string) (string, error) {
 	f, err := os.Open(d.path(docID))
 	if err != nil {

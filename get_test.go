@@ -162,6 +162,45 @@ func TestGet(t *testing.T) {
 			Rev:           "3-",
 		},
 	})
+	tests.Add("specify current rev yaml", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "yamltest",
+		options: map[string]interface{}{"rev": "3-"},
+		expected: &driver.Document{
+			ContentLength: 43,
+			Rev:           "3-",
+		},
+	})
+	tests.Add("specify old rev yaml", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "yamltest",
+		options: map[string]interface{}{"rev": "2-xxx"},
+		expected: &driver.Document{
+			ContentLength: 46,
+			Rev:           "2-xxx",
+		},
+	})
+	tests.Add("ddoc yaml", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "_design/users",
+		expected: &driver.Document{
+			ContentLength: 115,
+			Rev:           "2-",
+		},
+	})
+	tests.Add("ddoc rev yaml", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "_design/users",
+		options: map[string]interface{}{"rev": "2-"},
+		expected: &driver.Document{
+			ContentLength: 115,
+			Rev:           "2-",
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		dir := tt.path

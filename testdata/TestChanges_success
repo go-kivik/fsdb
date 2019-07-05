@@ -1,4 +1,7 @@
 {
+    "_design/users": [
+        "2-"
+    ],
     "autorev": [
         "6-"
     ],
