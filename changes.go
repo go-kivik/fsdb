@@ -29,6 +29,19 @@ func (c *changes) ETag() string    { return "" }
 func (c *changes) LastSeq() string { return "" }
 func (c *changes) Pending() int64  { return 0 }
 
+func ignoreDocID(name string) bool {
+	if name[0] != '_' {
+		return false
+	}
+	if strings.HasPrefix(name, "_design/") {
+		return false
+	}
+	if strings.HasPrefix(name, "_local/") {
+		return false
+	}
+	return true
+}
+
 func (c *changes) Next(ch *driver.Change) error {
 	for {
 		if len(c.infos) == 0 {
@@ -42,16 +55,19 @@ func (c *changes) Next(ch *driver.Change) error {
 		for _, ext := range decoder.Extensions() {
 			if strings.HasSuffix(candidate.Name(), "."+ext) {
 				base := strings.TrimSuffix(candidate.Name(), "."+ext)
+				docid, err := filename2id(base)
+				if err != nil {
+					return fmt.Errorf("Invalid docid: %s", candidate.Name())
+				}
+				if ignoreDocID(docid) {
+					continue
+				}
 				rev, err := c.db.currentRev(candidate.Name(), ext)
 				if err != nil {
 					return err
 				}
 				if rev == "" {
 					rev = "1-"
-				}
-				docid, err := filename2id(base)
-				if err != nil {
-					return fmt.Errorf("Invalid docid: %s", candidate.Name())
 				}
 				ch.ID = docid
 				ch.Changes = []string{rev}

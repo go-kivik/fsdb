@@ -6,11 +6,13 @@ import (
 	"sort"
 
 	"github.com/go-kivik/fsdb/internal"
+	"github.com/go-kivik/kivik/driver"
 )
 
 type Decoder interface {
 	Extensions() []string
 	Decode(io.Reader) (map[string]interface{}, error)
+	DecodeSecurity(io.Reader) (*driver.Security, error)
 	Rev(io.Reader) (internal.Rev, error)
 }
 
@@ -35,6 +37,14 @@ func Decode(r io.Reader, ext string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("No decoder for ext '%s'", ext)
 	}
 	return dec.Decode(r)
+}
+
+func DecodeSecurity(r io.Reader, ext string) (*driver.Security, error) {
+	dec, ok := decoders[ext]
+	if !ok {
+		return nil, fmt.Errorf("No decoder for ext '%s'", ext)
+	}
+	return dec.DecodeSecurity(r)
 }
 
 func Rev(r io.Reader, ext string) (string, error) {
