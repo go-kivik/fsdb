@@ -13,6 +13,11 @@ import (
 	"github.com/go-kivik/kivik/driver"
 )
 
+const (
+	// Maybe make this confiurable at some point?
+	revsLimit = 1000
+)
+
 // TODO:
 // - atts_since
 // - conflicts
@@ -21,7 +26,6 @@ import (
 // - local_seq
 // - meta
 // - open_revs
-// - revs
 // - revs_info
 func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
 	if docID == "" {
@@ -37,6 +41,16 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 	}
 	doc := &driver.Document{
 		Rev: ndoc.Rev.String(),
+	}
+	if ok, _ := opts["revs"].(bool); ok {
+		histSize := ndoc.Rev.Seq
+		if histSize > revsLimit {
+			histSize = revsLimit
+		}
+		ndoc.Data["_revisions"] = map[string]interface{}{
+			"start": ndoc.Rev.Seq,
+			"ids":   make([]string, int(histSize)),
+		}
 	}
 	if ok, _ := opts["attachments"].(bool); ok {
 		base := strings.TrimPrefix(base(ndoc.Path), d.path())
