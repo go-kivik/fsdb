@@ -47,9 +47,15 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 		if histSize > revsLimit {
 			histSize = revsLimit
 		}
+		var ids []string
+		if ndoc.Rev.Sum == "" {
+			ids = make([]string, int(histSize))
+		} else {
+			ids = []string{ndoc.Rev.Sum}
+		}
 		ndoc.Data["_revisions"] = map[string]interface{}{
 			"start": ndoc.Rev.Seq,
-			"ids":   make([]string, int(histSize)),
+			"ids":   ids,
 		}
 	}
 	if ok, _ := opts["attachments"].(bool); ok {

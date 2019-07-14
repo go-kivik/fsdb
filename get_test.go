@@ -211,6 +211,16 @@ func TestGet(t *testing.T) {
 			Rev:           "6-",
 		},
 	})
+	tests.Add("revs real", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "noattach",
+		options: map[string]interface{}{"revs": true},
+		expected: &driver.Document{
+			ContentLength: 99,
+			Rev:           "1-xxxxxxxxxx",
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		dir := tt.path
