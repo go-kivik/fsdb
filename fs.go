@@ -72,7 +72,7 @@ func (c *client) Version(_ context.Context) (*driver.Version, error) {
 }
 
 // Taken verbatim from http://docs.couchdb.org/en/2.0.0/api/database/common.html
-var validDBNameRE = regexp.MustCompile("^[a-z][a-z0-9_$()+/-]*$")
+var validDBNameRE = regexp.MustCompile("^[a-z_][a-z0-9_$()+/-]*$")
 
 // AllDBs returns a list of all DBs present in the configured root dir.
 func (c *client) AllDBs(_ context.Context, _ map[string]interface{}) ([]string, error) {
