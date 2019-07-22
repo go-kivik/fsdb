@@ -69,12 +69,16 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 			att.Stub = false
 			att.Follows = true
 			att.Content = f
+			revpos := att.RevPos
+			if revpos == 0 {
+				revpos = ndoc.Rev.Seq
+			}
 			atts[filename] = &attachment{
 				Content:     f,
 				Size:        att.Size,
 				ContentType: att.ContentType,
 				Digest:      att.ContentType,
-				RevPos:      att.RevPos,
+				RevPos:      revpos,
 			}
 		}
 		doc.Attachments = atts
