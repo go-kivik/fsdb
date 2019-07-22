@@ -74,6 +74,7 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 				Size:        att.Size,
 				ContentType: att.ContentType,
 				Digest:      att.ContentType,
+				RevPos:      att.RevPos,
 			}
 		}
 		doc.Attachments = atts
