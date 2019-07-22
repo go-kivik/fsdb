@@ -41,6 +41,7 @@ func (a attachments) Next(driverAtt *driver.Attachment) error {
 			Content:     att.Content,
 			Size:        att.Size,
 			Digest:      att.Digest,
+			RevPos:      att.RevPos,
 		}
 		*driverAtt = *x
 		delete(a, filename)
