@@ -51,6 +51,7 @@ func (a attachments) Next(driverAtt *driver.Attachment) error {
 
 type attachment struct {
 	ContentType string   `json:"content_type"`
+	RevPos      int64    `json:"revpos,omitempty"`
 	Stub        bool     `json:"stub,omitempty"`
 	Follows     bool     `json:"follows,omitempty"`
 	Content     *os.File `json:"data,omitempty"`
@@ -100,6 +101,7 @@ func copyDigest(tgt io.Writer, dst io.Reader) (int64, string, error) {
 func (a *attachment) UnmarshalJSON(p []byte) error {
 	var att struct {
 		ContentType string `json:"content_type"`
+		RevPos      int64  `json:"revpos"`
 		Stub        bool   `json:"stub"`
 		Content     []byte `json:"data"`
 		Size        int64  `json:"length"`
@@ -111,6 +113,7 @@ func (a *attachment) UnmarshalJSON(p []byte) error {
 	a.ContentType = att.ContentType
 	a.Size = att.Size
 	a.Digest = att.Digest
+	a.RevPos = att.RevPos
 	if att.Stub {
 		a.Stub = true
 		return nil
@@ -154,6 +157,7 @@ func (a *attachment) MarshalJSON() ([]byte, error) {
 
 	type att struct {
 		ContentType string `json:"content_type"`
+		RevPos      int64  `json:"revpos,omitempty"`
 		Data        []byte `json:"data"`
 		Size        int64  `json:"length"`
 		Digest      string `json:"digest"`
@@ -164,6 +168,7 @@ func (a *attachment) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(att{
 		ContentType: a.ContentType,
+		RevPos:      a.RevPos,
 		Data:        content,
 		Size:        a.Size,
 		Digest:      a.Digest,
@@ -173,12 +178,14 @@ func (a *attachment) MarshalJSON() ([]byte, error) {
 func (a *attachment) stubMarshalJSON() ([]byte, error) {
 	type stub struct {
 		ContentType string `json:"content_type"`
+		RevPos      int64  `json:"revpos,omitempty"`
 		Stub        bool   `json:"stub"`
 		Size        int64  `json:"length,omitempty"`
 		Digest      string `json:"digest,omitempty"`
 	}
 	return json.Marshal(stub{
 		ContentType: a.ContentType,
+		RevPos:      a.RevPos,
 		Stub:        true,
 		Size:        a.Size,
 		Digest:      a.Digest,
@@ -188,12 +195,14 @@ func (a *attachment) stubMarshalJSON() ([]byte, error) {
 func (a *attachment) followsMarshalJSON() ([]byte, error) {
 	type stub struct {
 		ContentType string `json:"content_type"`
+		RevPos      int64  `json:"revpos,omitempty"`
 		Follows     bool   `json:"follows"`
 		Size        int64  `json:"length,omitempty"`
 		Digest      string `json:"digest,omitempty"`
 	}
 	return json.Marshal(stub{
 		ContentType: a.ContentType,
+		RevPos:      a.RevPos,
 		Follows:     true,
 		Size:        a.Size,
 		Digest:      a.Digest,

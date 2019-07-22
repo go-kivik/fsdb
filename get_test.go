@@ -9,6 +9,8 @@ import (
 
 	"github.com/flimzy/diff"
 	"github.com/flimzy/testy"
+
+	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
 )
 
@@ -219,6 +221,25 @@ func TestGet(t *testing.T) {
 		expected: &driver.Document{
 			ContentLength: 99,
 			Rev:           "1-xxxxxxxxxx",
+		},
+	})
+	tests.Add("note--XkWjFv13acvjJTt-CGJJ8hXlWE", tt{
+		path:   "testdata",
+		dbname: "db.att",
+		id:     "note--XkWjFv13acvjJTt-CGJJ8hXlWE",
+		expected: &driver.Document{
+			ContentLength: 849,
+			Rev:           "1-fbaabe005e0f4e5685a68f857c0777d6",
+		},
+	})
+	tests.Add("note--XkWjFv13acvjJTt-CGJJ8hXlWE + attachments", tt{
+		path:    "testdata",
+		dbname:  "db.att",
+		id:      "note--XkWjFv13acvjJTt-CGJJ8hXlWE",
+		options: kivik.Options{"attachments": true},
+		expected: &driver.Document{
+			ContentLength: 852,
+			Rev:           "1-fbaabe005e0f4e5685a68f857c0777d6",
 		},
 	})
 
