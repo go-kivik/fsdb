@@ -58,6 +58,11 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 			"ids":   ids,
 		}
 	}
+	for _, att := range ndoc.Attachments {
+		if att.RevPos == 0 {
+			att.RevPos = ndoc.Rev.Seq
+		}
+	}
 	if ok, _ := opts["attachments"].(bool); ok {
 		base := strings.TrimPrefix(base(ndoc.Path), d.path())
 		atts := make(attachments)
@@ -69,16 +74,12 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 			att.Stub = false
 			att.Follows = true
 			att.Content = f
-			revpos := att.RevPos
-			if revpos == 0 {
-				revpos = ndoc.Rev.Seq
-			}
 			atts[filename] = &attachment{
 				Content:     f,
 				Size:        att.Size,
 				ContentType: att.ContentType,
 				Digest:      att.ContentType,
-				RevPos:      revpos,
+				RevPos:      att.RevPos,
 			}
 		}
 		doc.Attachments = atts
