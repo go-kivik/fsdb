@@ -58,19 +58,21 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 		}
 	}
 	if ok, _ := opts["revs"].(bool); ok {
-		histSize := ndoc.Rev.Seq
-		if histSize > revsLimit {
-			histSize = revsLimit
-		}
-		var ids []string
-		if ndoc.Rev.Sum == "" {
-			ids = make([]string, int(histSize))
-		} else {
-			ids = []string{ndoc.Rev.Sum}
-		}
-		ndoc.Data["_revisions"] = map[string]interface{}{
-			"start": ndoc.Rev.Seq,
-			"ids":   ids,
+		if _, ok := ndoc.Data["_revisions"]; !ok {
+			histSize := ndoc.Rev.Seq
+			if histSize > revsLimit {
+				histSize = revsLimit
+			}
+			var ids []string
+			if ndoc.Rev.Sum == "" {
+				ids = make([]string, int(histSize))
+			} else {
+				ids = []string{ndoc.Rev.Sum}
+			}
+			ndoc.Data["_revisions"] = map[string]interface{}{
+				"start": ndoc.Rev.Seq,
+				"ids":   ids,
+			}
 		}
 	}
 	for _, att := range ndoc.Attachments {
