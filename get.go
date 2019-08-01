@@ -18,6 +18,11 @@ const (
 	revsLimit = 1000
 )
 
+type revsInfo struct {
+	Rev    string `json:"rev"`
+	Status string `json:"status"`
+}
+
 // TODO:
 // - atts_since
 // - conflicts
@@ -26,7 +31,6 @@ const (
 // - local_seq
 // - meta
 // - open_revs
-// - revs_info
 func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
 	if docID == "" {
 		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no docid specified"}
@@ -39,8 +43,19 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 		}
 		return nil, err
 	}
+	if ndoc.Rev.IsZero() {
+		ndoc.Rev.Increment()
+	}
 	doc := &driver.Document{
 		Rev: ndoc.Rev.String(),
+	}
+	if ok, _ := opts["revs_info"].(bool); ok {
+		ndoc.Data["_revs_info"] = []revsInfo{
+			{
+				Rev:    ndoc.Rev.String(),
+				Status: "available",
+			},
+		}
 	}
 	if ok, _ := opts["revs"].(bool); ok {
 		histSize := ndoc.Rev.Seq
@@ -83,9 +98,6 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 			}
 		}
 		doc.Attachments = atts
-	}
-	if ndoc.Rev.IsZero() {
-		ndoc.Rev.Increment()
 	}
 	if ndoc.ID != docID {
 		ndoc.ID = docID
