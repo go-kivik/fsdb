@@ -2,6 +2,7 @@ package fs
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"encoding/json"
 	"errors"
@@ -328,4 +329,19 @@ func (d *db) readDoc(docID, rev string) (*normalDoc, error) {
 	}
 	doc.Path = f.Name()
 	return doc, nil
+}
+
+func (d *db) get(_ context.Context, docID string, opts map[string]interface{}) (*normalDoc, error) {
+	rev, _ := opts["rev"].(string)
+	ndoc, err := d.readDoc(docID, rev)
+	if err != nil {
+		if os.IsPermission(err) {
+			return nil, &kivik.Error{HTTPStatus: http.StatusForbidden, Err: err}
+		}
+		return nil, err
+	}
+	if ndoc.Rev.IsZero() {
+		ndoc.Rev.Increment()
+	}
+	return ndoc, nil
 }
