@@ -359,6 +359,7 @@ func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
 				if !os.IsNotExist(err) {
 					return f, ext, err
 				}
+				continue
 			}
 		}
 		f, err := os.Open(d.path(filename))

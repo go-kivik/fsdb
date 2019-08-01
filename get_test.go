@@ -184,6 +184,14 @@ func TestGet(t *testing.T) {
 			Rev:           "2-xxx",
 		},
 	})
+	tests.Add("specify bogus rev yaml", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "yamltest",
+		options: map[string]interface{}{"rev": "1-oink"},
+		status:  http.StatusNotFound,
+		err:     "missing",
+	})
 	tests.Add("ddoc yaml", tt{
 		path:   "testdata",
 		dbname: "db.foo",
