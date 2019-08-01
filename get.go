@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
@@ -58,10 +57,9 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 		}
 	}
 	if ok, _ := opts["attachments"].(bool); ok {
-		base := strings.TrimPrefix(base(ndoc.Path), d.path())
 		atts := make(attachments)
 		for filename, att := range ndoc.Attachments {
-			f, err := os.Open(d.path(base, filename))
+			f, err := d.openAttachment(ctx, docID, doc.Rev, filename)
 			if err != nil {
 				return nil, err
 			}
@@ -89,4 +87,15 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	doc.Rev = ndoc.Rev.String()
 	doc.ContentLength = int64(buf.Len())
 	return doc, nil
+}
+
+func (d *db) openAttachment(ctx context.Context, docID, rev, filename string) (*os.File, error) {
+	f, err := os.Open(d.path("."+docID, rev, filename))
+	if !os.IsNotExist(err) {
+		return f, err
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	return os.Open(d.path(docID, filename))
 }
