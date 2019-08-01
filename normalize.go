@@ -319,6 +319,26 @@ func (d *normalDoc) revsInfo() []revsInfo {
 	}
 }
 
+func (d *normalDoc) revisions() *revisions {
+	if d.Revisions != nil {
+		return d.Revisions
+	}
+	histSize := d.Rev.Seq
+	if histSize > revsLimit {
+		histSize = revsLimit
+	}
+	var ids []string
+	if d.Rev.Sum == "" {
+		ids = make([]string, int(histSize))
+	} else {
+		ids = []string{d.Rev.Sum}
+	}
+	return &revisions{
+		Start: d.Rev.Seq,
+		IDs:   ids,
+	}
+}
+
 type revisions struct {
 	Start int64    `json:"start"`
 	IDs   []string `json:"ids"`

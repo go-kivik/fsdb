@@ -49,22 +49,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 			ndoc.RevsInfo = ndoc.revsInfo()
 		}
 		if ok, _ := opts["revs"].(bool); ok {
-			if ndoc.Revisions == nil {
-				histSize := ndoc.Rev.Seq
-				if histSize > revsLimit {
-					histSize = revsLimit
-				}
-				var ids []string
-				if ndoc.Rev.Sum == "" {
-					ids = make([]string, int(histSize))
-				} else {
-					ids = []string{ndoc.Rev.Sum}
-				}
-				ndoc.Revisions = &revisions{
-					Start: ndoc.Rev.Seq,
-					IDs:   ids,
-				}
-			}
+			ndoc.Revisions = ndoc.revisions()
 		}
 	}
 	for _, att := range ndoc.Attachments {
