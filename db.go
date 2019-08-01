@@ -47,11 +47,6 @@ func (d *db) Stats(_ context.Context) (*driver.DBStats, error) {
 	return nil, notYetImplemented
 }
 
-func (d *db) Compact(_ context.Context) error {
-	// FIXME: Unimplemented
-	return notYetImplemented
-}
-
 func (d *db) CompactView(_ context.Context, _ string) error {
 	// FIXME: Unimplemented
 	return notYetImplemented
