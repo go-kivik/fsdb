@@ -31,52 +31,25 @@ type revsInfo struct {
 // - local_seq
 // - meta
 // - open_revs
-func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
+func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
 	if docID == "" {
 		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no docid specified"}
 	}
-	rev, _ := opts["rev"].(string)
-	ndoc, err := d.readDoc(docID, rev)
+	ndoc, err := d.get(ctx, docID, opts)
 	if err != nil {
-		if os.IsPermission(err) {
-			return nil, &kivik.Error{HTTPStatus: http.StatusForbidden, Err: err}
-		}
 		return nil, err
-	}
-	if ndoc.Rev.IsZero() {
-		ndoc.Rev.Increment()
 	}
 	doc := &driver.Document{
 		Rev: ndoc.Rev.String(),
 	}
-	if rev != "" {
-		delete(ndoc.Data, "_revisions")
+	if _, ok := opts["rev"]; ok {
+		ndoc.Revisions = nil
 	} else {
 		if ok, _ := opts["revs_info"].(bool); ok {
-			ndoc.Data["_revs_info"] = []revsInfo{
-				{
-					Rev:    ndoc.Rev.String(),
-					Status: "available",
-				},
-			}
+			ndoc.RevsInfo = ndoc.revsInfo()
 		}
 		if ok, _ := opts["revs"].(bool); ok {
-			if _, ok := ndoc.Data["_revisions"]; !ok {
-				histSize := ndoc.Rev.Seq
-				if histSize > revsLimit {
-					histSize = revsLimit
-				}
-				var ids []string
-				if ndoc.Rev.Sum == "" {
-					ids = make([]string, int(histSize))
-				} else {
-					ids = []string{ndoc.Rev.Sum}
-				}
-				ndoc.Data["_revisions"] = map[string]interface{}{
-					"start": ndoc.Rev.Seq,
-					"ids":   ids,
-				}
-			}
+			ndoc.Revisions = ndoc.revisions()
 		}
 	}
 	for _, att := range ndoc.Attachments {
