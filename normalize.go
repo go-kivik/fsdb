@@ -225,7 +225,7 @@ type normalDoc struct {
 func (d *normalDoc) MarshalJSON() ([]byte, error) {
 	for key := range d.Data {
 		if key[0] == '_' {
-			return nil, xerrors.Errorf("Unrecognized reserved key: %s", key)
+			return nil, xerrors.Errorf("Bad special document member: %s", key)
 		}
 	}
 	var data []byte
