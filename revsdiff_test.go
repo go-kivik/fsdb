@@ -14,8 +14,6 @@ import (
 
 func TestRevsDiff(t *testing.T) {
 	type tt struct {
-		setup        func(*testing.T, *db)
-		final        func(*testing.T, *db)
 		path, dbname string
 		revMap       interface{}
 		status       int
@@ -30,6 +28,15 @@ func TestRevsDiff(t *testing.T) {
 	tests.Add("empty map", tt{
 		revMap: map[string][]string{},
 	})
+	tests.Add("real test", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		revMap: map[string][]string{
+			"yamltest": {"3-", "2-xxx", "1-oink"},
+			"autorev":  {"6-", "5-", "4-"},
+			"newdoc":   {"1-asdf"},
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		dir := tt.path
@@ -40,9 +47,6 @@ func TestRevsDiff(t *testing.T) {
 		db := &db{
 			client: &client{root: dir},
 			dbName: tt.dbname,
-		}
-		if tt.setup != nil {
-			tt.setup(t, db)
 		}
 		rows, err := db.RevsDiff(context.Background(), tt.revMap)
 		testy.StatusErrorRE(t, tt.err, tt.status, err)
