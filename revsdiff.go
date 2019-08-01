@@ -49,6 +49,7 @@ type revDiffRows struct {
 var _ driver.Rows = &revDiffRows{}
 
 func (r *revDiffRows) Close() error {
+	r.revmap = nil
 	return nil
 }
 
