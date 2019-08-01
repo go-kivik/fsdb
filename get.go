@@ -49,29 +49,33 @@ func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (
 	doc := &driver.Document{
 		Rev: ndoc.Rev.String(),
 	}
-	if ok, _ := opts["revs_info"].(bool); ok {
-		ndoc.Data["_revs_info"] = []revsInfo{
-			{
-				Rev:    ndoc.Rev.String(),
-				Status: "available",
-			},
+	if rev != "" {
+		delete(ndoc.Data, "_revisions")
+	} else {
+		if ok, _ := opts["revs_info"].(bool); ok {
+			ndoc.Data["_revs_info"] = []revsInfo{
+				{
+					Rev:    ndoc.Rev.String(),
+					Status: "available",
+				},
+			}
 		}
-	}
-	if ok, _ := opts["revs"].(bool); ok {
-		if _, ok := ndoc.Data["_revisions"]; !ok {
-			histSize := ndoc.Rev.Seq
-			if histSize > revsLimit {
-				histSize = revsLimit
-			}
-			var ids []string
-			if ndoc.Rev.Sum == "" {
-				ids = make([]string, int(histSize))
-			} else {
-				ids = []string{ndoc.Rev.Sum}
-			}
-			ndoc.Data["_revisions"] = map[string]interface{}{
-				"start": ndoc.Rev.Seq,
-				"ids":   ids,
+		if ok, _ := opts["revs"].(bool); ok {
+			if _, ok := ndoc.Data["_revisions"]; !ok {
+				histSize := ndoc.Rev.Seq
+				if histSize > revsLimit {
+					histSize = revsLimit
+				}
+				var ids []string
+				if ndoc.Rev.Sum == "" {
+					ids = make([]string, int(histSize))
+				} else {
+					ids = []string{ndoc.Rev.Sum}
+				}
+				ndoc.Data["_revisions"] = map[string]interface{}{
+					"start": ndoc.Rev.Seq,
+					"ids":   ids,
+				}
 			}
 		}
 	}

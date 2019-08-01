@@ -264,6 +264,45 @@ func TestGet(t *testing.T) {
 			Rev:           "8-asdf",
 		},
 	})
+	tests.Add("specify current rev, revs_info=true", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "yamltest",
+		options: map[string]interface{}{
+			"rev":       "3-",
+			"revs_info": true,
+		},
+		expected: &driver.Document{
+			ContentLength: 43,
+			Rev:           "3-",
+		},
+	})
+	tests.Add("specify conflicting rev, revs_info=true", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "yamltest",
+		options: map[string]interface{}{
+			"rev":       "2-xxx",
+			"revs_info": true,
+		},
+		expected: &driver.Document{
+			ContentLength: 46,
+			Rev:           "2-xxx",
+		},
+	})
+	tests.Add("specify rev, revs=true", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "withrevs",
+		options: map[string]interface{}{
+			"rev":  "8-asdf",
+			"revs": true,
+		},
+		expected: &driver.Document{
+			ContentLength: 47,
+			Rev:           "8-asdf",
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		dir := tt.path
