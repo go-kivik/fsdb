@@ -43,13 +43,13 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 		Rev: ndoc.Rev.String(),
 	}
 	if _, ok := opts["rev"]; ok {
-		delete(ndoc.Data, "_revisions")
+		ndoc.Revisions = nil
 	} else {
 		if ok, _ := opts["revs_info"].(bool); ok {
-			ndoc.Data["_revs_info"] = ndoc.revsInfo()
+			ndoc.RevsInfo = ndoc.revsInfo()
 		}
 		if ok, _ := opts["revs"].(bool); ok {
-			if _, ok := ndoc.Data["_revisions"]; !ok {
+			if ndoc.Revisions == nil {
 				histSize := ndoc.Rev.Seq
 				if histSize > revsLimit {
 					histSize = revsLimit
@@ -60,9 +60,9 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 				} else {
 					ids = []string{ndoc.Rev.Sum}
 				}
-				ndoc.Data["_revisions"] = map[string]interface{}{
-					"start": ndoc.Rev.Seq,
-					"ids":   ids,
+				ndoc.Revisions = &revisions{
+					Start: ndoc.Rev.Seq,
+					IDs:   ids,
 				}
 			}
 		}

@@ -17,6 +17,7 @@ import (
 	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
+	"golang.org/x/xerrors"
 )
 
 type attachments map[string]*attachment
@@ -215,14 +216,16 @@ type normalDoc struct {
 	ID          string                 `json:"_id"`
 	Rev         internal.Rev           `json:"_rev,omitempty"`
 	Attachments attachments            `json:"_attachments,omitempty"`
+	RevsInfo    []revsInfo             `json:"_revs_info,omitempty"`
+	Revisions   *revisions             `json:"_revisions,omitempty"`
 	Data        map[string]interface{} `json:"-"`
 	Path        string                 `json:"-"`
 }
 
 func (d *normalDoc) MarshalJSON() ([]byte, error) {
-	for _, key := range []string{"_id", "_rev", "_attachments"} {
-		if _, ok := d.Data[key]; ok {
-			return nil, errors.New("Data must not contain _id, _rev, or _attachments keys")
+	for key := range d.Data {
+		if key[0] == '_' {
+			return nil, xerrors.Errorf("Unrecognized reserved key: %s", key)
 		}
 	}
 	var data []byte
@@ -243,11 +246,21 @@ func (d *normalDoc) MarshalJSON() ([]byte, error) {
 	return doc, nil
 }
 
+var reservedKeys = map[string]struct{}{
+	"_id":          {},
+	"_rev":         {},
+	"_attachments": {},
+	"_revisions":   {},
+	"_revs_info":   {},
+}
+
 func (d *normalDoc) UnmarshalJSON(p []byte) error {
 	doc := struct {
 		ID          string       `json:"_id"`
 		Rev         internal.Rev `json:"_rev,omitempty"`
 		Attachments attachments  `json:"_attachments,omitempty"`
+		RevsInfo    []revsInfo   `json:"_revs_info,omitempty"`
+		Revisions   *revisions   `json:"_revisions,omitempty"`
 	}{}
 	if err := json.Unmarshal(p, &doc); err != nil {
 		return err
@@ -256,12 +269,19 @@ func (d *normalDoc) UnmarshalJSON(p []byte) error {
 	if err := json.Unmarshal(p, &data); err != nil {
 		return err
 	}
-	delete(data, "_id")
-	delete(data, "_rev")
-	delete(data, "_attachments")
+	for key := range data {
+		if key[0] == '_' {
+			if _, ok := reservedKeys[key]; !ok {
+				return xerrors.Errorf("Unrecognized reserved key %s", key)
+			}
+			delete(data, key)
+		}
+	}
 	d.ID = doc.ID
 	d.Rev = doc.Rev
 	d.Attachments = doc.Attachments
+	d.Revisions = doc.Revisions
+	d.RevsInfo = doc.RevsInfo
 	d.Data = data
 	return nil
 }
@@ -297,6 +317,11 @@ func (d *normalDoc) revsInfo() []revsInfo {
 			Status: "available",
 		},
 	}
+}
+
+type revisions struct {
+	Start int64    `json:"start"`
+	IDs   []string `json:"ids"`
 }
 
 func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
