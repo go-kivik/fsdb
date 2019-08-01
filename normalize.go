@@ -288,6 +288,17 @@ func normalizeDoc(i interface{}) (*normalDoc, error) {
 	return doc, nil
 }
 
+func (d *normalDoc) revsInfo() []revsInfo {
+	// This driver only ever stores the current leaf, so we only ever
+	// return one revision here: the current one.
+	return []revsInfo{
+		{
+			Rev:    d.Rev.String(),
+			Status: "available",
+		},
+	}
+}
+
 func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
 	base := id2basename(docID)
 	for _, ext := range decoder.Extensions() {

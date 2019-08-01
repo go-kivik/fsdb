@@ -46,12 +46,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 		delete(ndoc.Data, "_revisions")
 	} else {
 		if ok, _ := opts["revs_info"].(bool); ok {
-			ndoc.Data["_revs_info"] = []revsInfo{
-				{
-					Rev:    ndoc.Rev.String(),
-					Status: "available",
-				},
-			}
+			ndoc.Data["_revs_info"] = ndoc.revsInfo()
 		}
 		if ok, _ := opts["revs"].(bool); ok {
 			if _, ok := ndoc.Data["_revisions"]; !ok {
