@@ -1,0 +1,5 @@
+{
+    "_id": "withrevs",
+    "_rev": "8-asdf",
+    "foo": "bar"
+}
