@@ -14,10 +14,13 @@ import (
 
 func TestRevsDiff(t *testing.T) {
 	type tt struct {
+		ctx          context.Context
 		path, dbname string
 		revMap       interface{}
 		status       int
 		err          string
+		rowStatus    int
+		rowErr       string
 	}
 	tests := testy.NewTable()
 	tests.Add("invalid revMap", tt{
@@ -37,6 +40,22 @@ func TestRevsDiff(t *testing.T) {
 			"newdoc":   {"1-asdf"},
 		},
 	})
+	tests.Add("cancelled context", func(t *testing.T) interface{} {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		return tt{
+			ctx:    ctx,
+			path:   "testdata",
+			dbname: "db.foo",
+			revMap: map[string][]string{
+				"yamltest": {"3-", "2-xxx", "1-oink"},
+				"autorev":  {"6-", "5-", "4-"},
+				"newdoc":   {"1-asdf"},
+			},
+			rowStatus: http.StatusInternalServerError,
+			rowErr:    "context canceled",
+		}
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		dir := tt.path
@@ -48,20 +67,27 @@ func TestRevsDiff(t *testing.T) {
 			client: &client{root: dir},
 			dbName: tt.dbname,
 		}
-		rows, err := db.RevsDiff(context.Background(), tt.revMap)
+		ctx := tt.ctx
+		if ctx == nil {
+			ctx = context.Background()
+		}
+		rows, err := db.RevsDiff(ctx, tt.revMap)
 		testy.StatusErrorRE(t, tt.err, tt.status, err)
 		result := make(map[string]json.RawMessage)
 		var row driver.Row
+		var rowErr error
 		for {
 			err := rows.Next(&row)
 			if err == io.EOF {
 				break
 			}
 			if err != nil {
-				t.Fatal(err)
+				rowErr = err
+				break
 			}
 			result[row.ID] = row.Value
 		}
+		testy.StatusErrorRE(t, tt.rowErr, tt.rowStatus, rowErr)
 		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
 			t.Error(d)
 		}

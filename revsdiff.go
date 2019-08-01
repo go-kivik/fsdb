@@ -67,6 +67,9 @@ func (r *revDiffRows) next() (docID string, missing []string, err error) {
 	if len(r.revmap) == 0 {
 		return "", nil, io.EOF
 	}
+	if err := r.ctx.Err(); err != nil {
+		return "", nil, err
+	}
 	revs := map[string]struct{}{}
 	for k, v := range r.revmap {
 		docID = k
