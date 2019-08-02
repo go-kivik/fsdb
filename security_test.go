@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/flimzy/diff"
 	"gitlab.com/flimzy/testy"
 )
 
@@ -37,7 +36,7 @@ func TestSecurity(t *testing.T) {
 		}
 		sec, err := db.Security(context.Background())
 		testy.StatusErrorRE(t, tt.err, tt.status, err)
-		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, sec); d != nil {
+		if d := testy.DiffAsJSON(testy.Snapshot(t), sec); d != nil {
 			t.Error(d)
 		}
 	})

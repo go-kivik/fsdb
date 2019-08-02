@@ -7,7 +7,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/flimzy/diff"
 	"gitlab.com/flimzy/testy"
 
 	"github.com/go-kivik/kivik"
@@ -328,7 +327,7 @@ func TestGet(t *testing.T) {
 		doc, err := db.Get(context.Background(), tt.id, tt.options)
 		testy.StatusErrorRE(t, tt.err, tt.status, err)
 		defer doc.Body.Close() // nolint: errcheck
-		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, doc.Body); d != nil {
+		if d := testy.DiffAsJSON(testy.Snapshot(t), doc.Body); d != nil {
 			t.Errorf("document:\n%s", d)
 		}
 		if doc.Attachments != nil {
@@ -341,19 +340,19 @@ func TestGet(t *testing.T) {
 					}
 					t.Fatal(err)
 				}
-				if d := diff.Text(&diff.File{Path: "testdata/" + testy.Stub(t) + "_" + att.Filename}, att.Content); d != nil {
+				if d := testy.DiffText(&testy.File{Path: "testdata/" + testy.Stub(t) + "_" + att.Filename}, att.Content); d != nil {
 					t.Errorf("Attachment %s content:\n%s", att.Filename, d)
 				}
 				_ = att.Content.Close()
 				att.Content = nil
-				if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t) + "_" + att.Filename + "_struct"}, att); d != nil {
+				if d := testy.DiffAsJSON(&testy.File{Path: "testdata/" + testy.Stub(t) + "_" + att.Filename + "_struct"}, att); d != nil {
 					t.Errorf("Attachment %s struct:\n%s", att.Filename, d)
 				}
 			}
 		}
 		doc.Body = nil
 		doc.Attachments = nil
-		if d := diff.Interface(tt.expected, doc); d != nil {
+		if d := testy.DiffInterface(tt.expected, doc); d != nil {
 			t.Error(d)
 		}
 		if tt.final != nil {

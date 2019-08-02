@@ -7,9 +7,10 @@ import (
 	"io"
 	"net/http"
 
+	"gitlab.com/flimzy/ale/httperr"
+
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
-	"gitlab.com/flimzy/ale/httperr"
 )
 
 var _ driver.RevsDiffer = &db{}
