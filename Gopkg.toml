@@ -26,10 +26,6 @@ required = ["github.com/go-kivik/couchdb/chttp"]
   branch = "master"
 
 [[constraint]]
-  name = "github.com/flimzy/testy"
-  branch = "master"
-
-[[constraint]]
   branch = "master"
   name = "github.com/go-kivik/kivik"
 
