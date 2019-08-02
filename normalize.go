@@ -272,7 +272,7 @@ func (d *normalDoc) UnmarshalJSON(p []byte) error {
 	for key := range data {
 		if key[0] == '_' {
 			if _, ok := reservedKeys[key]; !ok {
-				return xerrors.Errorf("Unrecognized reserved key %s", key)
+				return xerrors.Errorf("Bad special document member: %s", key)
 			}
 			delete(data, key)
 		}
