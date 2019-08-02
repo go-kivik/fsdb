@@ -5,8 +5,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/flimzy/diff"
-	"github.com/flimzy/testy"
+	"gitlab.com/flimzy/testy"
 
 	"github.com/go-kivik/kivik/driver"
 )
@@ -41,7 +40,7 @@ func TestChanges(t *testing.T) {
 			}
 			result[ch.ID] = ch.Changes
 		}
-		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
+		if d := testy.DiffAsJSON(testy.Snapshot(t), result); d != nil {
 			t.Error(d)
 		}
 	})

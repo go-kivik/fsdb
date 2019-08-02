@@ -22,14 +22,6 @@
 required = ["github.com/go-kivik/couchdb/chttp"]
 
 [[constraint]]
-  name = "github.com/flimzy/diff"
-  branch = "master"
-
-[[constraint]]
-  name = "github.com/flimzy/testy"
-  branch = "master"
-
-[[constraint]]
   branch = "master"
   name = "github.com/go-kivik/kivik"
 

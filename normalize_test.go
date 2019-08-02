@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/flimzy/diff"
-	"github.com/flimzy/testy"
+	"gitlab.com/flimzy/testy"
+
 	"github.com/go-kivik/fsdb/internal"
 )
 
@@ -55,7 +55,7 @@ func TestAttachmentMarshalJSON(t *testing.T) {
 	tests.Run(t, func(t *testing.T, test tst) {
 		result, err := json.Marshal(test.att)
 		testy.Error(t, test.err, err)
-		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
+		if d := testy.DiffAsJSON(testy.Snapshot(t), result); d != nil {
 			t.Error(d)
 		}
 	})
@@ -80,7 +80,7 @@ func TestAttachmentUnmarshalJSON_stub(t *testing.T) {
 		Size:        8,
 		Stub:        true,
 	}
-	if d := diff.Interface(expected, result); d != nil {
+	if d := testy.DiffInterface(expected, result); d != nil {
 		t.Error(d)
 	}
 }
@@ -101,7 +101,7 @@ func TestAttachmentUnmarshalJSON_file(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer result.cleanup() // nolint: errcheck
-	if d := diff.Text("Testing", content); d != nil {
+	if d := testy.DiffText("Testing", content); d != nil {
 		t.Errorf("content:\n%s", d)
 	}
 	result.Content = nil
@@ -110,7 +110,7 @@ func TestAttachmentUnmarshalJSON_file(t *testing.T) {
 		Digest:      "md5-ec4d59b2732f2f153240a8ff746282a6",
 		Size:        8,
 	}
-	if d := diff.Interface(expected, result); d != nil {
+	if d := testy.DiffInterface(expected, result); d != nil {
 		t.Error(d)
 	}
 }
@@ -148,7 +148,7 @@ func TestNormalDocMarshalJSON(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
+		if d := testy.DiffAsJSON(testy.Snapshot(t), result); d != nil {
 			t.Error(d)
 		}
 	})
@@ -189,7 +189,7 @@ func TestNormalDocUnmarshalJSON(t *testing.T) {
 		if err := json.Unmarshal([]byte(in), &result); err != nil {
 			t.Fatal(err)
 		}
-		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
+		if d := testy.DiffAsJSON(testy.Snapshot(t), result); d != nil {
 			t.Error(d)
 		}
 	})
@@ -209,7 +209,7 @@ func TestNormalizeDoc(t *testing.T) {
 	tests.Run(t, func(t *testing.T, test tst) {
 		result, err := normalizeDoc(test.doc)
 		testy.StatusError(t, test.err, test.status, err)
-		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
+		if d := testy.DiffAsJSON(testy.Snapshot(t), result); d != nil {
 			t.Error(d)
 		}
 	})
@@ -240,7 +240,7 @@ func TestReadDoc(t *testing.T) {
 		}
 		result, err := db.readDoc(tt.docID, tt.rev)
 		testy.StatusError(t, tt.err, tt.status, err)
-		if d := diff.AsJSON(&diff.File{Path: "testdata/" + testy.Stub(t)}, result); d != nil {
+		if d := testy.DiffAsJSON(testy.Snapshot(t), result); d != nil {
 			t.Error(d)
 		}
 	})
