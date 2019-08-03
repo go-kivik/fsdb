@@ -74,15 +74,36 @@ func (i docIndex) readIndex(path string, root bool) error {
 		entry := i.get(info.Name())
 		entry.attachmentDir = filepath.Join(path, info.Name())
 	}
+	return i.joinWinningRevs()
+}
+
+// joinWinningRevs looks for any winning revs that have attachments left in the
+// revs dir, and joins them, so such attachments are not considered abandoned.
+func (i docIndex) joinWinningRevs() error {
+	for _, entry := range i {
+		if entry.doc == "" {
+			continue
+		}
+		if len(entry.revs) == 0 {
+			continue
+		}
+		doc, err := readDoc(entry.doc)
+		if err != nil {
+			return err
+		}
+		rev := doc.Rev.String()
+		if revEntry, ok := entry.revs[rev]; ok {
+			if revEntry.doc == "" {
+				revEntry.doc = entry.doc
+			}
+		}
+	}
 	return nil
 }
 
 func (i docIndex) removeAbandonedAttachments() error {
 	for _, entry := range i {
-		if entry.doc != "" {
-			continue
-		}
-		if entry.attachmentDir != "" {
+		if entry.doc == "" && entry.attachmentDir != "" {
 			if err := os.RemoveAll(entry.attachmentDir); err != nil {
 				return kerr(err)
 			}
