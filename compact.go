@@ -2,7 +2,6 @@ package fs
 
 import (
 	"context"
-	"fmt"
 	"os"
 )
 
@@ -15,8 +14,12 @@ func (d *db) Compact(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	for _, i := range files {
-		fmt.Printf("file: %s\n", i.Name())
+		if err := os.RemoveAll(d.path(i.Name())); err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
