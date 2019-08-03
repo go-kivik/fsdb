@@ -9,9 +9,22 @@ import (
 	"github.com/go-kivik/fsdb/decoder"
 )
 
-type docIndex struct {
+type docEntry struct {
 	doc           string
 	attachmentDir string
+}
+
+type docIndex map[string]*docEntry
+
+// get gets the docEntry associated with docID, creating it if necessary.
+func (i docIndex) get(docID string) *docEntry {
+	e, ok := i[docID]
+	if ok {
+		return e
+	}
+	e = &docEntry{}
+	i[docID] = e
+	return e
 }
 
 func explodeFilename(filename string) (basename, ext string, ok bool) {
@@ -36,7 +49,7 @@ func (d *db) Compact(ctx context.Context) error {
 		return err
 	}
 
-	docs := map[string]*docIndex{}
+	docs := docIndex{}
 	for _, i := range files {
 		if !i.IsDir() {
 			docID, _, ok := explodeFilename(i.Name())
@@ -44,20 +57,12 @@ func (d *db) Compact(ctx context.Context) error {
 				// ignore unrecognized files
 				continue
 			}
-			di, ok := docs[docID]
-			if !ok {
-				di = &docIndex{}
-				docs[docID] = di
-			}
-			di.doc = d.path(i.Name())
+			e := docs.get(docID)
+			e.doc = d.path(i.Name())
 			continue
 		}
-		di, ok := docs[i.Name()]
-		if !ok {
-			di = &docIndex{}
-			docs[i.Name()] = di
-		}
-		di.attachmentDir = d.path(i.Name())
+		e := docs.get(i.Name())
+		e.attachmentDir = d.path(i.Name())
 	}
 
 	for _, idx := range docs {
