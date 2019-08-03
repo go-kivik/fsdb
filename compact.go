@@ -34,10 +34,53 @@ func (i docIndex) get(docID string) *docEntry {
 	return e
 }
 
+func (i docIndex) readRoot(path string) error {
+	return i.readIndex(path, true)
+}
+
+func (i docIndex) readRevs(path string) error {
+	return i.readIndex(path, false)
+}
+
+func (i docIndex) readIndex(path string, root bool) error {
+	dir, err := os.Open(path)
+	if err != nil {
+		return kerr(err)
+	}
+	files, err := dir.Readdir(-1)
+	if err != nil {
+		return kerr(err)
+	}
+
+	for _, info := range files {
+		if !info.IsDir() {
+			id, _, ok := explodeFilename(info.Name())
+			if !ok {
+				// ignore unrecognized files
+				continue
+			}
+			entry := i.get(id)
+			entry.doc = filepath.Join(path, info.Name())
+			continue
+		}
+		if root && info.Name()[0] == '.' {
+			id := strings.TrimPrefix(info.Name(), ".")
+			entry := i.get(id)
+			if err := entry.revs.readRevs(filepath.Join(path, info.Name())); err != nil {
+				return err
+			}
+			continue
+		}
+		entry := i.get(info.Name())
+		entry.attachmentDir = filepath.Join(path, info.Name())
+	}
+	return nil
+}
+
 func explodeFilename(filename string) (basename, ext string, ok bool) {
 	dotExt := filepath.Ext(filename)
 	basename = strings.TrimSuffix(filename, dotExt)
-	ext = strings.TrimPrefix(filename, ".")
+	ext = strings.TrimPrefix(dotExt, ".")
 	for _, e := range decoder.Extensions() {
 		if e == ext {
 			return basename, ext, true
@@ -47,73 +90,26 @@ func explodeFilename(filename string) (basename, ext string, ok bool) {
 }
 
 func (d *db) Compact(ctx context.Context) error {
-	dir, err := os.Open(d.path())
-	if err != nil {
-		return kerr(err)
-	}
-	files, err := dir.Readdir(-1)
-	if err != nil {
+	docs := docIndex{}
+	if err := docs.readRoot(d.path()); err != nil {
 		return err
 	}
 
-	docs := docIndex{}
-	for _, i := range files {
-		if !i.IsDir() {
-			docID, _, ok := explodeFilename(i.Name())
-			if !ok {
-				// ignore unrecognized files
+	for _, entry := range docs {
+		if entry.doc != "" {
+			continue
+		}
+		if entry.attachmentDir != "" {
+			if err := os.RemoveAll(entry.attachmentDir); err != nil {
+				return err
+			}
+		}
+		for _, revEntry := range entry.revs {
+			if revEntry.doc != "" {
 				continue
 			}
-			e := docs.get(docID)
-			e.doc = d.path(i.Name())
-			continue
-		}
-		if i.Name()[0] == '.' {
-			docID := strings.TrimPrefix(i.Name(), ".")
-			e := docs.get(docID)
-			revdir, err := os.Open(d.path(i.Name()))
-			if err != nil {
-				return err
-			}
-			revFiles, err := revdir.Readdir(-1)
-			if err != nil {
-				return err
-			}
-			for _, ri := range revFiles {
-				if !ri.IsDir() {
-					rev, _, ok := explodeFilename(ri.Name())
-					if !ok {
-						// ignore unrecognized files
-						continue
-					}
-					re := e.revs.get(rev)
-					re.doc = d.path(i.Name(), ri.Name())
-					continue
-				}
-				re := e.revs.get(i.Name())
-				re.attachmentDir = d.path(i.Name(), ri.Name())
-			}
-			continue
-		}
-		e := docs.get(i.Name())
-		e.attachmentDir = d.path(i.Name())
-	}
-
-	for _, e := range docs {
-		if e.doc != "" {
-			continue
-		}
-		if e.attachmentDir != "" {
-			if err := os.RemoveAll(e.attachmentDir); err != nil {
-				return err
-			}
-		}
-		for _, re := range e.revs {
-			if re.doc != "" {
-				continue
-			}
-			if re.attachmentDir != "" {
-				if err := os.RemoveAll(re.attachmentDir); err != nil {
+			if revEntry.attachmentDir != "" {
+				if err := os.RemoveAll(revEntry.attachmentDir); err != nil {
 					return err
 				}
 			}
