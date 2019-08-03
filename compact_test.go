@@ -98,6 +98,19 @@ func TestCompact(t *testing.T) {
 			dbname: "compact.nowinner_abandonedatt",
 		}
 	})
+	tests.Add("split attachments", func(t *testing.T) interface{} {
+		// Some attachments stored with winning rev, some stored
+		// in revs dir. This simulates an aborted update.
+		tmpdir := copyDir(t, "testdata/compact.split_atts", 1)
+		tests.Cleanup(func() error {
+			return os.RemoveAll(tmpdir)
+		})
+
+		return tt{
+			path:   tmpdir,
+			dbname: "compact.split_atts",
+		}
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		db := &db{
