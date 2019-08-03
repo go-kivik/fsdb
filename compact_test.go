@@ -87,6 +87,17 @@ func TestCompact(t *testing.T) {
 			dbname: "compact.nowinner_noatt",
 		}
 	})
+	tests.Add("non-winning, abandoned attachments", func(t *testing.T) interface{} {
+		tmpdir := copyDir(t, "testdata/compact.nowinner_abandonedatt", 1)
+		tests.Cleanup(func() error {
+			return os.RemoveAll(tmpdir)
+		})
+
+		return tt{
+			path:   tmpdir,
+			dbname: "compact.nowinner_abandonedatt",
+		}
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		db := &db{
