@@ -65,6 +65,17 @@ func TestCompact(t *testing.T) {
 			dbname: "compact.abandonedatt",
 		}
 	})
+	tests.Add("no attachments", func(t *testing.T) interface{} {
+		tmpdir := copyDir(t, "testdata/compact.noatt", 1)
+		tests.Cleanup(func() error {
+			return os.RemoveAll(tmpdir)
+		})
+
+		return tt{
+			path:   tmpdir,
+			dbname: "compact.noatt",
+		}
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		db := &db{
