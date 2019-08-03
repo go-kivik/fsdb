@@ -323,6 +323,30 @@ func TestGet(t *testing.T) {
 			Rev:           "2-yyyyyyyyy",
 		},
 	})
+	tests.Add("no winner, tied rev", tt{
+		// This tests a put which was aborted, leaving the attachments in
+		// {db}/.{docid}/{rev}/{filename}, while the winning rev is at
+		// the friendlier location of {db}/{docid}.{ext}
+		path:   "testdata",
+		dbname: "get.nowinner",
+		id:     "foo",
+		expected: &driver.Document{
+			ContentLength: 196,
+			Rev:           "1-yyy",
+		},
+	})
+	tests.Add("no winner, greater rev", tt{
+		// This tests a put which was aborted, leaving the attachments in
+		// {db}/.{docid}/{rev}/{filename}, while the winning rev is at
+		// the friendlier location of {db}/{docid}.{ext}
+		path:   "testdata",
+		dbname: "get.nowinner",
+		id:     "bar",
+		expected: &driver.Document{
+			ContentLength: 196,
+			Rev:           "2-yyy",
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		dir := tt.path
