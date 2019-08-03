@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/go-kivik/fsdb/decoder"
@@ -342,6 +343,24 @@ func (d *normalDoc) revisions() *revisions {
 type revisions struct {
 	Start int64    `json:"start"`
 	IDs   []string `json:"ids"`
+}
+
+func readDoc(path string) (*normalDoc, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, kerr(err)
+	}
+	ext := filepath.Ext(path)[1:]
+	i, err := decoder.Decode(f, ext)
+	if err != nil {
+		return nil, err
+	}
+	doc, err := normalizeDoc(i)
+	if err != nil {
+		return nil, err
+	}
+	doc.Path = path
+	return doc, nil
 }
 
 func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
