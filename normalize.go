@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -83,7 +84,7 @@ func (a *attachment) setMetaData() error {
 		return err
 	}
 	a.Size = size
-	a.Digest = fmt.Sprintf("md5-%x", h.Sum(nil))
+	a.Digest = fmt.Sprintf("md5-%s", base64.StdEncoding.EncodeToString(h.Sum(nil)))
 	return nil
 }
 
