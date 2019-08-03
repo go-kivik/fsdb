@@ -77,6 +77,23 @@ func (i docIndex) readIndex(path string, root bool) error {
 	return nil
 }
 
+func (i docIndex) removeAbandonedAttachments() error {
+	for _, entry := range i {
+		if entry.doc != "" {
+			continue
+		}
+		if entry.attachmentDir != "" {
+			if err := os.RemoveAll(entry.attachmentDir); err != nil {
+				return kerr(err)
+			}
+		}
+		if err := entry.revs.removeAbandonedAttachments(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func explodeFilename(filename string) (basename, ext string, ok bool) {
 	dotExt := filepath.Ext(filename)
 	basename = strings.TrimSuffix(filename, dotExt)
@@ -95,26 +112,5 @@ func (d *db) Compact(ctx context.Context) error {
 		return err
 	}
 
-	for _, entry := range docs {
-		if entry.doc != "" {
-			continue
-		}
-		if entry.attachmentDir != "" {
-			if err := os.RemoveAll(entry.attachmentDir); err != nil {
-				return err
-			}
-		}
-		for _, revEntry := range entry.revs {
-			if revEntry.doc != "" {
-				continue
-			}
-			if revEntry.attachmentDir != "" {
-				if err := os.RemoveAll(revEntry.attachmentDir); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	return nil
+	return docs.removeAbandonedAttachments()
 }

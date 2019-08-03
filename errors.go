@@ -5,11 +5,16 @@ import (
 	"os"
 
 	"github.com/go-kivik/kivik"
+	"golang.org/x/xerrors"
 )
 
 func kerr(err error) error {
 	if err == nil {
 		return nil
+	}
+	if xerrors.Is(err, &kivik.Error{}) {
+		// Error has already been converted
+		return err
 	}
 	if os.IsNotExist(err) {
 		return &kivik.Error{HTTPStatus: http.StatusNotFound, Err: err}
