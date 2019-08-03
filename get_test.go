@@ -331,7 +331,7 @@ func TestGet(t *testing.T) {
 		dbname: "get.nowinner",
 		id:     "foo",
 		expected: &driver.Document{
-			ContentLength: 196,
+			ContentLength: 42,
 			Rev:           "1-yyy",
 		},
 	})
@@ -343,7 +343,7 @@ func TestGet(t *testing.T) {
 		dbname: "get.nowinner",
 		id:     "bar",
 		expected: &driver.Document{
-			ContentLength: 196,
+			ContentLength: 39,
 			Rev:           "2-yyy",
 		},
 	})

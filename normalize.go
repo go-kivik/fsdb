@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 	"sync"
 
 	"github.com/go-kivik/fsdb/decoder"
@@ -383,10 +385,65 @@ func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
 		}
 		f, err := os.Open(d.path(filename))
 		if !os.IsNotExist(err) {
-			return f, ext, err
+			return f, ext, kerr(err)
 		}
 	}
-	return nil, "", &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "missing"}
+	if rev == "" {
+		return breakRevTie(d.path("." + base))
+	}
+	return nil, "", errNotFound
+}
+
+type tiedRev struct {
+	*internal.Rev
+	path string
+	ext  string
+}
+
+func breakRevTie(path string) (*os.File, string, error) {
+	dir, err := os.Open(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err = errNotFound
+		}
+		return nil, "", kerr(err)
+	}
+	files, err := dir.Readdir(-1)
+	if err != nil {
+		return nil, "", kerr(err)
+	}
+	revs := make([]*tiedRev, 0, len(files))
+	for _, info := range files {
+		if info.IsDir() {
+			continue
+		}
+		ext := filepath.Ext(info.Name())
+		base := strings.TrimSuffix(info.Name(), ext)
+		rev := new(internal.Rev)
+		if err := rev.UnmarshalText([]byte(base)); err != nil {
+			// Ignore unrecognized files
+			continue
+		}
+		revs = append(revs, &tiedRev{
+			Rev:  rev,
+			path: filepath.Join(path, info.Name()),
+			ext:  ext[1:],
+		})
+	}
+
+	if len(revs) == 0 {
+		return nil, "", errNotFound
+	}
+
+	sort.Slice(revs, func(i, j int) bool {
+		return revs[i].Seq > revs[j].Seq ||
+			(revs[i].Seq == revs[j].Seq && revs[i].Sum > revs[j].Sum)
+	})
+
+	winner := revs[0]
+
+	f, err := os.Open(winner.path)
+	return f, winner.ext, kerr(err)
 }
 
 func (d *db) readDoc(docID, rev string) (*normalDoc, error) {
@@ -411,10 +468,7 @@ func (d *db) get(_ context.Context, docID string, opts map[string]interface{}) (
 	rev, _ := opts["rev"].(string)
 	ndoc, err := d.readDoc(docID, rev)
 	if err != nil {
-		if os.IsPermission(err) {
-			return nil, &kivik.Error{HTTPStatus: http.StatusForbidden, Err: err}
-		}
-		return nil, err
+		return nil, kerr(err)
 	}
 	if ndoc.Rev.IsZero() {
 		ndoc.Rev.Increment()
