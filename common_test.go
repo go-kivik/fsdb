@@ -33,7 +33,7 @@ func rmdir(t *testing.T, dir string) {
 //  copyDir(t, "/foo/bar/baz", 0) // copies /foo/bar/baz/* to /tmp-XXX/*
 //  copyDir(t, "/foo/bar/baz", 1) // copies /foo/bar/baz/* to /tmp-XXX/baz/*
 //  copyDir(t, "/foo/bar/baz", 3) // copies /foo/bar/baz/* to /tmp-XXX/foo/bar/baz/*
-func copyDir(t *testing.T, source string, depth int) string {
+func copyDir(t *testing.T, source string, depth int) string { // nolint: unparam
 	t.Helper()
 	tmpdir := tempDir(t)
 	target := tmpdir
