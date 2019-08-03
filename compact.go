@@ -12,6 +12,7 @@ import (
 type docEntry struct {
 	doc           string
 	attachmentDir string
+	revs          []*docEntry
 }
 
 type docIndex map[string]*docEntry
@@ -59,6 +60,14 @@ func (d *db) Compact(ctx context.Context) error {
 			}
 			e := docs.get(docID)
 			e.doc = d.path(i.Name())
+			continue
+		}
+		if i.Name()[0] == '.' {
+			docID := strings.TrimPrefix(i.Name(), ".")
+			e := docs.get(docID)
+			e.revs = append(e.revs, &docEntry{
+				doc: d.path(i.Name()),
+			})
 			continue
 		}
 		e := docs.get(i.Name())
