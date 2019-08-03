@@ -12,7 +12,13 @@ import (
 type docEntry struct {
 	doc           string
 	attachmentDir string
-	revs          []*docEntry
+	revs          docIndex
+}
+
+func newEntry() *docEntry {
+	return &docEntry{
+		revs: make(docIndex),
+	}
 }
 
 type docIndex map[string]*docEntry
@@ -23,7 +29,7 @@ func (i docIndex) get(docID string) *docEntry {
 	if ok {
 		return e
 	}
-	e = &docEntry{}
+	e = newEntry()
 	i[docID] = e
 	return e
 }
@@ -65,22 +71,51 @@ func (d *db) Compact(ctx context.Context) error {
 		if i.Name()[0] == '.' {
 			docID := strings.TrimPrefix(i.Name(), ".")
 			e := docs.get(docID)
-			e.revs = append(e.revs, &docEntry{
-				doc: d.path(i.Name()),
-			})
+			revdir, err := os.Open(d.path(i.Name()))
+			if err != nil {
+				return err
+			}
+			revFiles, err := revdir.Readdir(-1)
+			if err != nil {
+				return err
+			}
+			for _, ri := range revFiles {
+				if !ri.IsDir() {
+					rev, _, ok := explodeFilename(ri.Name())
+					if !ok {
+						// ignore unrecognized files
+						continue
+					}
+					re := e.revs.get(rev)
+					re.doc = d.path(i.Name(), ri.Name())
+					continue
+				}
+				re := e.revs.get(i.Name())
+				re.attachmentDir = d.path(i.Name(), ri.Name())
+			}
 			continue
 		}
 		e := docs.get(i.Name())
 		e.attachmentDir = d.path(i.Name())
 	}
 
-	for _, idx := range docs {
-		if idx.doc != "" {
+	for _, e := range docs {
+		if e.doc != "" {
 			continue
 		}
-		if idx.attachmentDir != "" {
-			if err := os.RemoveAll(idx.attachmentDir); err != nil {
+		if e.attachmentDir != "" {
+			if err := os.RemoveAll(e.attachmentDir); err != nil {
 				return err
+			}
+		}
+		for _, re := range e.revs {
+			if re.doc != "" {
+				continue
+			}
+			if re.attachmentDir != "" {
+				if err := os.RemoveAll(re.attachmentDir); err != nil {
+					return err
+				}
 			}
 		}
 	}
