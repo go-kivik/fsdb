@@ -103,9 +103,31 @@ func (i docIndex) joinWinningRevs() error {
 
 func (i docIndex) removeAbandonedAttachments() error {
 	for _, entry := range i {
-		if entry.doc == "" && entry.attachmentDir != "" {
-			if err := os.RemoveAll(entry.attachmentDir); err != nil {
+		if entry.attachmentDir != "" {
+			if entry.doc == "" {
+				if err := os.RemoveAll(entry.attachmentDir); err != nil {
+					return kerr(err)
+				}
+				continue
+			}
+			doc, err := readDoc(entry.doc)
+			if err != nil {
+				return err
+			}
+			attDir, err := os.Open(entry.attachmentDir)
+			if err != nil {
 				return kerr(err)
+			}
+			atts, err := attDir.Readdir(-1)
+			if err != nil {
+				return kerr(err)
+			}
+			for _, att := range atts {
+				if _, ok := doc.Attachments[att.Name()]; !ok {
+					if err := os.Remove(filepath.Join(entry.attachmentDir, att.Name())); err != nil {
+						return kerr(err)
+					}
+				}
 			}
 		}
 		if err := entry.revs.removeAbandonedAttachments(); err != nil {
