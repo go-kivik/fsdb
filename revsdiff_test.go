@@ -9,6 +9,7 @@ import (
 
 	"gitlab.com/flimzy/testy"
 
+	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/kivik/driver"
 )
 
@@ -66,6 +67,7 @@ func TestRevsDiff(t *testing.T) {
 		db := &db{
 			client: &client{root: dir},
 			dbName: tt.dbname,
+			fs:     filesystem.Default(),
 		}
 		ctx := tt.ctx
 		if ctx == nil {

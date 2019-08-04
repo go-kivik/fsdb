@@ -2,19 +2,21 @@ package fs
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
-	"os"
 	"testing"
 
 	"gitlab.com/flimzy/testy"
 
+	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
 )
 
 func TestGet(t *testing.T) {
 	type tt struct {
+		fs           filesystem.Filesystem
 		setup        func(*testing.T, *db)
 		final        func(*testing.T, *db)
 		path, dbname string
@@ -35,30 +37,15 @@ func TestGet(t *testing.T) {
 		err:    `^missing$`,
 	})
 	tests.Add("forbidden", func(t *testing.T) interface{} {
-		var mode os.FileMode
 		return tt{
-			setup: func(t *testing.T, d *db) {
-				f, err := os.Open(d.path())
-				if err != nil {
-					t.Fatal(err)
-				}
-				stat, err := f.Stat()
-				if err != nil {
-					t.Fatal(err)
-				}
-				mode = stat.Mode()
-				if err := os.Chmod(d.path(), 0000); err != nil {
-					t.Fatal(err)
-				}
-			},
-			final: func(t *testing.T, d *db) {
-				if err := os.Chmod(d.path(), mode); err != nil {
-					t.Fatal(err)
-				}
+			fs: &filesystem.MockFS{
+				OpenFunc: func(_ string) (filesystem.File, error) {
+					return nil, &kivik.Error{HTTPStatus: http.StatusForbidden, Err: errors.New("permission denied")}
+				},
 			},
 			id:     "foo",
 			status: http.StatusForbidden,
-			err:    "/foo.json: permission denied$",
+			err:    "permission denied$",
 		}
 	})
 	tests.Add("success, no attachments", tt{
@@ -377,6 +364,10 @@ func TestGet(t *testing.T) {
 		db := &db{
 			client: &client{root: dir},
 			dbName: tt.dbname,
+			fs:     tt.fs,
+		}
+		if db.fs == nil {
+			db.fs = filesystem.Default()
 		}
 		if tt.setup != nil {
 			tt.setup(t, db)

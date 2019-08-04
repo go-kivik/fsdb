@@ -27,10 +27,13 @@ func (fs *defaultFS) Create(name string) (File, error) {
 // File represents a file object.
 type File interface {
 	io.Reader
+	io.Closer
 	io.Writer
 	io.ReaderAt
 	io.Seeker
+	Name() string
 	Readdir(int) ([]os.FileInfo, error)
+	Stat() (os.FileInfo, error)
 }
 
 type defaultFile struct {

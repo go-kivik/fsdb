@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/go-kivik/fsdb/decoder"
+	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
@@ -57,13 +58,13 @@ func (a attachments) Next(driverAtt *driver.Attachment) error {
 }
 
 type attachment struct {
-	ContentType string   `json:"content_type"`
-	RevPos      int64    `json:"revpos,omitempty"`
-	Stub        bool     `json:"stub,omitempty"`
-	Follows     bool     `json:"follows,omitempty"`
-	Content     *os.File `json:"data,omitempty"`
-	Size        int64    `json:"length"`
-	Digest      string   `json:"digest"`
+	ContentType string          `json:"content_type"`
+	RevPos      int64           `json:"revpos,omitempty"`
+	Stub        bool            `json:"stub,omitempty"`
+	Follows     bool            `json:"follows,omitempty"`
+	Content     filesystem.File `json:"data,omitempty"`
+	Size        int64           `json:"length"`
+	Digest      string          `json:"digest"`
 }
 
 func (a *attachment) cleanup() error {
@@ -366,7 +367,7 @@ func readDoc(path string) (*normalDoc, error) {
 	return doc, nil
 }
 
-func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
+func (d *db) openDoc(docID, rev string) (filesystem.File, string, error) {
 	base := id2basename(docID)
 	for _, ext := range decoder.Extensions() {
 		filename := base + "." + ext
@@ -377,14 +378,14 @@ func (d *db) openDoc(docID, rev string) (*os.File, string, error) {
 			}
 			if currev != rev {
 				revFilename := "." + base + "/" + rev + "." + ext
-				f, err := os.Open(d.path(revFilename))
+				f, err := d.fs.Open(d.path(revFilename))
 				if !os.IsNotExist(err) {
 					return f, ext, err
 				}
 				continue
 			}
 		}
-		f, err := os.Open(d.path(filename))
+		f, err := d.fs.Open(d.path(filename))
 		if !os.IsNotExist(err) {
 			return f, ext, kerr(err)
 		}
