@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
 )
@@ -94,8 +95,8 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	return doc, nil
 }
 
-func (d *db) openAttachment(ctx context.Context, docID string, revs *revisions, filename string) (*os.File, error) {
-	f, err := os.Open(d.path(docID, filename))
+func (d *db) openAttachment(ctx context.Context, docID string, revs *revisions, filename string) (filesystem.File, error) {
+	f, err := d.fs.Open(d.path(docID, filename))
 	if err == nil {
 		return f, nil
 	}

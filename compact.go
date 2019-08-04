@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-kivik/fsdb/decoder"
+	"github.com/go-kivik/fsdb/filesystem"
 )
 
 type docEntry struct {
@@ -34,16 +35,16 @@ func (i docIndex) get(docID string) *docEntry {
 	return e
 }
 
-func (i docIndex) readRoot(path string) error {
-	return i.readIndex(path, true)
+func (i docIndex) readRoot(ctx context.Context, fs filesystem.Filesystem, path string) error {
+	return i.readIndex(ctx, fs, path, true)
 }
 
-func (i docIndex) readRevs(path string) error {
-	return i.readIndex(path, false)
+func (i docIndex) readRevs(ctx context.Context, fs filesystem.Filesystem, path string) error {
+	return i.readIndex(ctx, fs, path, false)
 }
 
-func (i docIndex) readIndex(path string, root bool) error {
-	dir, err := os.Open(path)
+func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path string, root bool) error {
+	dir, err := fs.Open(path)
 	if err != nil {
 		return kerr(err)
 	}
@@ -53,6 +54,9 @@ func (i docIndex) readIndex(path string, root bool) error {
 	}
 
 	for _, info := range files {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if !info.IsDir() {
 			id, _, ok := explodeFilename(info.Name())
 			if !ok {
@@ -66,7 +70,7 @@ func (i docIndex) readIndex(path string, root bool) error {
 		if root && info.Name()[0] == '.' {
 			id := strings.TrimPrefix(info.Name(), ".")
 			entry := i.get(id)
-			if err := entry.revs.readRevs(filepath.Join(path, info.Name())); err != nil {
+			if err := entry.revs.readRevs(ctx, fs, filepath.Join(path, info.Name())); err != nil {
 				return err
 			}
 			continue
@@ -101,7 +105,7 @@ func (i docIndex) joinWinningRevs() error {
 	return nil
 }
 
-func (i docIndex) removeAbandonedAttachments() error {
+func (i docIndex) removeAbandonedAttachments(fs filesystem.Filesystem) error {
 	for _, entry := range i {
 		if entry.attachmentDir != "" {
 			if entry.doc == "" {
@@ -114,7 +118,7 @@ func (i docIndex) removeAbandonedAttachments() error {
 			if err != nil {
 				return err
 			}
-			attDir, err := os.Open(entry.attachmentDir)
+			attDir, err := fs.Open(entry.attachmentDir)
 			if err != nil {
 				return kerr(err)
 			}
@@ -130,7 +134,7 @@ func (i docIndex) removeAbandonedAttachments() error {
 				}
 			}
 		}
-		if err := entry.revs.removeAbandonedAttachments(); err != nil {
+		if err := entry.revs.removeAbandonedAttachments(fs); err != nil {
 			return err
 		}
 	}
@@ -150,10 +154,14 @@ func explodeFilename(filename string) (basename, ext string, ok bool) {
 }
 
 func (d *db) Compact(ctx context.Context) error {
+	return d.compact(ctx, filesystem.Default())
+}
+
+func (d *db) compact(ctx context.Context, fs filesystem.Filesystem) error {
 	docs := docIndex{}
-	if err := docs.readRoot(d.path()); err != nil {
+	if err := docs.readRoot(ctx, fs, d.path()); err != nil {
 		return err
 	}
 
-	return docs.removeAbandonedAttachments()
+	return docs.removeAbandonedAttachments(fs)
 }

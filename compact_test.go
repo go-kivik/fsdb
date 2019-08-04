@@ -2,16 +2,21 @@ package fs
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"gitlab.com/flimzy/testy"
+
+	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/kivik"
 )
 
 func TestCompact(t *testing.T) {
 	type tt struct {
+		fs     filesystem.Filesystem
 		path   string
 		dbname string
 		status int
@@ -38,21 +43,16 @@ func TestCompact(t *testing.T) {
 			dbname: "foo",
 		}
 	})
-	tests.Add("permission denied", func(t *testing.T) interface{} {
-		tmpdir := tempDir(t)
-		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0); err != nil {
-			t.Fatal(err)
-		}
-		tests.Cleanup(func() error {
-			return os.RemoveAll(tmpdir)
-		})
-
-		return tt{
-			path:   tmpdir,
-			dbname: "foo",
-			status: http.StatusForbidden,
-			err:    "/foo: permission denied$",
-		}
+	tests.Add("permission denied", tt{
+		fs: &filesystem.MockFS{
+			OpenFunc: func(_ string) (filesystem.File, error) {
+				return nil, &kivik.Error{HTTPStatus: http.StatusForbidden, Err: errors.New("permission denied")}
+			},
+		},
+		path:   "somepath",
+		dbname: "doesntmatter",
+		status: http.StatusForbidden,
+		err:    "permission denied$",
 	})
 	tests.Add("abandoned attachments", func(t *testing.T) interface{} {
 		tmpdir := copyDir(t, "testdata/compact.abandonedatt", 1)
@@ -126,11 +126,15 @@ func TestCompact(t *testing.T) {
 	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
+		fs := tt.fs
+		if fs == nil {
+			fs = filesystem.Default()
+		}
 		db := &db{
 			client: &client{root: tt.path},
 			dbName: tt.dbname,
 		}
-		err := db.Compact(context.Background())
+		err := db.compact(context.Background(), fs)
 		testy.StatusErrorRE(t, tt.err, tt.status, err)
 		if d := testy.DiffAsJSON(testy.Snapshot(t), testy.JSONDir{
 			Path:        tt.path,

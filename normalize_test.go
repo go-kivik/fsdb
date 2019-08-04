@@ -8,6 +8,7 @@ import (
 
 	"gitlab.com/flimzy/testy"
 
+	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/fsdb/internal"
 )
 
@@ -237,6 +238,7 @@ func TestReadDoc(t *testing.T) {
 		db := &db{
 			client: &client{root: tt.root},
 			dbName: tt.dbname,
+			fs:     filesystem.Default(),
 		}
 		result, err := db.readDoc(tt.docID, tt.rev)
 		testy.StatusError(t, tt.err, tt.status, err)
