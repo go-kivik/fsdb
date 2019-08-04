@@ -2,9 +2,9 @@ package fs
 
 import (
 	"context"
+	"net/http"
 	"path/filepath"
 
-	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
 	"github.com/go-kivik/kivik/errors"
 )
@@ -16,7 +16,7 @@ type db struct {
 
 var _ driver.DB = &db{}
 
-var notYetImplemented = errors.Status(kivik.StatusNotImplemented, "kivik: not yet implemented in fs driver")
+var notYetImplemented = errors.Status(http.StatusNotImplemented, "kivik: not yet implemented in fs driver")
 
 func (d *db) path(parts ...string) string {
 	return filepath.Join(append([]string{d.client.root, d.dbName}, parts...)...)
