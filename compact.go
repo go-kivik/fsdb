@@ -35,15 +35,15 @@ func (i docIndex) get(docID string) *docEntry {
 	return e
 }
 
-func (i docIndex) readRoot(fs filesystem.Filesystem, path string) error {
-	return i.readIndex(fs, path, true)
+func (i docIndex) readRoot(ctx context.Context, fs filesystem.Filesystem, path string) error {
+	return i.readIndex(ctx, fs, path, true)
 }
 
-func (i docIndex) readRevs(fs filesystem.Filesystem, path string) error {
-	return i.readIndex(fs, path, false)
+func (i docIndex) readRevs(ctx context.Context, fs filesystem.Filesystem, path string) error {
+	return i.readIndex(ctx, fs, path, false)
 }
 
-func (i docIndex) readIndex(fs filesystem.Filesystem, path string, root bool) error {
+func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path string, root bool) error {
 	dir, err := fs.Open(path)
 	if err != nil {
 		return kerr(err)
@@ -54,6 +54,9 @@ func (i docIndex) readIndex(fs filesystem.Filesystem, path string, root bool) er
 	}
 
 	for _, info := range files {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if !info.IsDir() {
 			id, _, ok := explodeFilename(info.Name())
 			if !ok {
@@ -67,7 +70,7 @@ func (i docIndex) readIndex(fs filesystem.Filesystem, path string, root bool) er
 		if root && info.Name()[0] == '.' {
 			id := strings.TrimPrefix(info.Name(), ".")
 			entry := i.get(id)
-			if err := entry.revs.readRevs(fs, filepath.Join(path, info.Name())); err != nil {
+			if err := entry.revs.readRevs(ctx, fs, filepath.Join(path, info.Name())); err != nil {
 				return err
 			}
 			continue
@@ -156,7 +159,7 @@ func (d *db) Compact(ctx context.Context) error {
 
 func (d *db) compact(ctx context.Context, fs filesystem.Filesystem) error {
 	docs := docIndex{}
-	if err := docs.readRoot(fs, d.path()); err != nil {
+	if err := docs.readRoot(ctx, fs, d.path()); err != nil {
 		return err
 	}
 
