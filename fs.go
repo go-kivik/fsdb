@@ -9,15 +9,16 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/pkg/errors"
-
+	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
 )
 
 const dirMode = os.FileMode(0700)
 
-type fsDriver struct{}
+type fsDriver struct {
+	fs filesystem.Filesystem
+}
 
 var _ driver.Driver = &fsDriver{}
 
@@ -34,16 +35,18 @@ func init() {
 type client struct {
 	version *driver.Version
 	root    string
+	fs      filesystem.Filesystem
 }
 
 var _ driver.Client = &client{}
 
 func (d *fsDriver) NewClient(dir string) (driver.Client, error) {
 	if err := validateRootDir(dir); err != nil {
-		if os.IsPermission(errors.Cause(err)) {
-			return nil, &kivik.Error{HTTPStatus: http.StatusUnauthorized, Message: "access denied"}
-		}
-		return nil, err
+		return nil, kerr(err)
+	}
+	fs := d.fs
+	if fs == nil {
+		fs = filesystem.Default()
 	}
 	return &client{
 		version: &driver.Version{
@@ -51,17 +54,19 @@ func (d *fsDriver) NewClient(dir string) (driver.Client, error) {
 			Vendor:      Vendor,
 			RawResponse: json.RawMessage(fmt.Sprintf(`{"version":"%s","vendor":{"name":"%s"}}`, Version, Vendor)),
 		},
+		fs:   fs,
 		root: dir,
 	}, nil
 }
 
 func validateRootDir(dir string) error {
 	// See if the target path exists, and is a directory
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		if err = os.MkdirAll(dir, dirMode); err != nil {
-			return errors.Wrapf(err, "failed to create dir '%s'", dir)
-		}
-		return nil
+	info, err := os.Stat(dir)
+	if err != nil {
+		return kerr(err)
+	}
+	if !info.IsDir() {
+		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("%s is not a directory", dir)}
 	}
 	return nil
 }
@@ -142,5 +147,6 @@ func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) 
 	return &db{
 		client: c,
 		dbName: dbName,
+		fs:     c.fs,
 	}, nil
 }

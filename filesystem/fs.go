@@ -8,6 +8,7 @@ import (
 
 // Filesystem is a filesystem implemenatation.
 type Filesystem interface {
+	Mkdir(name string, perm os.FileMode) error
 	Open(string) (File, error)
 	Create(string) (File, error)
 }
@@ -15,6 +16,10 @@ type Filesystem interface {
 type defaultFS struct{}
 
 var _ Filesystem = &defaultFS{}
+
+func (fs *defaultFS) Mkdir(name string, perm os.FileMode) error {
+	return os.Mkdir(name, perm)
+}
 
 func (fs *defaultFS) Open(name string) (File, error) {
 	return os.Open(name)

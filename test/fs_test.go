@@ -23,7 +23,6 @@ func TestFS(t *testing.T) {
 		t.Errorf("Failed to create temp dir to test FS driver: %s\n", err)
 		return
 	}
-	os.RemoveAll(tempDir)       // So the driver can re-create it as desired
 	defer os.RemoveAll(tempDir) // To clean up after tests
 	client, err := kivik.New("fs", tempDir)
 	if err != nil {
