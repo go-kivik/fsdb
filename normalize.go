@@ -474,5 +474,6 @@ func (d *db) get(_ context.Context, docID string, opts map[string]interface{}) (
 	if ndoc.Rev.IsZero() {
 		ndoc.Rev.Increment()
 	}
+	ndoc.Revisions = ndoc.revisions()
 	return ndoc, nil
 }

@@ -1,5 +1,10 @@
 _id: bar
 _rev: 2-yyy
+_revisions:
+    start: 2
+    ids:
+        - yyy
+        - xxx
 _attachments:
     foo.txt:
         content_type: text/plain
