@@ -52,3 +52,9 @@ func copyDir(t *testing.T, source string, depth int) string { // nolint: unparam
 	}
 	return tmpdir
 }
+
+func cleanTmpdir(path string) func() error {
+	return func() error {
+		return os.RemoveAll(path)
+	}
+}

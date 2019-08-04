@@ -1,0 +1,5 @@
+{
+    "foo/_design%2Ffoo.json": {
+        "content": "{\"_id\":\"_design/foo\",\"_rev\":\"1-9c52d211374283d5def378aa0e10709d\",\"foo\":\"bar\"}\n"
+    }
+}
