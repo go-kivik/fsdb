@@ -347,6 +347,26 @@ func TestGet(t *testing.T) {
 			Rev:           "2-yyy",
 		},
 	})
+	tests.Add("atts split between winning and revs dir", tt{
+		path:    "testdata",
+		dbname:  "get.split_atts",
+		id:      "foo",
+		options: map[string]interface{}{"attachments": true},
+		expected: &driver.Document{
+			ContentLength: 292,
+			Rev:           "2-zzz",
+		},
+	})
+	tests.Add("atts split between two revs", tt{
+		path:    "testdata",
+		dbname:  "get.split_atts",
+		id:      "bar",
+		options: map[string]interface{}{"attachments": true},
+		expected: &driver.Document{
+			ContentLength: 293,
+			Rev:           "2-yyy",
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		dir := tt.path

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -41,16 +42,6 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	doc := &driver.Document{
 		Rev: ndoc.Rev.String(),
 	}
-	if _, ok := opts["rev"]; ok {
-		ndoc.Revisions = nil
-	} else {
-		if ok, _ := opts["revs_info"].(bool); ok {
-			ndoc.RevsInfo = ndoc.revsInfo()
-		}
-		if ok, _ := opts["revs"].(bool); ok {
-			ndoc.Revisions = ndoc.revisions()
-		}
-	}
 	for _, att := range ndoc.Attachments {
 		if att.RevPos == 0 {
 			att.RevPos = ndoc.Rev.Seq
@@ -59,16 +50,20 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	if ok, _ := opts["attachments"].(bool); ok {
 		atts := make(attachments)
 		for filename, att := range ndoc.Attachments {
-			f, err := d.openAttachment(ctx, docID, doc.Rev, filename)
+			f, err := d.openAttachment(ctx, docID, ndoc.Revisions, filename)
 			if err != nil {
 				return nil, err
+			}
+			info, err := f.Stat()
+			if err != nil {
+				return nil, kerr(err)
 			}
 			att.Stub = false
 			att.Follows = true
 			att.Content = f
 			atts[filename] = &attachment{
 				Content:     f,
-				Size:        att.Size,
+				Size:        info.Size(),
 				ContentType: att.ContentType,
 				Digest:      att.ContentType,
 				RevPos:      att.RevPos,
@@ -78,6 +73,16 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	}
 	if ndoc.ID != docID {
 		ndoc.ID = docID
+	}
+	if _, ok := opts["revs"]; !ok {
+		ndoc.Revisions = nil
+	}
+	if _, ok := opts["rev"]; ok {
+		ndoc.Revisions = nil
+	} else {
+		if ok, _ := opts["revs_info"].(bool); ok {
+			ndoc.RevsInfo = ndoc.revsInfo()
+		}
 	}
 	buf := &bytes.Buffer{}
 	if err := json.NewEncoder(buf).Encode(ndoc); err != nil {
@@ -89,13 +94,27 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	return doc, nil
 }
 
-func (d *db) openAttachment(ctx context.Context, docID, rev, filename string) (*os.File, error) {
-	f, err := os.Open(d.path("."+docID, rev, filename))
+func (d *db) openAttachment(ctx context.Context, docID string, revs *revisions, filename string) (*os.File, error) {
+	f, err := os.Open(d.path(docID, filename))
+	if err == nil {
+		return f, nil
+	}
 	if !os.IsNotExist(err) {
-		return f, err
+		return f, kerr(err)
 	}
-	if err := ctx.Err(); err != nil {
-		return nil, err
+	for i, revid := range revs.IDs {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		rev := fmt.Sprintf("%d-%s", revs.Start-int64(i), revid)
+		f, err := os.Open(d.path("."+docID, rev, filename))
+		if os.IsNotExist(err) {
+			continue
+		}
+		if err != nil {
+			return f, kerr(err)
+		}
+		return f, nil
 	}
-	return os.Open(d.path(docID, filename))
+	return nil, errNotFound
 }
