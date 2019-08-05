@@ -3,9 +3,13 @@ package decoder
 import (
 	"fmt"
 	"io"
+	"net/http"
+	"os"
 	"sort"
 
+	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/fsdb/internal"
+	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
 )
 
@@ -54,6 +58,21 @@ func Rev(r io.Reader, ext string) (internal.Rev, error) {
 		return internal.Rev{}, fmt.Errorf("No decoder for ext '%s'", ext)
 	}
 	return dec.Rev(r)
+}
+
+// ReadRev cycles through all registered extensions, and if found, reads the
+// rev and returns it.
+func ReadRev(fs filesystem.Filesystem, base string) (internal.Rev, error) {
+	for _, ext := range Extensions() {
+		f, err := fs.Open(base + "." + ext)
+		switch {
+		case err == nil:
+			return Rev(f, ext)
+		case !os.IsNotExist(err):
+			return internal.Rev{}, err
+		}
+	}
+	return internal.Rev{}, &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "missing"}
 }
 
 // Extensions returns the registered file extensions.
