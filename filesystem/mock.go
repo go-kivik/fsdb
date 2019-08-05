@@ -7,6 +7,7 @@ type MockFS struct {
 	MkdirFunc  func(string, os.FileMode) error
 	CreateFunc func(string) (File, error)
 	OpenFunc   func(string) (File, error)
+	StatFunc   func(string) (os.FileInfo, error)
 }
 
 var _ Filesystem = &MockFS{}
@@ -24,4 +25,9 @@ func (fs *MockFS) Open(name string) (File, error) {
 // Create calls fs.CreateFunc
 func (fs *MockFS) Create(name string) (File, error) {
 	return fs.CreateFunc(name)
+}
+
+// Stat calls fs.StatFunc
+func (fs *MockFS) Stat(name string) (os.FileInfo, error) {
+	return fs.StatFunc(name)
 }
