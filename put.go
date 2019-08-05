@@ -36,7 +36,11 @@ func (d *db) currentRev(docID, ext string) (string, error) {
 		}
 		return "", err
 	}
-	return decoder.Rev(f, ext)
+	r, err := decoder.Rev(f, ext)
+	if err != nil {
+		return "", err
+	}
+	return r.String(), nil
 }
 
 func compareRevs(doc *normalDoc, opts map[string]interface{}, currev string) error {

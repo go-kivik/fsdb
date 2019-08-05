@@ -47,15 +47,16 @@ func DecodeSecurity(r io.Reader, ext string) (*driver.Security, error) {
 	return dec.DecodeSecurity(r)
 }
 
-func Rev(r io.Reader, ext string) (string, error) {
+// Rev extracts the revision from r, based on the decoder registered for ext.
+func Rev(r io.Reader, ext string) (internal.Rev, error) {
 	dec, ok := decoders[ext]
 	if !ok {
-		return "", fmt.Errorf("No decoder for ext '%s'", ext)
+		return internal.Rev{}, fmt.Errorf("No decoder for ext '%s'", ext)
 	}
-	rev, err := dec.Rev(r)
-	return rev.String(), err
+	return dec.Rev(r)
 }
 
+// Extensions returns the registered file extensions.
 func Extensions() []string {
 	return extensions
 }
