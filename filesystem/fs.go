@@ -11,6 +11,7 @@ type Filesystem interface {
 	Mkdir(name string, perm os.FileMode) error
 	Open(string) (File, error)
 	Create(string) (File, error)
+	Stat(string) (os.FileInfo, error)
 }
 
 type defaultFS struct{}
@@ -27,6 +28,10 @@ func (fs *defaultFS) Open(name string) (File, error) {
 
 func (fs *defaultFS) Create(name string) (File, error) {
 	return os.Create(name)
+}
+
+func (fs *defaultFS) Stat(name string) (os.FileInfo, error) {
+	return os.Stat(name)
 }
 
 // File represents a file object.
