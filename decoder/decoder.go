@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/fsdb/internal"
@@ -97,10 +98,11 @@ func Extensions() []string {
 }
 
 // ReadDocMeta reads document metadata from the document. extHint, if provided,
-// short-circuits the extension detection.
+// short-circuits the extension detection. extHint may begin with a period, or
+// not.
 func ReadDocMeta(fs filesystem.Filesystem, base string, extHint ...string) (*internal.DocMeta, error) {
 	if len(extHint) > 0 {
-		ext := extHint[0]
+		ext := strings.TrimPrefix(extHint[0], ".")
 		f, err := fs.Open(base + "." + ext)
 		if err != nil {
 			return nil, err
