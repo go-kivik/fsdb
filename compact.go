@@ -12,14 +12,13 @@ import (
 )
 
 type docEntry struct {
-	Meta           *internal.DocMeta
+	internal.DocMeta
 	AttachmentsDir string
 	Revs           docIndex
 }
 
 func newEntry() *docEntry {
 	return &docEntry{
-		Meta: &internal.DocMeta{},
 		Revs: make(docIndex),
 	}
 }
@@ -79,18 +78,19 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 					continue
 				}
 			}
-			entry := i.get(id)
-			entry.Meta, err = decoder.ReadDocMeta(fs, filepath.Join(path, id), ext)
+			meta, err := decoder.ReadDocMeta(fs, filepath.Join(path, id), ext)
 			if err != nil {
 				return err
 			}
+			entry := i.get(id)
+			entry.DocMeta = *meta
 			if docID != "" {
-				entry.Meta.ID = docID
+				entry.ID = docID
 			}
 			if rev.Seq != 0 {
-				entry.Meta.Rev = rev
+				entry.Rev = rev
 			}
-			entry.Meta.Path = filepath.Join(path, info.Name())
+			entry.Path = filepath.Join(path, info.Name())
 			continue
 		}
 		if root && info.Name()[0] == '.' {
@@ -111,20 +111,20 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 // revs dir, and joins them, so such attachments are not considered abandoned.
 func (i docIndex) joinWinningRevs() error {
 	for _, entry := range i {
-		if entry.Meta.Path == "" {
+		if entry.Path == "" {
 			continue
 		}
 		if len(entry.Revs) == 0 {
 			continue
 		}
-		doc, err := readDoc(entry.Meta.Path)
+		doc, err := readDoc(entry.Path)
 		if err != nil {
 			return err
 		}
 		rev := doc.Rev.String()
 		if revEntry, ok := entry.Revs[rev]; ok {
-			if revEntry.Meta.Path == "" {
-				revEntry.Meta.Path = entry.Meta.Path
+			if revEntry.Path == "" {
+				revEntry.Path = entry.Path
 			}
 		}
 	}
@@ -134,13 +134,13 @@ func (i docIndex) joinWinningRevs() error {
 func (i docIndex) removeAbandonedAttachments(fs filesystem.Filesystem) error {
 	for _, entry := range i {
 		if entry.AttachmentsDir != "" {
-			if entry.Meta.Path == "" {
+			if entry.Path == "" {
 				if err := os.RemoveAll(entry.AttachmentsDir); err != nil {
 					return kerr(err)
 				}
 				continue
 			}
-			doc, err := readDoc(entry.Meta.Path)
+			doc, err := readDoc(entry.Path)
 			if err != nil {
 				return err
 			}
