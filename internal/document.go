@@ -30,6 +30,9 @@ type DocMeta struct {
 	Attachments Attachments `json:"_attachments,omitempty" yaml:"_attachments,omitempty"`
 	RevsInfo    []RevsInfo  `json:"_revs_info,omitempty" yaml:"_revs_info,omitempty"`
 	Revisions   *Revisions  `json:"_revisions,omitempty" yaml:"_revisions,omitempty"`
+
+	// Path is the full, on-disk path to this document.
+	Path string `json:"-" yaml:"-"`
 }
 
 // Document is a CouchDB document.
