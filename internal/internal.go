@@ -9,10 +9,7 @@ import (
 	"strings"
 )
 
-type RevDoc struct {
-	Rev Rev `json:"_rev" yaml:"_rev"`
-}
-
+// Rev is a CouchDB document revision identifier.
 type Rev struct {
 	Seq      int64
 	Sum      string
