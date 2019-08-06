@@ -13,7 +13,40 @@ import (
 	"sync"
 
 	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/kivik/driver"
 )
+
+type Attachments map[string]*Attachment
+
+var _ driver.Attachments = Attachments{}
+
+func (a Attachments) Close() error {
+	for filename, att := range a {
+		if err := att.Content.Close(); err != nil {
+			return err
+		}
+		delete(a, filename)
+	}
+	return nil
+}
+
+func (a Attachments) Next(driverAtt *driver.Attachment) error {
+	for filename, att := range a {
+		x := &driver.Attachment{
+			Filename:    filename,
+			ContentType: att.ContentType,
+			Stub:        att.Stub,
+			Content:     att.Content,
+			Size:        att.Size,
+			Digest:      att.Digest,
+			RevPos:      att.RevPos,
+		}
+		*driverAtt = *x
+		delete(a, filename)
+		return nil
+	}
+	return io.EOF
+}
 
 // Attachment represents a file attachment.
 type Attachment struct {

@@ -3,7 +3,6 @@ package fs
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -14,46 +13,13 @@ import (
 	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
-	"github.com/go-kivik/kivik/driver"
 	"golang.org/x/xerrors"
 )
-
-type attachments map[string]*internal.Attachment
-
-var _ driver.Attachments = attachments{}
-
-func (a attachments) Close() error {
-	for filename, att := range a {
-		if err := att.Content.Close(); err != nil {
-			return err
-		}
-		delete(a, filename)
-	}
-	return nil
-}
-
-func (a attachments) Next(driverAtt *driver.Attachment) error {
-	for filename, att := range a {
-		x := &driver.Attachment{
-			Filename:    filename,
-			ContentType: att.ContentType,
-			Stub:        att.Stub,
-			Content:     att.Content,
-			Size:        att.Size,
-			Digest:      att.Digest,
-			RevPos:      att.RevPos,
-		}
-		*driverAtt = *x
-		delete(a, filename)
-		return nil
-	}
-	return io.EOF
-}
 
 type normalDoc struct {
 	ID          string                 `json:"_id"`
 	Rev         internal.Rev           `json:"_rev,omitempty"`
-	Attachments attachments            `json:"_attachments,omitempty"`
+	Attachments internal.Attachments   `json:"_attachments,omitempty"`
 	RevsInfo    []revsInfo             `json:"_revs_info,omitempty"`
 	Revisions   *revisions             `json:"_revisions,omitempty"`
 	Data        map[string]interface{} `json:"-"`
@@ -94,11 +60,11 @@ var reservedKeys = map[string]struct{}{
 
 func (d *normalDoc) UnmarshalJSON(p []byte) error {
 	doc := struct {
-		ID          string       `json:"_id"`
-		Rev         internal.Rev `json:"_rev,omitempty"`
-		Attachments attachments  `json:"_attachments,omitempty"`
-		RevsInfo    []revsInfo   `json:"_revs_info,omitempty"`
-		Revisions   *revisions   `json:"_revisions,omitempty"`
+		ID          string               `json:"_id"`
+		Rev         internal.Rev         `json:"_rev,omitempty"`
+		Attachments internal.Attachments `json:"_attachments,omitempty"`
+		RevsInfo    []revsInfo           `json:"_revs_info,omitempty"`
+		Revisions   *revisions           `json:"_revisions,omitempty"`
 	}{}
 	if err := json.Unmarshal(p, &doc); err != nil {
 		return err

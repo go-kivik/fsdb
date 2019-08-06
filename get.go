@@ -50,7 +50,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 		}
 	}
 	if ok, _ := opts["attachments"].(bool); ok {
-		atts := make(attachments)
+		atts := make(internal.Attachments)
 		for filename, att := range ndoc.Attachments {
 			f, err := d.openAttachment(ctx, docID, ndoc.Revisions, filename)
 			if err != nil {

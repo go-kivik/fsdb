@@ -30,7 +30,7 @@ func TestNormalDocMarshalJSON(t *testing.T) {
 		return &normalDoc{
 			ID:  "foo",
 			Rev: internal.Rev{Seq: 1, Sum: "xxx"},
-			Attachments: attachments{
+			Attachments: internal.Attachments{
 				"foo.txt": &internal.Attachment{
 					ContentType: "text/plain",
 					Content:     f,
