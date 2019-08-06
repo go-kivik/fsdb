@@ -23,17 +23,23 @@ type Revisions struct {
 	IDs   []string `json:"ids"`
 }
 
-// Document is a CouchDB document.
-type Document struct {
-	ID          string                 `json:"_id"`
-	Rev         Rev                    `json:"_rev,omitempty"`
-	Attachments Attachments            `json:"_attachments,omitempty"`
-	RevsInfo    []RevsInfo             `json:"_revs_info,omitempty"`
-	Revisions   *Revisions             `json:"_revisions,omitempty"`
-	Data        map[string]interface{} `json:"-"`
-	Path        string                 `json:"-"`
+// DocMeta contains the special CouchDB metadata fields for each document.
+type DocMeta struct {
+	ID          string      `json:"_id"`
+	Rev         Rev         `json:"_rev,omitempty"`
+	Attachments Attachments `json:"_attachments,omitempty"`
+	RevsInfo    []RevsInfo  `json:"_revs_info,omitempty"`
+	Revisions   *Revisions  `json:"_revisions,omitempty"`
 }
 
+// Document is a CouchDB document.
+type Document struct {
+	DocMeta
+	Data map[string]interface{} `json:"-"`
+	Path string                 `json:"-"`
+}
+
+// MarshalJSON satisfies the json.Marshaler interface.
 func (d *Document) MarshalJSON() ([]byte, error) {
 	for key := range d.Data {
 		if key[0] == '_' {
