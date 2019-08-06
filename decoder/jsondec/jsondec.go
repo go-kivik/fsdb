@@ -36,8 +36,8 @@ func (d *dec) Rev(r io.Reader) (internal.Rev, error) {
 	return meta.Rev, err
 }
 
-func (d *dec) DocMeta(r io.Reader) (internal.DocMeta, error) {
-	meta := internal.DocMeta{}
+func (d *dec) DocMeta(r io.Reader) (*internal.DocMeta, error) {
+	meta := &internal.DocMeta{}
 	err := json.NewDecoder(r).Decode(&meta)
 	return meta, err
 }

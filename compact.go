@@ -8,10 +8,12 @@ import (
 
 	"github.com/go-kivik/fsdb/decoder"
 	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/fsdb/internal"
 )
 
 type docEntry struct {
 	DocPath        string
+	Meta           *internal.DocMeta
 	AttachmentsDir string
 	Revs           docIndex
 }
@@ -58,12 +60,16 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 			return err
 		}
 		if !info.IsDir() {
-			id, _, ok := explodeFilename(info.Name())
+			id, ext, ok := explodeFilename(info.Name())
 			if !ok {
 				// ignore unrecognized files
 				continue
 			}
 			entry := i.get(id)
+			entry.Meta, err = decoder.ReadDocMeta(fs, filepath.Join(path, id), ext)
+			if err != nil {
+				return err
+			}
 			entry.DocPath = filepath.Join(path, info.Name())
 			continue
 		}
