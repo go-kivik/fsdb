@@ -13,16 +13,19 @@ import (
 	"github.com/go-kivik/kivik/driver"
 )
 
+// Decoder represents an abstract document decoder.
 type Decoder interface {
 	Extensions() []string
 	Decode(io.Reader) (map[string]interface{}, error)
 	DecodeSecurity(io.Reader) (*driver.Security, error)
 	Rev(io.Reader) (internal.Rev, error)
+	DocMeta(io.Reader) (internal.DocMeta, error)
 }
 
 var decoders = map[string]Decoder{}
 var extensions = []string{}
 
+// Register registers the specified decoder for the extensions it supports.
 func Register(dec Decoder) {
 	exts := dec.Extensions()
 	for _, ext := range exts {
@@ -35,6 +38,7 @@ func Register(dec Decoder) {
 	sort.Strings(extensions)
 }
 
+// Decode passes r to the appropriate decoder for ext, to decode the document.
 func Decode(r io.Reader, ext string) (map[string]interface{}, error) {
 	dec, ok := decoders[ext]
 	if !ok {
@@ -43,6 +47,8 @@ func Decode(r io.Reader, ext string) (map[string]interface{}, error) {
 	return dec.Decode(r)
 }
 
+// DecodeSecurity passes r to the appropriate decoder for ext, to decode the
+// security document.
 func DecodeSecurity(r io.Reader, ext string) (*driver.Security, error) {
 	dec, ok := decoders[ext]
 	if !ok {

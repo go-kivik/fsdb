@@ -11,8 +11,10 @@ import (
 func TestDocumentMarshalJSON(t *testing.T) {
 	tests := testy.NewTable()
 	tests.Add("no attachments", &Document{
-		ID:  "foo",
-		Rev: Rev{Seq: 1, Sum: "xxx"},
+		DocMeta: DocMeta{
+			ID:  "foo",
+			Rev: Rev{Seq: 1, Sum: "xxx"},
+		},
 		Data: map[string]interface{}{
 			"foo": "bar",
 		},
@@ -25,12 +27,14 @@ func TestDocumentMarshalJSON(t *testing.T) {
 		}
 
 		return &Document{
-			ID:  "foo",
-			Rev: Rev{Seq: 1, Sum: "xxx"},
-			Attachments: Attachments{
-				"foo.txt": &Attachment{
-					ContentType: "text/plain",
-					Content:     f,
+			DocMeta: DocMeta{
+				ID:  "foo",
+				Rev: Rev{Seq: 1, Sum: "xxx"},
+				Attachments: Attachments{
+					"foo.txt": &Attachment{
+						ContentType: "text/plain",
+						Content:     f,
+					},
 				},
 			},
 		}

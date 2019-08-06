@@ -32,7 +32,12 @@ func (d *dec) DecodeSecurity(r io.Reader) (*driver.Security, error) {
 }
 
 func (d *dec) Rev(r io.Reader) (internal.Rev, error) {
-	doc := internal.RevDoc{}
-	err := json.NewDecoder(r).Decode(&doc)
-	return doc.Rev, err
+	meta, err := d.DocMeta(r)
+	return meta.Rev, err
+}
+
+func (d *dec) DocMeta(r io.Reader) (internal.DocMeta, error) {
+	meta := internal.DocMeta{}
+	err := json.NewDecoder(r).Decode(&meta)
+	return meta, err
 }
