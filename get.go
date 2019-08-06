@@ -10,19 +10,10 @@ import (
 	"os"
 
 	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
 )
-
-const (
-	// Maybe make this confiurable at some point?
-	revsLimit = 1000
-)
-
-type revsInfo struct {
-	Rev    string `json:"rev"`
-	Status string `json:"status"`
-}
 
 // TODO:
 // - atts_since
@@ -49,7 +40,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 		}
 	}
 	if ok, _ := opts["attachments"].(bool); ok {
-		atts := make(attachments)
+		atts := make(internal.Attachments)
 		for filename, att := range ndoc.Attachments {
 			f, err := d.openAttachment(ctx, docID, ndoc.Revisions, filename)
 			if err != nil {
@@ -62,7 +53,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 			att.Stub = false
 			att.Follows = true
 			att.Content = f
-			atts[filename] = &attachment{
+			atts[filename] = &internal.Attachment{
 				Content:     f,
 				Size:        info.Size(),
 				ContentType: att.ContentType,
@@ -82,7 +73,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 		ndoc.Revisions = nil
 	} else {
 		if ok, _ := opts["revs_info"].(bool); ok {
-			ndoc.RevsInfo = ndoc.revsInfo()
+			ndoc.RevsInfo = ndoc.GetRevsInfo()
 		}
 	}
 	buf := &bytes.Buffer{}
@@ -95,7 +86,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	return doc, nil
 }
 
-func (d *db) openAttachment(ctx context.Context, docID string, revs *revisions, filename string) (filesystem.File, error) {
+func (d *db) openAttachment(ctx context.Context, docID string, revs *internal.Revisions, filename string) (filesystem.File, error) {
 	f, err := d.fs.Open(d.path(docID, filename))
 	if err == nil {
 		return f, nil
