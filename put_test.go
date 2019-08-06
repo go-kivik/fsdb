@@ -130,7 +130,7 @@ func TestPut(t *testing.T) {
 			"_attachments": 123,
 		},
 		status: http.StatusBadRequest,
-		err:    "json: cannot unmarshal number into Go struct field ._attachments of type internal.Attachments",
+		err:    "json: cannot unmarshal number into Go struct field DocMeta._attachments of type internal.Attachments",
 	})
 	tests.Add("attachment", func(t *testing.T) interface{} {
 		tmpdir := tempDir(t)

@@ -72,15 +72,9 @@ var reservedKeys = map[string]struct{}{
 	"_revs_info":   {},
 }
 
+// UnmarshalJSON satisfies the json.Unmarshaler interface.
 func (d *Document) UnmarshalJSON(p []byte) error {
-	doc := struct {
-		ID          string      `json:"_id"`
-		Rev         Rev         `json:"_rev,omitempty"`
-		Attachments Attachments `json:"_attachments,omitempty"`
-		RevsInfo    []RevsInfo  `json:"_revs_info,omitempty"`
-		Revisions   *Revisions  `json:"_revisions,omitempty"`
-	}{}
-	if err := json.Unmarshal(p, &doc); err != nil {
+	if err := json.Unmarshal(p, &d.DocMeta); err != nil {
 		return err
 	}
 	data := map[string]interface{}{}
@@ -95,11 +89,6 @@ func (d *Document) UnmarshalJSON(p []byte) error {
 			delete(data, key)
 		}
 	}
-	d.ID = doc.ID
-	d.Rev = doc.Rev
-	d.Attachments = doc.Attachments
-	d.Revisions = doc.Revisions
-	d.RevsInfo = doc.RevsInfo
 	d.Data = data
 	return nil
 }
