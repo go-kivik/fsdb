@@ -19,7 +19,7 @@ type Decoder interface {
 	Decode(io.Reader) (map[string]interface{}, error)
 	DecodeSecurity(io.Reader) (*driver.Security, error)
 	Rev(io.Reader) (internal.Rev, error)
-	DocMeta(io.Reader) (internal.DocMeta, error)
+	DocMeta(io.Reader) (*internal.DocMeta, error)
 }
 
 var decoders = map[string]Decoder{}
@@ -66,6 +66,16 @@ func Rev(r io.Reader, ext string) (internal.Rev, error) {
 	return dec.Rev(r)
 }
 
+// DocMeta extracts the document metadata from r, based on the decoder registered
+// for ext.
+func DocMeta(r io.Reader, ext string) (*internal.DocMeta, error) {
+	dec, ok := decoders[ext]
+	if !ok {
+		return nil, fmt.Errorf("No decoder for ext '%s'", ext)
+	}
+	return dec.DocMeta(r)
+}
+
 // ReadRev cycles through all registered extensions, and if found, reads the
 // rev and returns it.
 func ReadRev(fs filesystem.Filesystem, base string) (internal.Rev, error) {
@@ -84,4 +94,27 @@ func ReadRev(fs filesystem.Filesystem, base string) (internal.Rev, error) {
 // Extensions returns the registered file extensions.
 func Extensions() []string {
 	return extensions
+}
+
+// ReadDocMeta reads document metadata from the document. extHint, if provided,
+// short-circuits the extension detection.
+func ReadDocMeta(fs filesystem.Filesystem, base string, extHint ...string) (*internal.DocMeta, error) {
+	if len(extHint) > 0 {
+		ext := extHint[0]
+		f, err := fs.Open(base + "." + ext)
+		if err != nil {
+			return nil, err
+		}
+		return DocMeta(f, ext)
+	}
+	for _, ext := range Extensions() {
+		f, err := fs.Open(base + "." + ext)
+		switch {
+		case err == nil:
+			return DocMeta(f, ext)
+		case !os.IsNotExist(err):
+			return nil, err
+		}
+	}
+	return nil, &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "missing"}
 }
