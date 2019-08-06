@@ -12,7 +12,6 @@ import (
 )
 
 type docEntry struct {
-	DocPath        string
 	Meta           *internal.DocMeta
 	AttachmentsDir string
 	Revs           docIndex
@@ -20,6 +19,7 @@ type docEntry struct {
 
 func newEntry() *docEntry {
 	return &docEntry{
+		Meta: &internal.DocMeta{},
 		Revs: make(docIndex),
 	}
 }
@@ -65,12 +65,32 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 				// ignore unrecognized files
 				continue
 			}
+			var docID string
+			var rev internal.Rev
+			if root {
+				docID, err = filename2id(id)
+				if err != nil {
+					// ignore unrecognized files
+					continue
+				}
+			} else {
+				if err := rev.UnmarshalText([]byte(id)); err != nil {
+					// ignore unrecognized files
+					continue
+				}
+			}
 			entry := i.get(id)
 			entry.Meta, err = decoder.ReadDocMeta(fs, filepath.Join(path, id), ext)
 			if err != nil {
 				return err
 			}
-			entry.DocPath = filepath.Join(path, info.Name())
+			if docID != "" {
+				entry.Meta.ID = docID
+			}
+			if rev.Seq != 0 {
+				entry.Meta.Rev = rev
+			}
+			entry.Meta.Path = filepath.Join(path, info.Name())
 			continue
 		}
 		if root && info.Name()[0] == '.' {
@@ -91,20 +111,20 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 // revs dir, and joins them, so such attachments are not considered abandoned.
 func (i docIndex) joinWinningRevs() error {
 	for _, entry := range i {
-		if entry.DocPath == "" {
+		if entry.Meta.Path == "" {
 			continue
 		}
 		if len(entry.Revs) == 0 {
 			continue
 		}
-		doc, err := readDoc(entry.DocPath)
+		doc, err := readDoc(entry.Meta.Path)
 		if err != nil {
 			return err
 		}
 		rev := doc.Rev.String()
 		if revEntry, ok := entry.Revs[rev]; ok {
-			if revEntry.DocPath == "" {
-				revEntry.DocPath = entry.DocPath
+			if revEntry.Meta.Path == "" {
+				revEntry.Meta.Path = entry.Meta.Path
 			}
 		}
 	}
@@ -114,13 +134,13 @@ func (i docIndex) joinWinningRevs() error {
 func (i docIndex) removeAbandonedAttachments(fs filesystem.Filesystem) error {
 	for _, entry := range i {
 		if entry.AttachmentsDir != "" {
-			if entry.DocPath == "" {
+			if entry.Meta.Path == "" {
 				if err := os.RemoveAll(entry.AttachmentsDir); err != nil {
 					return kerr(err)
 				}
 				continue
 			}
-			doc, err := readDoc(entry.DocPath)
+			doc, err := readDoc(entry.Meta.Path)
 			if err != nil {
 				return err
 			}
