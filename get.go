@@ -20,11 +20,6 @@ const (
 	revsLimit = 1000
 )
 
-type revsInfo struct {
-	Rev    string `json:"rev"`
-	Status string `json:"status"`
-}
-
 // TODO:
 // - atts_since
 // - conflicts
@@ -96,7 +91,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	return doc, nil
 }
 
-func (d *db) openAttachment(ctx context.Context, docID string, revs *revisions, filename string) (filesystem.File, error) {
+func (d *db) openAttachment(ctx context.Context, docID string, revs *internal.Revisions, filename string) (filesystem.File, error) {
 	f, err := d.fs.Open(d.path(docID, filename))
 	if err == nil {
 		return f, nil

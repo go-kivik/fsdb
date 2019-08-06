@@ -20,8 +20,8 @@ type normalDoc struct {
 	ID          string                 `json:"_id"`
 	Rev         internal.Rev           `json:"_rev,omitempty"`
 	Attachments internal.Attachments   `json:"_attachments,omitempty"`
-	RevsInfo    []revsInfo             `json:"_revs_info,omitempty"`
-	Revisions   *revisions             `json:"_revisions,omitempty"`
+	RevsInfo    []internal.RevsInfo    `json:"_revs_info,omitempty"`
+	Revisions   *internal.Revisions    `json:"_revisions,omitempty"`
 	Data        map[string]interface{} `json:"-"`
 	Path        string                 `json:"-"`
 }
@@ -63,8 +63,8 @@ func (d *normalDoc) UnmarshalJSON(p []byte) error {
 		ID          string               `json:"_id"`
 		Rev         internal.Rev         `json:"_rev,omitempty"`
 		Attachments internal.Attachments `json:"_attachments,omitempty"`
-		RevsInfo    []revsInfo           `json:"_revs_info,omitempty"`
-		Revisions   *revisions           `json:"_revisions,omitempty"`
+		RevsInfo    []internal.RevsInfo  `json:"_revs_info,omitempty"`
+		Revisions   *internal.Revisions  `json:"_revisions,omitempty"`
 	}{}
 	if err := json.Unmarshal(p, &doc); err != nil {
 		return err
@@ -112,10 +112,10 @@ func normalizeDoc(i interface{}) (*normalDoc, error) {
 	return doc, nil
 }
 
-func (d *normalDoc) revsInfo() []revsInfo {
+func (d *normalDoc) revsInfo() []internal.RevsInfo {
 	// This driver only ever stores the current leaf, so we only ever
 	// return one revision here: the current one.
-	return []revsInfo{
+	return []internal.RevsInfo{
 		{
 			Rev:    d.Rev.String(),
 			Status: "available",
@@ -123,7 +123,7 @@ func (d *normalDoc) revsInfo() []revsInfo {
 	}
 }
 
-func (d *normalDoc) revisions() *revisions {
+func (d *normalDoc) revisions() *internal.Revisions {
 	if d.Revisions != nil {
 		return d.Revisions
 	}
@@ -137,15 +137,10 @@ func (d *normalDoc) revisions() *revisions {
 	} else {
 		ids = []string{d.Rev.Sum}
 	}
-	return &revisions{
+	return &internal.Revisions{
 		Start: d.Rev.Seq,
 		IDs:   ids,
 	}
-}
-
-type revisions struct {
-	Start int64    `json:"start"`
-	IDs   []string `json:"ids"`
 }
 
 func readDoc(path string) (*normalDoc, error) {
