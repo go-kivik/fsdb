@@ -2,6 +2,9 @@ package internal
 
 import (
 	"encoding/json"
+	"path/filepath"
+	"sort"
+	"strings"
 
 	"golang.org/x/xerrors"
 )
@@ -33,6 +36,27 @@ type DocMeta struct {
 
 	// Path is the full, on-disk path to this document.
 	Path string `json:"-" yaml:"-"`
+}
+
+// DocMetas is a list of document metadata, which can be sorted using CouchDB's
+// conflict resolution logic.
+type DocMetas []*DocMeta
+
+var _ sort.Interface = DocMetas{}
+
+// Len returns the number of revisions in r.
+func (r DocMetas) Len() int {
+	return len(r)
+}
+
+// Less allows sorting r.
+func (r DocMetas) Less(i, j int) bool {
+	return r[i].Rev.Seq > r[j].Rev.Seq ||
+		(r[i].Rev.Seq == r[j].Rev.Seq && r[i].Rev.Sum > r[j].Rev.Sum)
+}
+
+func (r DocMetas) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
 }
 
 // Document is a CouchDB document.
@@ -135,4 +159,10 @@ func (d *Document) GetRevisions() *Revisions {
 		Start: d.Rev.Seq,
 		IDs:   ids,
 	}
+}
+
+// Ext returns d.Path's file extension, without a dot. If d.Path is empty, Ext()
+// returns the empty string.
+func (d *DocMeta) Ext() string {
+	return strings.TrimPrefix(filepath.Ext(d.Path), ".")
 }

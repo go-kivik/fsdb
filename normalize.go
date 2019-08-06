@@ -74,12 +74,6 @@ func (d *db) openDoc(docID, rev string) (filesystem.File, string, error) {
 	return nil, "", errNotFound
 }
 
-type tiedRev struct {
-	*internal.Rev
-	path string
-	ext  string
-}
-
 func breakRevTie(path string) (*os.File, string, error) {
 	dir, err := os.Open(path)
 	if err != nil {
@@ -92,22 +86,21 @@ func breakRevTie(path string) (*os.File, string, error) {
 	if err != nil {
 		return nil, "", kerr(err)
 	}
-	revs := make([]*tiedRev, 0, len(files))
+	revs := make(internal.DocMetas, 0, len(files))
 	for _, info := range files {
 		if info.IsDir() {
 			continue
 		}
 		ext := filepath.Ext(info.Name())
 		base := strings.TrimSuffix(info.Name(), ext)
-		rev := new(internal.Rev)
+		rev := internal.Rev{}
 		if err := rev.UnmarshalText([]byte(base)); err != nil {
 			// Ignore unrecognized files
 			continue
 		}
-		revs = append(revs, &tiedRev{
+		revs = append(revs, &internal.DocMeta{
 			Rev:  rev,
-			path: filepath.Join(path, info.Name()),
-			ext:  ext[1:],
+			Path: filepath.Join(path, info.Name()),
 		})
 	}
 
@@ -115,15 +108,12 @@ func breakRevTie(path string) (*os.File, string, error) {
 		return nil, "", errNotFound
 	}
 
-	sort.Slice(revs, func(i, j int) bool {
-		return revs[i].Seq > revs[j].Seq ||
-			(revs[i].Seq == revs[j].Seq && revs[i].Sum > revs[j].Sum)
-	})
+	sort.Sort(revs)
 
 	winner := revs[0]
 
-	f, err := os.Open(winner.path)
-	return f, winner.ext, kerr(err)
+	f, err := os.Open(winner.Path)
+	return f, winner.Ext(), kerr(err)
 }
 
 func (d *db) readDoc(docID, rev string) (*internal.Document, error) {
