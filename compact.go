@@ -11,14 +11,14 @@ import (
 )
 
 type docEntry struct {
-	doc           string
-	attachmentDir string
-	revs          docIndex
+	DocPath        string
+	AttachmentsDir string
+	Revs           docIndex
 }
 
 func newEntry() *docEntry {
 	return &docEntry{
-		revs: make(docIndex),
+		Revs: make(docIndex),
 	}
 }
 
@@ -64,19 +64,19 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 				continue
 			}
 			entry := i.get(id)
-			entry.doc = filepath.Join(path, info.Name())
+			entry.DocPath = filepath.Join(path, info.Name())
 			continue
 		}
 		if root && info.Name()[0] == '.' {
 			id := strings.TrimPrefix(info.Name(), ".")
 			entry := i.get(id)
-			if err := entry.revs.readRevs(ctx, fs, filepath.Join(path, info.Name())); err != nil {
+			if err := entry.Revs.readRevs(ctx, fs, filepath.Join(path, info.Name())); err != nil {
 				return err
 			}
 			continue
 		}
 		entry := i.get(info.Name())
-		entry.attachmentDir = filepath.Join(path, info.Name())
+		entry.AttachmentsDir = filepath.Join(path, info.Name())
 	}
 	return i.joinWinningRevs()
 }
@@ -85,20 +85,20 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 // revs dir, and joins them, so such attachments are not considered abandoned.
 func (i docIndex) joinWinningRevs() error {
 	for _, entry := range i {
-		if entry.doc == "" {
+		if entry.DocPath == "" {
 			continue
 		}
-		if len(entry.revs) == 0 {
+		if len(entry.Revs) == 0 {
 			continue
 		}
-		doc, err := readDoc(entry.doc)
+		doc, err := readDoc(entry.DocPath)
 		if err != nil {
 			return err
 		}
 		rev := doc.Rev.String()
-		if revEntry, ok := entry.revs[rev]; ok {
-			if revEntry.doc == "" {
-				revEntry.doc = entry.doc
+		if revEntry, ok := entry.Revs[rev]; ok {
+			if revEntry.DocPath == "" {
+				revEntry.DocPath = entry.DocPath
 			}
 		}
 	}
@@ -107,18 +107,18 @@ func (i docIndex) joinWinningRevs() error {
 
 func (i docIndex) removeAbandonedAttachments(fs filesystem.Filesystem) error {
 	for _, entry := range i {
-		if entry.attachmentDir != "" {
-			if entry.doc == "" {
-				if err := os.RemoveAll(entry.attachmentDir); err != nil {
+		if entry.AttachmentsDir != "" {
+			if entry.DocPath == "" {
+				if err := os.RemoveAll(entry.AttachmentsDir); err != nil {
 					return kerr(err)
 				}
 				continue
 			}
-			doc, err := readDoc(entry.doc)
+			doc, err := readDoc(entry.DocPath)
 			if err != nil {
 				return err
 			}
-			attDir, err := fs.Open(entry.attachmentDir)
+			attDir, err := fs.Open(entry.AttachmentsDir)
 			if err != nil {
 				return kerr(err)
 			}
@@ -128,13 +128,13 @@ func (i docIndex) removeAbandonedAttachments(fs filesystem.Filesystem) error {
 			}
 			for _, att := range atts {
 				if _, ok := doc.Attachments[att.Name()]; !ok {
-					if err := os.Remove(filepath.Join(entry.attachmentDir, att.Name())); err != nil {
+					if err := os.Remove(filepath.Join(entry.AttachmentsDir, att.Name())); err != nil {
 						return kerr(err)
 					}
 				}
 			}
 		}
-		if err := entry.revs.removeAbandonedAttachments(fs); err != nil {
+		if err := entry.Revs.removeAbandonedAttachments(fs); err != nil {
 			return err
 		}
 	}
