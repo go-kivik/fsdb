@@ -94,7 +94,7 @@ func (r *revDiffRows) next() (docID string, missing []string, err error) {
 		if err != nil {
 			return "", nil, err
 		}
-		revisions := ndoc.revisions()
+		revisions := ndoc.GetRevisions()
 		for i, id := range revisions.IDs {
 			rev := fmt.Sprintf("%d-%s", revisions.Start+1-int64(i), id)
 			delete(revs, rev)

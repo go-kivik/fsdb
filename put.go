@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/go-kivik/fsdb/decoder"
+	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
 )
 
@@ -43,7 +44,7 @@ func (d *db) currentRev(docID, ext string) (string, error) {
 	return r.String(), nil
 }
 
-func compareRevs(doc *normalDoc, opts map[string]interface{}, currev string) error {
+func compareRevs(doc *internal.Document, opts map[string]interface{}, currev string) error {
 	optsrev, _ := opts["rev"].(string)
 	docrev := doc.Rev.String()
 	if optsrev != "" && docrev != "" && optsrev != docrev {
@@ -123,7 +124,7 @@ func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[stri
 	if err != nil {
 		return "", err
 	}
-	defer ndoc.cleanup() // nolint: errcheck
+	defer ndoc.Cleanup() // nolint: errcheck
 	currev, err := d.currentRev(filename, "json")
 	if err != nil {
 		return "", err

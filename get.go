@@ -15,11 +15,6 @@ import (
 	"github.com/go-kivik/kivik/driver"
 )
 
-const (
-	// Maybe make this confiurable at some point?
-	revsLimit = 1000
-)
-
 // TODO:
 // - atts_since
 // - conflicts
@@ -78,7 +73,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 		ndoc.Revisions = nil
 	} else {
 		if ok, _ := opts["revs_info"].(bool); ok {
-			ndoc.RevsInfo = ndoc.revsInfo()
+			ndoc.RevsInfo = ndoc.GetRevsInfo()
 		}
 	}
 	buf := &bytes.Buffer{}
