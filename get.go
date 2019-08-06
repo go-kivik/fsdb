@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
 )
@@ -62,7 +63,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 			att.Stub = false
 			att.Follows = true
 			att.Content = f
-			atts[filename] = &attachment{
+			atts[filename] = &internal.Attachment{
 				Content:     f,
 				Size:        info.Size(),
 				ContentType: att.ContentType,
