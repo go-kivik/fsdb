@@ -2,7 +2,6 @@ package fs
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -13,8 +12,7 @@ import (
 
 type docEntry struct {
 	internal.DocMeta
-	AttachmentsDir string
-	Revs           docIndex
+	Revs docIndex
 }
 
 func newEntry() *docEntry {
@@ -101,8 +99,6 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 			}
 			continue
 		}
-		entry := i.get(info.Name())
-		entry.AttachmentsDir = filepath.Join(path, info.Name())
 	}
 	return i.joinWinningRevs()
 }
@@ -131,42 +127,6 @@ func (i docIndex) joinWinningRevs() error {
 	return nil
 }
 
-func (i docIndex) removeAbandonedAttachments(fs filesystem.Filesystem) error {
-	for _, entry := range i {
-		if entry.AttachmentsDir != "" {
-			if entry.Path == "" {
-				if err := os.RemoveAll(entry.AttachmentsDir); err != nil {
-					return kerr(err)
-				}
-				continue
-			}
-			doc, err := readDoc(entry.Path)
-			if err != nil {
-				return err
-			}
-			attDir, err := fs.Open(entry.AttachmentsDir)
-			if err != nil {
-				return kerr(err)
-			}
-			atts, err := attDir.Readdir(-1)
-			if err != nil {
-				return kerr(err)
-			}
-			for _, att := range atts {
-				if _, ok := doc.Attachments[att.Name()]; !ok {
-					if err := os.Remove(filepath.Join(entry.AttachmentsDir, att.Name())); err != nil {
-						return kerr(err)
-					}
-				}
-			}
-		}
-		if err := entry.Revs.removeAbandonedAttachments(fs); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func explodeFilename(filename string) (basename, ext string, ok bool) {
 	dotExt := filepath.Ext(filename)
 	basename = strings.TrimSuffix(filename, dotExt)
@@ -185,9 +145,5 @@ func (d *db) Compact(ctx context.Context) error {
 
 func (d *db) compact(ctx context.Context, fs filesystem.Filesystem) error {
 	docs := docIndex{}
-	if err := docs.readRoot(ctx, fs, d.path()); err != nil {
-		return err
-	}
-
-	return docs.removeAbandonedAttachments(fs)
+	return docs.readRoot(ctx, fs, d.path())
 }
