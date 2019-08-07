@@ -54,17 +54,6 @@ func TestCompact(t *testing.T) {
 		status: http.StatusForbidden,
 		err:    "permission denied$",
 	})
-	tests.Add("abandoned attachments", func(t *testing.T) interface{} {
-		tmpdir := copyDir(t, "testdata/compact.abandonedatt", 1)
-		tests.Cleanup(func() error {
-			return os.RemoveAll(tmpdir)
-		})
-
-		return tt{
-			path:   tmpdir,
-			dbname: "compact.abandonedatt",
-		}
-	})
 	tests.Add("no attachments", func(t *testing.T) interface{} {
 		tmpdir := copyDir(t, "testdata/compact.noatt", 1)
 		tests.Cleanup(func() error {
@@ -85,43 +74,6 @@ func TestCompact(t *testing.T) {
 		return tt{
 			path:   tmpdir,
 			dbname: "compact.nowinner_noatt",
-		}
-	})
-	tests.Add("non-winning, abandoned attachments", func(t *testing.T) interface{} {
-		tmpdir := copyDir(t, "testdata/compact.nowinner_abandonedatt", 1)
-		tests.Cleanup(func() error {
-			return os.RemoveAll(tmpdir)
-		})
-
-		return tt{
-			path:   tmpdir,
-			dbname: "compact.nowinner_abandonedatt",
-		}
-	})
-	tests.Add("split attachments", func(t *testing.T) interface{} {
-		// Some attachments stored with winning rev, some stored
-		// in revs dir. This simulates an aborted update.
-		tmpdir := copyDir(t, "testdata/compact.split_atts", 1)
-		tests.Cleanup(func() error {
-			return os.RemoveAll(tmpdir)
-		})
-
-		return tt{
-			path:   tmpdir,
-			dbname: "compact.split_atts",
-		}
-	})
-	tests.Add("extra attachments", func(t *testing.T) interface{} {
-		// Some attachments stored with winning rev, some stored
-		// in revs dir. This simulates an aborted update.
-		tmpdir := copyDir(t, "testdata/compact.extra_atts", 1)
-		tests.Cleanup(func() error {
-			return os.RemoveAll(tmpdir)
-		})
-
-		return tt{
-			path:   tmpdir,
-			dbname: "compact.extra_atts",
 		}
 	})
 
