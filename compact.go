@@ -63,7 +63,7 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 				continue
 			}
 			var docID string
-			var rev internal.Rev
+			var rev internal.RevID
 			if root {
 				docID, err = filename2id(id)
 				if err != nil {

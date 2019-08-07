@@ -29,7 +29,7 @@ type Revisions struct {
 // DocMeta contains the special CouchDB metadata fields for each document.
 type DocMeta struct {
 	ID          string      `json:"_id,omitempty" yaml:"_id,omitempty"`
-	Rev         Rev         `json:"_rev,omitempty" yaml:"_rev,omitempty"`
+	Rev         RevID       `json:"_rev,omitempty" yaml:"_rev,omitempty"`
 	Attachments Attachments `json:"_attachments,omitempty" yaml:"_attachments,omitempty"`
 	RevsInfo    []RevsInfo  `json:"_revs_info,omitempty" yaml:"_revs_info,omitempty"`
 	Revisions   *Revisions  `json:"_revisions,omitempty" yaml:"_revisions,omitempty"`

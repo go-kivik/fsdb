@@ -93,7 +93,7 @@ func breakRevTie(path string) (*os.File, string, error) {
 		}
 		ext := filepath.Ext(info.Name())
 		base := strings.TrimSuffix(info.Name(), ext)
-		rev := internal.Rev{}
+		rev := internal.RevID{}
 		if err := rev.UnmarshalText([]byte(base)); err != nil {
 			// Ignore unrecognized files
 			continue
