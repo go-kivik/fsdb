@@ -1,6 +1,8 @@
 package cdb
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // RevMeta is the metadata stored in reach revision.
 type RevMeta struct {
@@ -32,11 +34,28 @@ func (r *Revision) UnmarshalJSON(p []byte) error {
 	return nil
 }
 
+// UnmarshalYAML satisfies the yaml.Unmarshaler interface.
+func (r *Revision) UnmarshalYAML(u func(interface{}) error) error {
+	if err := u(&r.RevMeta); err != nil {
+		return err
+	}
+	if err := u(&r.Data); err != nil {
+		return err
+	}
+	for key := range reservedKeys {
+		delete(r.Data, key)
+	}
+	return nil
+}
+
 // MarshalJSON satisfies the json.Marshaler interface
 func (r *Revision) MarshalJSON() ([]byte, error) {
 	metaJSON, err := json.Marshal(r.RevMeta)
 	if err != nil {
 		return nil, err
+	}
+	if len(r.Data) == 0 {
+		return metaJSON, nil
 	}
 	dataJSON, err := json.Marshal(r.Data)
 	if err != nil {

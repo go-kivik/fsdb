@@ -1,9 +1,9 @@
 package cdb
 
 import (
-	"encoding/json"
 	"path/filepath"
 
+	"github.com/go-kivik/fsdb/cdb/decode"
 	"github.com/go-kivik/fsdb/filesystem"
 )
 
@@ -32,12 +32,12 @@ func New(dbroot string, fs ...filesystem.Filesystem) *FS {
 // Open opens the requested document.
 func (fs *FS) Open(docID string) (*Document, error) {
 	base := escapeID(docID)
-	f, err := fs.fs.Open(filepath.Join(fs.root, base+".json"))
+	f, ext, err := decode.OpenAny(fs.fs, filepath.Join(fs.root, base))
 	if err != nil {
 		return nil, kerr(missing(err))
 	}
 	rev := new(Revision)
-	if err := json.NewDecoder(f).Decode(rev); err != nil {
+	if err := decode.Decode(f, ext, rev); err != nil {
 		return nil, err
 	}
 	doc := &Document{
