@@ -92,11 +92,16 @@ func (d *Document) MarshalJSON() ([]byte, error) {
 }
 
 var reservedKeys = map[string]struct{}{
-	"_id":          {},
-	"_rev":         {},
-	"_attachments": {},
-	"_revisions":   {},
-	"_revs_info":   {},
+	"_id":                {},
+	"_rev":               {},
+	"_attachments":       {},
+	"_revisions":         {},
+	"_revs_info":         {}, // *
+	"_deleted":           {},
+	"_conflicts":         {}, // *
+	"_deleted_conflicts": {}, // *
+	"_local_seq":         {}, // *
+	// * Can these be PUT?
 }
 
 // UnmarshalJSON satisfies the json.Unmarshaler interface.
