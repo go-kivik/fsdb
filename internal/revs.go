@@ -9,18 +9,18 @@ import (
 	"strings"
 )
 
-// Rev is a CouchDB document revision identifier.
-type Rev struct {
+// RevID is a CouchDB document revision identifier.
+type RevID struct {
 	Seq      int64
 	Sum      string
 	original string
 }
 
-func (r *Rev) Changed() bool {
+func (r *RevID) Changed() bool {
 	return r.String() != r.original
 }
 
-func (r *Rev) UnmarshalText(p []byte) error {
+func (r *RevID) UnmarshalText(p []byte) error {
 	r.original = string(p)
 	if bytes.Contains(p, []byte("-")) {
 		parts := bytes.SplitN(p, []byte("-"), 2)
@@ -43,7 +43,7 @@ func (r *Rev) UnmarshalText(p []byte) error {
 	return nil
 }
 
-func (r *Rev) UnmarshalJSON(p []byte) error {
+func (r *RevID) UnmarshalJSON(p []byte) error {
 	if p[0] == '"' {
 		var str string
 		if e := json.Unmarshal(p, &str); e != nil {
@@ -66,22 +66,22 @@ func (r *Rev) UnmarshalJSON(p []byte) error {
 	return json.Unmarshal(p, &r.Seq)
 }
 
-func (r Rev) MarshalText() ([]byte, error) {
+func (r RevID) MarshalText() ([]byte, error) {
 	return []byte(r.String()), nil
 }
 
-func (r Rev) String() string {
+func (r RevID) String() string {
 	if r.Seq == 0 {
 		return ""
 	}
 	return fmt.Sprintf("%d-%s", r.Seq, r.Sum)
 }
 
-func (r *Rev) IsZero() bool {
+func (r *RevID) IsZero() bool {
 	return r.Seq == 0
 }
 
-func (r *Rev) Increment(payload ...string) {
+func (r *RevID) Increment(payload ...string) {
 	r.Seq++
 	if len(payload) == 0 {
 		r.Sum = ""

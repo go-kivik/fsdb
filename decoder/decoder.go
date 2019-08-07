@@ -19,7 +19,7 @@ type Decoder interface {
 	Extensions() []string
 	Decode(io.Reader) (map[string]interface{}, error)
 	DecodeSecurity(io.Reader) (*driver.Security, error)
-	Rev(io.Reader) (internal.Rev, error)
+	Rev(io.Reader) (internal.RevID, error)
 	DocMeta(io.Reader) (*internal.DocMeta, error)
 }
 
@@ -59,10 +59,10 @@ func DecodeSecurity(r io.Reader, ext string) (*driver.Security, error) {
 }
 
 // Rev extracts the revision from r, based on the decoder registered for ext.
-func Rev(r io.Reader, ext string) (internal.Rev, error) {
+func Rev(r io.Reader, ext string) (internal.RevID, error) {
 	dec, ok := decoders[ext]
 	if !ok {
-		return internal.Rev{}, fmt.Errorf("No decoder for ext '%s'", ext)
+		return internal.RevID{}, fmt.Errorf("No decoder for ext '%s'", ext)
 	}
 	return dec.Rev(r)
 }
@@ -79,17 +79,17 @@ func DocMeta(r io.Reader, ext string) (*internal.DocMeta, error) {
 
 // ReadRev cycles through all registered extensions, and if found, reads the
 // rev and returns it.
-func ReadRev(fs filesystem.Filesystem, base string) (internal.Rev, error) {
+func ReadRev(fs filesystem.Filesystem, base string) (internal.RevID, error) {
 	for _, ext := range Extensions() {
 		f, err := fs.Open(base + "." + ext)
 		switch {
 		case err == nil:
 			return Rev(f, ext)
 		case !os.IsNotExist(err):
-			return internal.Rev{}, err
+			return internal.RevID{}, err
 		}
 	}
-	return internal.Rev{}, &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "missing"}
+	return internal.RevID{}, &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "missing"}
 }
 
 // Extensions returns the registered file extensions.

@@ -31,7 +31,7 @@ func (d *dec) DecodeSecurity(r io.Reader) (*driver.Security, error) {
 	return sec, err
 }
 
-func (d *dec) Rev(r io.Reader) (internal.Rev, error) {
+func (d *dec) Rev(r io.Reader) (internal.RevID, error) {
 	meta, err := d.DocMeta(r)
 	return meta.Rev, err
 }

@@ -13,7 +13,7 @@ func TestDocumentMarshalJSON(t *testing.T) {
 	tests.Add("no attachments", &Document{
 		DocMeta: DocMeta{
 			ID:  "foo",
-			Rev: Rev{Seq: 1, Sum: "xxx"},
+			Rev: RevID{Seq: 1, Sum: "xxx"},
 		},
 		Data: map[string]interface{}{
 			"foo": "bar",
@@ -29,7 +29,7 @@ func TestDocumentMarshalJSON(t *testing.T) {
 		return &Document{
 			DocMeta: DocMeta{
 				ID:  "foo",
-				Rev: Rev{Seq: 1, Sum: "xxx"},
+				Rev: RevID{Seq: 1, Sum: "xxx"},
 				Attachments: Attachments{
 					"foo.txt": &Attachment{
 						ContentType: "text/plain",
