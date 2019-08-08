@@ -99,7 +99,11 @@ func (r *Revision) finalizeUnmarshal() error {
 // MarshalJSON satisfies the json.Marshaler interface
 func (r *Revision) MarshalJSON() ([]byte, error) {
 	var meta interface{} = r.RevMeta
-	if revs, _ := r.options["revs"].(bool); !revs {
+	revs, _ := r.options["revs"].(bool)
+	if _, ok := r.options["rev"]; ok {
+		revs = false
+	}
+	if !revs {
 		meta = struct {
 			RevMeta
 			// This suppresses RevHistory from being included in the default output

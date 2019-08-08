@@ -261,55 +261,55 @@ func TestGet(t *testing.T) {
 			Rev:           "6-",
 		},
 	})
-	// tests.Add("revs, explicit", tt{
-	// 	path:    "testdata",
-	// 	dbname:  "db.foo",
-	// 	id:      "withrevs",
-	// 	options: map[string]interface{}{"revs": true},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 115,
-	// 		Rev:           "8-asdf",
-	// 	},
-	// })
-	// tests.Add("specify current rev, revs_info=true", tt{
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "yamltest",
-	// 	options: map[string]interface{}{
-	// 		"rev":       "3-",
-	// 		"revs_info": true,
-	// 	},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 43,
-	// 		Rev:           "3-",
-	// 	},
-	// })
-	// tests.Add("specify conflicting rev, revs_info=true", tt{
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "yamltest",
-	// 	options: map[string]interface{}{
-	// 		"rev":       "2-xxx",
-	// 		"revs_info": true,
-	// 	},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 46,
-	// 		Rev:           "2-xxx",
-	// 	},
-	// })
-	// tests.Add("specify rev, revs=true", tt{
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "withrevs",
-	// 	options: map[string]interface{}{
-	// 		"rev":  "8-asdf",
-	// 		"revs": true,
-	// 	},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 47,
-	// 		Rev:           "8-asdf",
-	// 	},
-	// })
+	tests.Add("revs, explicit", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "withrevs",
+		options: map[string]interface{}{"revs": true},
+		expected: &driver.Document{
+			ContentLength: 115,
+			Rev:           "8-asdf",
+		},
+	})
+	tests.Add("specify current rev, revs_info=true", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "yamltest",
+		options: map[string]interface{}{
+			"rev":       "3-",
+			"revs_info": true,
+		},
+		expected: &driver.Document{
+			ContentLength: 43,
+			Rev:           "3-",
+		},
+	})
+	tests.Add("specify conflicting rev, revs_info=true", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "yamltest",
+		options: map[string]interface{}{
+			"rev":       "2-xxx",
+			"revs_info": true,
+		},
+		expected: &driver.Document{
+			ContentLength: 46,
+			Rev:           "2-xxx",
+		},
+	})
+	tests.Add("specify rev, revs=true", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "withrevs",
+		options: map[string]interface{}{
+			"rev":  "8-asdf",
+			"revs": true,
+		},
+		expected: &driver.Document{
+			ContentLength: 47,
+			Rev:           "8-asdf",
+		},
+	})
 	// tests.Add("interrupted put", tt{
 	// 	// This tests a put which was aborted, leaving the attachments in
 	// 	// {db}/.{docid}/{rev}/{filename}, while the winning rev is at
