@@ -7,8 +7,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 
+	"github.com/go-kivik/fsdb/cdb"
 	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/kivik"
 	"github.com/go-kivik/kivik/driver"
@@ -144,9 +146,14 @@ func (c *client) DestroyDB(ctx context.Context, dbName string, options map[strin
 }
 
 func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) (driver.DB, error) {
+	return newDB(c, dbName), nil
+}
+
+func newDB(c *client, dbName string) *db {
 	return &db{
 		client: c,
 		dbName: dbName,
 		fs:     c.fs,
-	}, nil
+		cdb:    cdb.New(filepath.Join(c.root, dbName), c.fs),
+	}
 }

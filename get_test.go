@@ -119,6 +119,7 @@ func TestGet(t *testing.T) {
 		},
 	})
 	tests.Add("norev", tt{
+		// done
 		path:   "testdata",
 		dbname: "db.foo",
 		id:     "norev",
@@ -365,14 +366,11 @@ func TestGet(t *testing.T) {
 			dir = tempDir(t)
 			defer rmdir(t, dir)
 		}
-		db := &db{
-			client: &client{root: dir},
-			dbName: tt.dbname,
-			fs:     tt.fs,
+		fs := tt.fs
+		if fs == nil {
+			fs = filesystem.Default()
 		}
-		if db.fs == nil {
-			db.fs = filesystem.Default()
-		}
+		db := newDB(&client{root: dir, fs: fs}, tt.dbname)
 		if tt.setup != nil {
 			tt.setup(t, db)
 		}
