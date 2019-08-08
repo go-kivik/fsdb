@@ -64,6 +64,22 @@ func TestFSOpen(t *testing.T) {
 		root:  "testdata/open",
 		docID: "nomain",
 	})
+	tests.Add("json auto rev number", tt{
+		root:  "testdata/open",
+		docID: "jsonautorevnum",
+	})
+	tests.Add("yaml auto rev number", tt{
+		root:  "testdata/open",
+		docID: "yamlautorevnum",
+	})
+	tests.Add("json auto rev string", tt{
+		root:  "testdata/open",
+		docID: "jsonautorevstr",
+	})
+	tests.Add("yaml auto rev string", tt{
+		root:  "testdata/open",
+		docID: "yamlautorevstr",
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		fs := New(tt.root, tt.fs)
