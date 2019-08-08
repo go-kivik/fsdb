@@ -40,6 +40,9 @@ func (fs *FS) Open(docID string) (*Document, error) {
 	if err := decode.Decode(f, ext, rev); err != nil {
 		return nil, err
 	}
+	if rev.Rev.IsZero() {
+		rev.Rev = RevID{Seq: 1}
+	}
 	rev.path = filepath.Join(fs.root, base)
 	rev.fs = fs.fs
 	doc := &Document{
