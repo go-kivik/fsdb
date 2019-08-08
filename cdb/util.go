@@ -55,6 +55,13 @@ func copyDigest(tgt io.Writer, dst io.Reader) (int64, string, error) {
 	return written, "md5-" + base64.StdEncoding.EncodeToString(h.Sum(nil)), err
 }
 
+func digest(r io.Reader) (int64, string, error) {
+	h := md5.New()
+	written, err := io.Copy(h, r)
+	return written, "md5-" + base64.StdEncoding.EncodeToString(h.Sum(nil)), err
+
+}
+
 func joinJSON(objects ...json.RawMessage) []byte {
 	var size int
 	for _, obj := range objects {

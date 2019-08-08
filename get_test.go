@@ -60,16 +60,16 @@ func TestGet(t *testing.T) {
 			Rev:           "1-xxxxxxxxxx",
 		},
 	})
-	// tests.Add("success, attachment stub", tt{
-	// 	// done
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "withattach",
-	// 	expected: &driver.Document{
-	// 		ContentLength: 193,
-	// 		Rev:           "2-yyyyyyyyy",
-	// 	},
-	// })
+	tests.Add("success, attachment stub", tt{
+		// done
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "withattach",
+		expected: &driver.Document{
+			ContentLength: 185,
+			Rev:           "2-yyyyyyyyy",
+		},
+	})
 	// tests.Add("success, include attachments", tt{
 	// 	path:    "testdata",
 	// 	dbname:  "db.foo",

@@ -4,6 +4,7 @@
     "_attachments": {
         "foo.txt": {
             "content_type": "text/plain",
+            "revpos": 1,
             "data": "VGVzdCBmaWxlCg==",
             "length": 10,
             "digest": "md5-cff5tj+J3vS8OVU4L55cEw=="

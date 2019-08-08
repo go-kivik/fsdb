@@ -90,7 +90,8 @@ func TestFSOpen(t *testing.T) {
 		result, err := fs.Open(tt.docID)
 		testy.StatusError(t, tt.err, tt.status, err)
 		result.Options = kivik.Options{
-			"_revs": true,
+			"revs":        true,
+			"attachments": true,
 		}
 		if d := testy.DiffAsJSON(testy.Snapshot(t), result); d != nil {
 			t.Error(d)

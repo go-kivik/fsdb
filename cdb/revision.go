@@ -86,13 +86,18 @@ func (r *Revision) finalizeUnmarshal() error {
 			IDs:   ids,
 		}
 	}
+	for _, att := range r.Attachments {
+		if att.RevPos == 0 {
+			att.RevPos = r.Rev.Seq
+		}
+	}
 	return nil
 }
 
 // MarshalJSON satisfies the json.Marshaler interface
 func (r *Revision) MarshalJSON() ([]byte, error) {
 	var meta interface{} = r.RevMeta
-	if revs, _ := r.options["_revs"].(bool); !revs {
+	if revs, _ := r.options["revs"].(bool); !revs {
 		meta = struct {
 			RevMeta
 			// This suppresses RevHistory from being included in the default output
@@ -100,6 +105,11 @@ func (r *Revision) MarshalJSON() ([]byte, error) {
 		}{
 			RevMeta: r.RevMeta,
 		}
+	}
+	attachments, _ := r.options["attachments"].(bool)
+	for _, att := range r.Attachments {
+		att.Follows = false
+		att.Stub = !attachments
 	}
 	parts := make([]json.RawMessage, 0, 2)
 	metaJSON, err := json.Marshal(meta)

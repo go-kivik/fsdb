@@ -26,17 +26,53 @@ type Attachment struct {
 
 // MarshalJSON implements the json.Marshaler interface.
 func (a *Attachment) MarshalJSON() ([]byte, error) {
-	if a.path != "" {
-		f, err := a.fs.Open(a.path)
-		if err != nil {
+	if a.Stub || a.Follows {
+		if err := a.readMetadata(); err != nil {
 			return nil, err
 		}
-		buf := &bytes.Buffer{}
-		a.Size, a.Digest, err = copyDigest(buf, f)
-		if err != nil {
+	} else {
+		if err := a.readContent(); err != nil {
 			return nil, err
 		}
-		a.Content = buf.Bytes()
 	}
-	return json.Marshal(*a)
+	att := struct {
+		Attachment
+		Stub    *bool `json:"stub,omitempty"`
+		Follows *bool `json:"follows,omitempty"`
+	}{
+		Attachment: *a,
+	}
+	if a.Stub {
+		att.Stub = &a.Stub
+	}
+	if a.Follows {
+		att.Follows = &a.Follows
+	}
+	return json.Marshal(att)
+}
+
+func (a *Attachment) readContent() error {
+	f, err := a.fs.Open(a.path)
+	if err != nil {
+		return err
+	}
+	buf := &bytes.Buffer{}
+	a.Size, a.Digest, err = copyDigest(buf, f)
+	if err != nil {
+		return err
+	}
+	a.Content = buf.Bytes()
+	return nil
+}
+
+func (a *Attachment) readMetadata() error {
+	f, err := a.fs.Open(a.path)
+	if err != nil {
+		return err
+	}
+	a.Size, a.Digest, err = digest(f)
+	if err != nil {
+		return err
+	}
+	return nil
 }
