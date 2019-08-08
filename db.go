@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/go-kivik/fsdb/cdb"
 	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/kivik/driver"
 	"github.com/go-kivik/kivik/errors"
@@ -14,6 +15,7 @@ type db struct {
 	*client
 	dbName string
 	fs     filesystem.Filesystem
+	cdb    *cdb.FS
 }
 
 var _ driver.DB = &db{}

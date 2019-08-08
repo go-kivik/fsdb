@@ -62,17 +62,30 @@ func TestGet(t *testing.T) {
 		dbname: "db.foo",
 		id:     "withattach",
 		expected: &driver.Document{
-			ContentLength: 193,
+			ContentLength: 185,
 			Rev:           "2-yyyyyyyyy",
 		},
 	})
-	tests.Add("success, include attachments", tt{
+	tests.Add("success, include mp attachments", tt{
 		path:    "testdata",
 		dbname:  "db.foo",
 		id:      "withattach",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{
-			ContentLength: 196,
+			ContentLength: 188,
+			Rev:           "2-yyyyyyyyy",
+		},
+	})
+	tests.Add("success, include inline attachments", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "withattach",
+		options: map[string]interface{}{
+			"attachments":   true,
+			"header:accept": "application/json",
+		},
+		expected: &driver.Document{
+			ContentLength: 195,
 			Rev:           "2-yyyyyyyyy",
 		},
 	})
@@ -92,7 +105,7 @@ func TestGet(t *testing.T) {
 		id:      "withattach",
 		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
 		expected: &driver.Document{
-			ContentLength: 194,
+			ContentLength: 187,
 			Rev:           "1-xxxxxxxxxx",
 		},
 	})
@@ -306,7 +319,7 @@ func TestGet(t *testing.T) {
 		id:      "abortedput",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{
-			ContentLength: 196,
+			ContentLength: 188,
 			Rev:           "2-yyyyyyyyy",
 		},
 	})
@@ -361,14 +374,11 @@ func TestGet(t *testing.T) {
 			dir = tempDir(t)
 			defer rmdir(t, dir)
 		}
-		db := &db{
-			client: &client{root: dir},
-			dbName: tt.dbname,
-			fs:     tt.fs,
+		fs := tt.fs
+		if fs == nil {
+			fs = filesystem.Default()
 		}
-		if db.fs == nil {
-			db.fs = filesystem.Default()
-		}
+		db := newDB(&client{root: dir, fs: fs}, tt.dbname)
 		if tt.setup != nil {
 			tt.setup(t, db)
 		}
