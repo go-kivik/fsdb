@@ -44,5 +44,11 @@ func (fs *FS) Open(docID string) (*Document, error) {
 		ID:        docID,
 		Revisions: []*Revision{rev},
 	}
+	for _, rev := range doc.Revisions {
+		for filename, att := range rev.Attachments {
+			att.path = filepath.Join(fs.root, base, filename)
+			att.fs = fs.fs
+		}
+	}
 	return doc, nil
 }

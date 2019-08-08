@@ -20,9 +20,9 @@ var decoders = map[string]decoder{
 
 // OpenAny attempts to open base + any supported extension. It returns the open
 // file, the matched extension, or an error.
-func OpenAny(fs filesystem.Filesystem, base string) (f *os.File, ext string, err error) {
+func OpenAny(fs filesystem.Filesystem, base string) (f filesystem.File, ext string, err error) {
 	for ext = range decoders {
-		f, err = os.Open(base + "." + ext)
+		f, err = fs.Open(base + "." + ext)
 		if err == nil || !os.IsNotExist(err) {
 			return
 		}

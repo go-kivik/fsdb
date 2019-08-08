@@ -1,11 +1,14 @@
 package cdb
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
-	"github.com/go-kivik/fsdb/filesystem"
 	"gitlab.com/flimzy/testy"
+
+	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/kivik"
 )
 
 func TestFSOpen(t *testing.T) {
@@ -29,6 +32,25 @@ func TestFSOpen(t *testing.T) {
 	tests.Add("main rev only, yaml", tt{
 		root:  "testdata/open",
 		docID: "bar",
+	})
+	tests.Add("no id in doc", tt{
+		root:  "testdata/open",
+		docID: "noid",
+	})
+	tests.Add("forbidden", tt{
+		fs: &filesystem.MockFS{
+			OpenFunc: func(_ string) (filesystem.File, error) {
+				return nil, &kivik.Error{HTTPStatus: http.StatusForbidden, Err: errors.New("permission denied")}
+			},
+		},
+		root:   "doesntmatter",
+		docID:  "foo",
+		status: http.StatusForbidden,
+		err:    "permission denied",
+	})
+	tests.Add("attachment", tt{
+		root:  "testdata/open",
+		docID: "att",
 	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {

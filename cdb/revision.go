@@ -6,10 +6,10 @@ import (
 
 // RevMeta is the metadata stored in reach revision.
 type RevMeta struct {
-	Rev         RevID                 `json:"_rev" yaml:"_rev"`
-	Deleted     *bool                 `json:"_deleted,omitempty" yaml:"_deleted,omitempty"`
-	Attachments map[string]Attachment `json:"_attachments,omitempty", yaml:"_attachments,omitempty"`
-	RevHistory  *RevHistory           `json:"_revisions,omitempty" yaml:"_revisions,omitempty"`
+	Rev         RevID                  `json:"_rev" yaml:"_rev"`
+	Deleted     *bool                  `json:"_deleted,omitempty" yaml:"_deleted,omitempty"`
+	Attachments map[string]*Attachment `json:"_attachments,omitempty" yaml:"_attachments,omitempty"`
+	RevHistory  *RevHistory            `json:"_revisions,omitempty" yaml:"_revisions,omitempty"`
 }
 
 // Revision is a specific instance of a document.
