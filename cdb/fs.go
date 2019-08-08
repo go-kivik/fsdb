@@ -4,9 +4,11 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/go-kivik/fsdb/cdb/decode"
 	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/kivik"
 )
 
 // FS provides filesystem access to a
@@ -64,7 +66,7 @@ func (fs *FS) readSubRev(path string) (*Revision, error) {
 	return rev, nil
 }
 
-func (fs *FS) openRevs(docID string) ([]*Revision, error) {
+func (fs *FS) openRevs(docID, revid string) ([]*Revision, error) {
 	revs := make(Revisions, 0, 1)
 	base := escapeID(docID)
 	rev, err := fs.readMainRev(filepath.Join(fs.root, base))
@@ -72,7 +74,9 @@ func (fs *FS) openRevs(docID string) ([]*Revision, error) {
 		return nil, err
 	}
 	if err == nil {
-		revs = append(revs, rev)
+		if revid == "" || rev.Rev.String() == revid {
+			revs = append(revs, rev)
+		}
 	}
 	dirpath := filepath.Join(fs.root, "."+base)
 	dir, err := fs.fs.Open(dirpath)
@@ -87,6 +91,12 @@ func (fs *FS) openRevs(docID string) ([]*Revision, error) {
 		for _, info := range files {
 			if info.IsDir() {
 				continue
+			}
+			if revid != "" {
+				base := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
+				if base != revid {
+					continue
+				}
 			}
 			rev, err := fs.readSubRev(filepath.Join(dirpath, info.Name()))
 			switch {
@@ -106,8 +116,9 @@ func (fs *FS) openRevs(docID string) ([]*Revision, error) {
 }
 
 // Open opens the requested document.
-func (fs *FS) Open(docID string) (*Document, error) {
-	revs, err := fs.openRevs(docID)
+func (fs *FS) Open(docID string, opts kivik.Options) (*Document, error) {
+	rev, _ := opts["rev"].(string)
+	revs, err := fs.openRevs(docID, rev)
 	if err != nil {
 		return nil, err
 	}

@@ -13,11 +13,12 @@ import (
 
 func TestFSOpen(t *testing.T) {
 	type tt struct {
-		fs     filesystem.Filesystem
-		root   string
-		docID  string
-		status int
-		err    string
+		fs      filesystem.Filesystem
+		root    string
+		docID   string
+		options kivik.Options
+		status  int
+		err     string
 	}
 	tests := testy.NewTable()
 	tests.Add("not found", tt{
@@ -87,7 +88,7 @@ func TestFSOpen(t *testing.T) {
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		fs := New(tt.root, tt.fs)
-		result, err := fs.Open(tt.docID)
+		result, err := fs.Open(tt.docID, tt.options)
 		testy.StatusError(t, tt.err, tt.status, err)
 		result.Options = kivik.Options{
 			"revs":          true,

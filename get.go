@@ -27,7 +27,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	if docID == "" {
 		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no docid specified"}
 	}
-	doc, err := d.cdb.Open(docID)
+	doc, err := d.cdb.Open(docID, opts)
 	if err != nil {
 		return nil, err
 	}

@@ -93,26 +93,26 @@ func TestGet(t *testing.T) {
 			Rev:           "2-yyyyyyyyy",
 		},
 	})
-	// tests.Add("specify current rev", tt{
-	// 	path:    "testdata",
-	// 	dbname:  "db.foo",
-	// 	id:      "noattach",
-	// 	options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 53,
-	// 		Rev:           "1-xxxxxxxxxx",
-	// 	},
-	// })
-	// tests.Add("specify old rev", tt{
-	// 	path:    "testdata",
-	// 	dbname:  "db.foo",
-	// 	id:      "withattach",
-	// 	options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 194,
-	// 		Rev:           "1-xxxxxxxxxx",
-	// 	},
-	// })
+	tests.Add("specify current rev", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "noattach",
+		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
+		expected: &driver.Document{
+			ContentLength: 53,
+			Rev:           "1-xxxxxxxxxx",
+		},
+	})
+	tests.Add("specify old rev", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "withattach",
+		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
+		expected: &driver.Document{
+			ContentLength: 187,
+			Rev:           "1-xxxxxxxxxx",
+		},
+	})
 	// tests.Add("autorev", tt{
 	// 	path:   "testdata",
 	// 	dbname: "db.foo",
