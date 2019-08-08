@@ -239,28 +239,28 @@ func TestGet(t *testing.T) {
 			Rev:           "1-fbaabe005e0f4e5685a68f857c0777d6",
 		},
 	})
-	// tests.Add("note--XkWjFv13acvjJTt-CGJJ8hXlWE + attachments", tt{
-	// 	path:    "testdata",
-	// 	dbname:  "db.att",
-	// 	id:      "note--XkWjFv13acvjJTt-CGJJ8hXlWE",
-	// 	options: kivik.Options{"attachments": true},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 852,
-	// 		Rev:           "1-fbaabe005e0f4e5685a68f857c0777d6",
-	// 	},
-	// })
-	// tests.Add("revs_info=true", tt{
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "autorev",
-	// 	options: kivik.Options{
-	// 		"revs_info": true,
-	// 	},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 91,
-	// 		Rev:           "6-",
-	// 	},
-	// })
+	tests.Add("note--XkWjFv13acvjJTt-CGJJ8hXlWE + attachments", tt{
+		path:    "testdata",
+		dbname:  "db.att",
+		id:      "note--XkWjFv13acvjJTt-CGJJ8hXlWE",
+		options: kivik.Options{"attachments": true},
+		expected: &driver.Document{
+			ContentLength: 852,
+			Rev:           "1-fbaabe005e0f4e5685a68f857c0777d6",
+		},
+	})
+	tests.Add("revs_info=true", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "autorev",
+		options: kivik.Options{
+			"revs_info": true,
+		},
+		expected: &driver.Document{
+			ContentLength: 91,
+			Rev:           "6-",
+		},
+	})
 	// tests.Add("revs, explicit", tt{
 	// 	path:    "testdata",
 	// 	dbname:  "db.foo",
