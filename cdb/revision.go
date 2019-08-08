@@ -37,10 +37,7 @@ func (r *Revision) UnmarshalJSON(p []byte) error {
 	if err := json.Unmarshal(p, &r.Data); err != nil {
 		return err
 	}
-	for key := range reservedKeys {
-		delete(r.Data, key)
-	}
-	return nil
+	return r.finalizeUnmarshal()
 }
 
 // UnmarshalYAML satisfies the yaml.Unmarshaler interface.
@@ -51,6 +48,10 @@ func (r *Revision) UnmarshalYAML(u func(interface{}) error) error {
 	if err := u(&r.Data); err != nil {
 		return err
 	}
+	return r.finalizeUnmarshal()
+}
+
+func (r *Revision) finalizeUnmarshal() error {
 	for key := range reservedKeys {
 		delete(r.Data, key)
 	}
