@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/kivik"
+	"github.com/icza/dyno"
 )
 
 // RevMeta is the metadata stored in reach revision.
@@ -54,6 +55,7 @@ func (r *Revision) UnmarshalYAML(u func(interface{}) error) error {
 	if err := u(&r.Data); err != nil {
 		return err
 	}
+	r.Data = dyno.ConvertMapI2MapS(r.Data).(map[string]interface{})
 	return r.finalizeUnmarshal()
 }
 

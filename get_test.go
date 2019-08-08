@@ -28,18 +28,15 @@ func TestGet(t *testing.T) {
 	}
 	tests := testy.NewTable()
 	tests.Add("no id", tt{
-		// done
 		status: http.StatusBadRequest,
 		err:    "no docid specified",
 	})
 	tests.Add("not found", tt{
-		// done
 		id:     "foo",
 		status: http.StatusNotFound,
 		err:    `^missing$`,
 	})
 	tests.Add("forbidden", func(t *testing.T) interface{} {
-		// done
 		return tt{
 			fs: &filesystem.MockFS{
 				OpenFunc: func(_ string) (filesystem.File, error) {
@@ -61,7 +58,6 @@ func TestGet(t *testing.T) {
 		},
 	})
 	tests.Add("success, attachment stub", tt{
-		// done
 		path:   "testdata",
 		dbname: "db.foo",
 		id:     "withattach",
@@ -113,137 +109,136 @@ func TestGet(t *testing.T) {
 			Rev:           "1-xxxxxxxxxx",
 		},
 	})
-	// tests.Add("autorev", tt{
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "autorev",
-	// 	expected: &driver.Document{
-	// 		ContentLength: 42,
-	// 		Rev:           "6-",
-	// 	},
-	// })
-	// tests.Add("intrev", tt{
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "intrev",
-	// 	expected: &driver.Document{
-	// 		ContentLength: 41,
-	// 		Rev:           "6-",
-	// 	},
-	// })
-	// tests.Add("norev", tt{
-	// 	// done
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "norev",
-	// 	expected: &driver.Document{
-	// 		ContentLength: 40,
-	// 		Rev:           "1-",
-	// 	},
-	// })
-	// tests.Add("noid", tt{
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "noid",
-	// 	expected: &driver.Document{
-	// 		ContentLength: 39,
-	// 		Rev:           "6-",
-	// 	},
-	// })
-	// tests.Add("wrong id", tt{
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "wrongid",
-	// 	expected: &driver.Document{
-	// 		ContentLength: 42,
-	// 		Rev:           "6-",
-	// 	},
-	// })
-	// tests.Add("yaml", tt{
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "yamltest",
-	// 	expected: &driver.Document{
-	// 		ContentLength: 43,
-	// 		Rev:           "3-",
-	// 	},
-	// })
-	// tests.Add("specify current rev yaml", tt{
-	// 	path:    "testdata",
-	// 	dbname:  "db.foo",
-	// 	id:      "yamltest",
-	// 	options: map[string]interface{}{"rev": "3-"},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 43,
-	// 		Rev:           "3-",
-	// 	},
-	// })
-	// tests.Add("specify old rev yaml", tt{
-	// 	path:    "testdata",
-	// 	dbname:  "db.foo",
-	// 	id:      "yamltest",
-	// 	options: map[string]interface{}{"rev": "2-xxx"},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 46,
-	// 		Rev:           "2-xxx",
-	// 	},
-	// })
-	// tests.Add("specify bogus rev yaml", tt{
-	// 	path:    "testdata",
-	// 	dbname:  "db.foo",
-	// 	id:      "yamltest",
-	// 	options: map[string]interface{}{"rev": "1-oink"},
-	// 	status:  http.StatusNotFound,
-	// 	err:     "missing",
-	// })
-	// tests.Add("ddoc yaml", tt{
-	// 	path:   "testdata",
-	// 	dbname: "db.foo",
-	// 	id:     "_design/users",
-	// 	expected: &driver.Document{
-	// 		ContentLength: 115,
-	// 		Rev:           "2-",
-	// 	},
-	// })
-	// tests.Add("ddoc rev yaml", tt{
-	// 	path:    "testdata",
-	// 	dbname:  "db.foo",
-	// 	id:      "_design/users",
-	// 	options: map[string]interface{}{"rev": "2-"},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 115,
-	// 		Rev:           "2-",
-	// 	},
-	// })
-	// tests.Add("revs", tt{
-	// 	path:    "testdata",
-	// 	dbname:  "db.foo",
-	// 	id:      "wrongid",
-	// 	options: map[string]interface{}{"revs": true},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 93,
-	// 		Rev:           "6-",
-	// 	},
-	// })
-	// tests.Add("revs real", tt{
-	// 	path:    "testdata",
-	// 	dbname:  "db.foo",
-	// 	id:      "noattach",
-	// 	options: map[string]interface{}{"revs": true},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 99,
-	// 		Rev:           "1-xxxxxxxxxx",
-	// 	},
-	// })
-	// tests.Add("note--XkWjFv13acvjJTt-CGJJ8hXlWE", tt{
-	// 	path:   "testdata",
-	// 	dbname: "db.att",
-	// 	id:     "note--XkWjFv13acvjJTt-CGJJ8hXlWE",
-	// 	expected: &driver.Document{
-	// 		ContentLength: 849,
-	// 		Rev:           "1-fbaabe005e0f4e5685a68f857c0777d6",
-	// 	},
-	// })
+	tests.Add("autorev", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "autorev",
+		expected: &driver.Document{
+			ContentLength: 42,
+			Rev:           "6-",
+		},
+	})
+	tests.Add("intrev", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "intrev",
+		expected: &driver.Document{
+			ContentLength: 41,
+			Rev:           "6-",
+		},
+	})
+	tests.Add("norev", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "norev",
+		expected: &driver.Document{
+			ContentLength: 40,
+			Rev:           "1-",
+		},
+	})
+	tests.Add("noid", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "noid",
+		expected: &driver.Document{
+			ContentLength: 39,
+			Rev:           "6-",
+		},
+	})
+	tests.Add("wrong id", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "wrongid",
+		expected: &driver.Document{
+			ContentLength: 42,
+			Rev:           "6-",
+		},
+	})
+	tests.Add("yaml", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "yamltest",
+		expected: &driver.Document{
+			ContentLength: 43,
+			Rev:           "3-",
+		},
+	})
+	tests.Add("specify current rev yaml", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "yamltest",
+		options: map[string]interface{}{"rev": "3-"},
+		expected: &driver.Document{
+			ContentLength: 43,
+			Rev:           "3-",
+		},
+	})
+	tests.Add("specify old rev yaml", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "yamltest",
+		options: map[string]interface{}{"rev": "2-xxx"},
+		expected: &driver.Document{
+			ContentLength: 46,
+			Rev:           "2-xxx",
+		},
+	})
+	tests.Add("specify bogus rev yaml", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "yamltest",
+		options: map[string]interface{}{"rev": "1-oink"},
+		status:  http.StatusNotFound,
+		err:     "missing",
+	})
+	tests.Add("ddoc yaml", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "_design/users",
+		expected: &driver.Document{
+			ContentLength: 115,
+			Rev:           "2-",
+		},
+	})
+	tests.Add("ddoc rev yaml", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "_design/users",
+		options: map[string]interface{}{"rev": "2-"},
+		expected: &driver.Document{
+			ContentLength: 115,
+			Rev:           "2-",
+		},
+	})
+	tests.Add("revs", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "wrongid",
+		options: map[string]interface{}{"revs": true},
+		expected: &driver.Document{
+			ContentLength: 93,
+			Rev:           "6-",
+		},
+	})
+	tests.Add("revs real", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "noattach",
+		options: map[string]interface{}{"revs": true},
+		expected: &driver.Document{
+			ContentLength: 99,
+			Rev:           "1-xxxxxxxxxx",
+		},
+	})
+	tests.Add("note--XkWjFv13acvjJTt-CGJJ8hXlWE", tt{
+		path:   "testdata",
+		dbname: "db.att",
+		id:     "note--XkWjFv13acvjJTt-CGJJ8hXlWE",
+		expected: &driver.Document{
+			ContentLength: 849,
+			Rev:           "1-fbaabe005e0f4e5685a68f857c0777d6",
+		},
+	})
 	// tests.Add("note--XkWjFv13acvjJTt-CGJJ8hXlWE + attachments", tt{
 	// 	path:    "testdata",
 	// 	dbname:  "db.att",
