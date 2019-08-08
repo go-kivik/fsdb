@@ -3,6 +3,7 @@ package decode
 import (
 	"io"
 	"os"
+	"strings"
 
 	"github.com/go-kivik/fsdb/filesystem"
 	"golang.org/x/xerrors"
@@ -32,6 +33,7 @@ func OpenAny(fs filesystem.Filesystem, base string) (f filesystem.File, ext stri
 
 // Decode decodes r according to ext's registered decoder, into i.
 func Decode(r io.Reader, ext string, i interface{}) error {
+	ext = strings.TrimPrefix(ext, ".")
 	dec, ok := decoders[ext]
 	if !ok {
 		return xerrors.Errorf("No decoder for %s", ext)

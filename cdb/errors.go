@@ -1,6 +1,7 @@
 package cdb
 
 import (
+	"errors"
 	"net/http"
 	"os"
 
@@ -9,7 +10,8 @@ import (
 )
 
 var (
-	errNotFound = &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "missing"}
+	errNotFound         = &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "missing"}
+	errUnrecognizedFile = errors.New("unrecognized file")
 )
 
 // missing transforms a NotExist error into a standard CouchDBesque 'missing'

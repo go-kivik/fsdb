@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/go-kivik/fsdb/filesystem"
@@ -95,4 +96,23 @@ func (r *Revision) openAttachment(filename string) (string, filesystem.File, err
 		}
 	}
 	return "", nil, errNotFound
+}
+
+// Revisions is a sortable list of document revisions.
+type Revisions []*Revision
+
+var _ sort.Interface = Revisions{}
+
+// Len returns the number of elements in r.
+func (r Revisions) Len() int {
+	return len(r)
+}
+
+func (r Revisions) Less(i, j int) bool {
+	return r[i].Rev.Seq > r[j].Rev.Seq ||
+		(r[i].Rev.Seq == r[j].Rev.Seq && r[i].Rev.Sum > r[j].Rev.Sum)
+}
+
+func (r Revisions) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
 }
