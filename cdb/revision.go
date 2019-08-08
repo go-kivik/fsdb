@@ -21,9 +21,9 @@ type RevMeta struct {
 
 	// isMain should be set to true when unmarshaling the main Rev, to enable
 	// auto-population of the _rev key, if necessary
-	isMain bool
-	path   string
-	fs     filesystem.Filesystem
+	isMain bool                  // nolint: structcheck
+	path   string                // nolint: structcheck
+	fs     filesystem.Filesystem // nolint: structcheck
 }
 
 // Revision is a specific instance of a document.
@@ -33,7 +33,7 @@ type Revision struct {
 	// Data is the normal payload
 	Data map[string]interface{} `json:"-" yaml:"-"`
 
-	options kivik.Options `json:"-" yaml:"-"`
+	options kivik.Options
 }
 
 // UnmarshalJSON satisfies the json.Unmarshaler interface.
@@ -107,7 +107,7 @@ func (r *Revision) MarshalJSON() ([]byte, error) {
 		meta = struct {
 			RevMeta
 			// This suppresses RevHistory from being included in the default output
-			RevHistory *RevHistory `json:"_revisions,omitempty"`
+			RevHistory *RevHistory `json:"_revisions,omitempty"` // nolint: govet
 		}{
 			RevMeta: r.RevMeta,
 		}

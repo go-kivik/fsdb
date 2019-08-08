@@ -33,9 +33,11 @@ func escapeID(id string) string {
 	return id
 }
 
+/*
 func unescapeID(filename string) (string, error) {
 	return url.PathUnescape(filename)
 }
+*/
 
 // copyDigest works the same as io.Copy, but also returns the md5sum digest of
 // the copied file.

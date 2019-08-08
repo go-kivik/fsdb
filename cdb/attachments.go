@@ -48,8 +48,8 @@ func (a *Attachment) MarshalJSON() ([]byte, error) {
 	}
 	att := struct {
 		Attachment
-		Stub    *bool `json:"stub,omitempty"`
-		Follows *bool `json:"follows,omitempty"`
+		Stub    *bool `json:"stub,omitempty"`    // nolint: govet
+		Follows *bool `json:"follows,omitempty"` // nolint: govet
 	}{
 		Attachment: *a,
 	}
