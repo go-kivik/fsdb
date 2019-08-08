@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/go-kivik/fsdb/cdb/decode"
 	"github.com/go-kivik/fsdb/filesystem"
@@ -39,25 +38,17 @@ func (fs *FS) readMainRev(base string) (*Revision, error) {
 	}
 	defer f.Close() // nolint: errcheck
 	rev := new(Revision)
-	if err := decode.Decode(f, ext, rev); err != nil {
-		return nil, err
-	}
+	rev.isMain = true
 	rev.path = base + "." + ext
 	rev.fs = fs.fs
-	if rev.Rev.IsZero() {
-		rev.Rev = RevID{Seq: 1}
+	if err := decode.Decode(f, ext, rev); err != nil {
+		return nil, err
 	}
 	return rev, nil
 }
 
 func (fs *FS) readSubRev(path string) (*Revision, error) {
 	ext := filepath.Ext(path)
-	var revid RevID
-	basename := filepath.Base(strings.TrimSuffix(path, ext))
-	if err := revid.UnmarshalText([]byte(basename)); err != nil {
-		// skip unrecognized files
-		return nil, errUnrecognizedFile
-	}
 
 	f, err := fs.fs.Open(path)
 	if err != nil {
@@ -65,12 +56,11 @@ func (fs *FS) readSubRev(path string) (*Revision, error) {
 	}
 	defer f.Close() // nolint: errcheck
 	rev := new(Revision)
+	rev.path = path
+	rev.fs = fs.fs
 	if err := decode.Decode(f, ext, rev); err != nil {
 		return nil, err
 	}
-	rev.path = path
-	rev.fs = fs.fs
-	rev.Rev = revid
 	return rev, nil
 }
 

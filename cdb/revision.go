@@ -17,8 +17,11 @@ type RevMeta struct {
 	Attachments map[string]*Attachment `json:"_attachments,omitempty" yaml:"_attachments,omitempty"`
 	RevHistory  *RevHistory            `json:"_revisions,omitempty" yaml:"_revisions,omitempty"`
 
-	path string
-	fs   filesystem.Filesystem
+	// isMain should be set to true when unmarshaling the main Rev, to enable
+	// auto-population of the _rev key, if necessary
+	isMain bool
+	path   string
+	fs     filesystem.Filesystem
 }
 
 // Revision is a specific instance of a document.
@@ -54,6 +57,31 @@ func (r *Revision) UnmarshalYAML(u func(interface{}) error) error {
 func (r *Revision) finalizeUnmarshal() error {
 	for key := range reservedKeys {
 		delete(r.Data, key)
+	}
+	if r.isMain && r.Rev.IsZero() {
+		r.Rev = RevID{Seq: 1}
+	}
+	if !r.isMain && r.path != "" {
+		revstr := filepath.Base(strings.TrimSuffix(r.path, filepath.Ext(r.path)))
+		if err := r.Rev.UnmarshalText([]byte(revstr)); err != nil {
+			return errUnrecognizedFile
+		}
+	}
+	if r.RevHistory == nil {
+		var ids []string
+		if r.Rev.Sum == "" {
+			histSize := r.Rev.Seq
+			if histSize > revsLimit {
+				histSize = revsLimit
+			}
+			ids = make([]string, int(histSize))
+		} else {
+			ids = []string{r.Rev.Sum}
+		}
+		r.RevHistory = &RevHistory{
+			Start: r.Rev.Seq,
+			IDs:   ids,
+		}
 	}
 	return nil
 }
