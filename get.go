@@ -27,67 +27,66 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	if docID == "" {
 		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no docid specified"}
 	}
-	_, err := d.cdb.Open(docID)
+	doc, err := d.cdb.Open(docID)
 	if err != nil {
 		return nil, err
 	}
-	ndoc, err := d.get(ctx, docID, opts)
-	if err != nil {
-		return nil, err
-	}
-	doc := &driver.Document{
-		Rev: ndoc.Rev.String(),
-	}
-	for _, att := range ndoc.Attachments {
-		if att.RevPos == 0 {
-			att.RevPos = ndoc.Rev.Seq
-		}
-	}
-	if ok, _ := opts["attachments"].(bool); ok {
-		atts := make(internal.Attachments)
-		for filename, att := range ndoc.Attachments {
-			f, err := d.openAttachment(ctx, docID, ndoc.Revisions, filename)
-			if err != nil {
-				return nil, err
-			}
-			info, err := f.Stat()
-			if err != nil {
-				return nil, kerr(err)
-			}
-			att.Stub = false
-			att.Follows = true
-			att.Content = f
-			atts[filename] = &internal.Attachment{
-				Content:     f,
-				Size:        info.Size(),
-				ContentType: att.ContentType,
-				Digest:      att.ContentType,
-				RevPos:      att.RevPos,
-			}
-		}
-		doc.Attachments = atts
-	}
-	if ndoc.ID != docID {
-		ndoc.ID = docID
-	}
-	if _, ok := opts["revs"]; !ok {
-		ndoc.Revisions = nil
-	}
-	if _, ok := opts["rev"]; ok {
-		ndoc.Revisions = nil
-	} else {
-		if ok, _ := opts["revs_info"].(bool); ok {
-			ndoc.RevsInfo = ndoc.GetRevsInfo()
-		}
-	}
+	// ndoc, err := d.get(ctx, docID, opts)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// for _, att := range ndoc.Attachments {
+	// 	if att.RevPos == 0 {
+	// 		att.RevPos = ndoc.Rev.Seq
+	// 	}
+	// }
+	// if ok, _ := opts["attachments"].(bool); ok {
+	// 	atts := make(internal.Attachments)
+	// 	for filename, att := range ndoc.Attachments {
+	// 		f, err := d.openAttachment(ctx, docID, ndoc.Revisions, filename)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		info, err := f.Stat()
+	// 		if err != nil {
+	// 			return nil, kerr(err)
+	// 		}
+	// 		att.Stub = false
+	// 		att.Follows = true
+	// 		att.Content = f
+	// 		atts[filename] = &internal.Attachment{
+	// 			Content:     f,
+	// 			Size:        info.Size(),
+	// 			ContentType: att.ContentType,
+	// 			Digest:      att.ContentType,
+	// 			RevPos:      att.RevPos,
+	// 		}
+	// 	}
+	// 	doc.Attachments = atts
+	// }
+	// if ndoc.ID != docID {
+	// 	ndoc.ID = docID
+	// }
+	// if _, ok := opts["revs"]; !ok {
+	// 	ndoc.Revisions = nil
+	// }
+	// if _, ok := opts["rev"]; ok {
+	// 	ndoc.Revisions = nil
+	// } else {
+	// 	if ok, _ := opts["revs_info"].(bool); ok {
+	// 		ndoc.RevsInfo = ndoc.GetRevsInfo()
+	// 	}
+	// }
+	doc.Options = opts
 	buf := &bytes.Buffer{}
-	if err := json.NewEncoder(buf).Encode(ndoc); err != nil {
+	if err := json.NewEncoder(buf).Encode(doc); err != nil {
 		return nil, err
 	}
-	doc.Body = ioutil.NopCloser(buf)
-	doc.Rev = ndoc.Rev.String()
-	doc.ContentLength = int64(buf.Len())
-	return doc, nil
+	return &driver.Document{
+		Rev:           doc.Revisions[0].Rev.String(),
+		Body:          ioutil.NopCloser(buf),
+		ContentLength: int64(buf.Len()),
+	}, nil
 }
 
 func (d *db) openAttachment(ctx context.Context, docID string, revs *internal.Revisions, filename string) (filesystem.File, error) {

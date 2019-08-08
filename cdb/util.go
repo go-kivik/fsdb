@@ -3,6 +3,7 @@ package cdb
 import (
 	"crypto/md5"
 	"encoding/base64"
+	"encoding/json"
 	"io"
 	"net/url"
 	"sync"
@@ -54,7 +55,7 @@ func copyDigest(tgt io.Writer, dst io.Reader) (int64, string, error) {
 	return written, "md5-" + base64.StdEncoding.EncodeToString(h.Sum(nil)), err
 }
 
-func joinJSON(objects ...[]byte) []byte {
+func joinJSON(objects ...json.RawMessage) []byte {
 	var size int
 	for _, obj := range objects {
 		size += len(obj)

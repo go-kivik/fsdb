@@ -1,7 +1,9 @@
 // Package cdb provides the core CouchDB types.
 package cdb
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // RevHistory represents the recent ancestors of a revision.
 type RevHistory struct {

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/kivik"
 )
 
 // RevMeta is the metadata stored in reach revision.
@@ -30,6 +31,8 @@ type Revision struct {
 
 	// Data is the normal payload
 	Data map[string]interface{} `json:"-" yaml:"-"`
+
+	options kivik.Options `json:"-" yaml:"-"`
 }
 
 // UnmarshalJSON satisfies the json.Unmarshaler interface.
@@ -88,18 +91,30 @@ func (r *Revision) finalizeUnmarshal() error {
 
 // MarshalJSON satisfies the json.Marshaler interface
 func (r *Revision) MarshalJSON() ([]byte, error) {
-	metaJSON, err := json.Marshal(r.RevMeta)
+	var meta interface{} = r.RevMeta
+	if revs, _ := r.options["_revs"].(bool); !revs {
+		meta = struct {
+			RevMeta
+			// This suppresses RevHistory from being included in the default output
+			RevHistory *RevHistory `json:"_revisions,omitempty"`
+		}{
+			RevMeta: r.RevMeta,
+		}
+	}
+	parts := make([]json.RawMessage, 0, 2)
+	metaJSON, err := json.Marshal(meta)
 	if err != nil {
 		return nil, err
 	}
-	if len(r.Data) == 0 {
-		return metaJSON, nil
+	parts = append(parts, metaJSON)
+	if len(r.Data) > 0 {
+		dataJSON, err := json.Marshal(r.Data)
+		if err != nil {
+			return nil, err
+		}
+		parts = append(parts, dataJSON)
 	}
-	dataJSON, err := json.Marshal(r.Data)
-	if err != nil {
-		return nil, err
-	}
-	return joinJSON(metaJSON, dataJSON), nil
+	return joinJSON(parts...), nil
 }
 
 func (r *Revision) openAttachment(filename string) (string, filesystem.File, error) {
@@ -115,9 +130,10 @@ func (r *Revision) openAttachment(filename string) (string, filesystem.File, err
 		path += "." + basename
 	}
 	for _, rev := range r.RevHistory.ancestors() {
-		f, err := r.fs.Open(filepath.Join(path, rev, filename))
+		fullpath := filepath.Join(path, rev, filename)
+		f, err := r.fs.Open(fullpath)
 		if !os.IsNotExist(err) {
-			return filepath.Join(path, rev, filename), f, err
+			return fullpath, f, err
 		}
 	}
 	return "", nil, errNotFound
