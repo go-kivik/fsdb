@@ -40,13 +40,20 @@ func (fs *FS) Open(docID string) (*Document, error) {
 	if err := decode.Decode(f, ext, rev); err != nil {
 		return nil, err
 	}
+	rev.path = filepath.Join(fs.root, base)
+	rev.fs = fs.fs
 	doc := &Document{
 		ID:        docID,
 		Revisions: []*Revision{rev},
 	}
 	for _, rev := range doc.Revisions {
 		for filename, att := range rev.Attachments {
-			att.path = filepath.Join(fs.root, base, filename)
+			path, file, err := rev.openAttachment(filename)
+			if err != nil {
+				return nil, err
+			}
+			_ = file.Close()
+			att.path = path
 			att.fs = fs.fs
 		}
 	}

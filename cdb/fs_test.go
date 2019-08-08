@@ -52,6 +52,10 @@ func TestFSOpen(t *testing.T) {
 		root:  "testdata/open",
 		docID: "att",
 	})
+	tests.Add("attachments from multiple revs", tt{
+		root:  "testdata/open",
+		docID: "splitatts",
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		fs := New(tt.root, tt.fs)

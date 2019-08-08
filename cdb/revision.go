@@ -2,6 +2,11 @@ package cdb
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/go-kivik/fsdb/filesystem"
 )
 
 // RevMeta is the metadata stored in reach revision.
@@ -10,6 +15,9 @@ type RevMeta struct {
 	Deleted     *bool                  `json:"_deleted,omitempty" yaml:"_deleted,omitempty"`
 	Attachments map[string]*Attachment `json:"_attachments,omitempty" yaml:"_attachments,omitempty"`
 	RevHistory  *RevHistory            `json:"_revisions,omitempty" yaml:"_revisions,omitempty"`
+
+	path string
+	fs   filesystem.Filesystem
 }
 
 // Revision is a specific instance of a document.
@@ -66,4 +74,25 @@ func (r *Revision) MarshalJSON() ([]byte, error) {
 	result = append(result, ',')
 	result = append(result, dataJSON[1:]...)
 	return result, nil
+}
+
+func (r *Revision) openAttachment(filename string) (string, filesystem.File, error) {
+	path := strings.TrimSuffix(r.path, filepath.Ext(r.path))
+	f, err := r.fs.Open(filepath.Join(path, filename))
+	if !os.IsNotExist(err) {
+		return filepath.Join(path, filename), f, err
+	}
+	basename := filepath.Base(path)
+	path = strings.TrimSuffix(path, basename)
+	if basename != r.Rev.String() {
+		// We're working with the main rev
+		path += "." + basename
+	}
+	for _, rev := range r.RevHistory.ancestors() {
+		f, err := r.fs.Open(filepath.Join(path, rev, filename))
+		if !os.IsNotExist(err) {
+			return filepath.Join(path, rev, filename), f, err
+		}
+	}
+	return "", nil, errNotFound
 }

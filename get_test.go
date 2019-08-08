@@ -28,15 +28,18 @@ func TestGet(t *testing.T) {
 	}
 	tests := testy.NewTable()
 	tests.Add("no id", tt{
+		// done
 		status: http.StatusBadRequest,
 		err:    "no docid specified",
 	})
 	tests.Add("not found", tt{
+		// done
 		id:     "foo",
 		status: http.StatusNotFound,
 		err:    `^missing$`,
 	})
 	tests.Add("forbidden", func(t *testing.T) interface{} {
+		// done
 		return tt{
 			fs: &filesystem.MockFS{
 				OpenFunc: func(_ string) (filesystem.File, error) {
@@ -58,6 +61,7 @@ func TestGet(t *testing.T) {
 		},
 	})
 	tests.Add("success, attachment stub", tt{
+		// done
 		path:   "testdata",
 		dbname: "db.foo",
 		id:     "withattach",
