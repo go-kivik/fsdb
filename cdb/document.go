@@ -17,9 +17,5 @@ func (d *Document) MarshalJSON() ([]byte, error) {
 	idJSON, _ := json.Marshal(map[string]string{
 		"_id": d.ID,
 	})
-	result := make([]byte, 0, len(idJSON)+len(revJSON)-1)
-	result = append(result, idJSON[:len(idJSON)-1]...)
-	result = append(result, ',')
-	result = append(result, revJSON[1:]...)
-	return result, nil
+	return joinJSON(idJSON, revJSON), nil
 }

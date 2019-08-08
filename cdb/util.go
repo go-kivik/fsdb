@@ -53,3 +53,21 @@ func copyDigest(tgt io.Writer, dst io.Reader) (int64, string, error) {
 
 	return written, "md5-" + base64.StdEncoding.EncodeToString(h.Sum(nil)), err
 }
+
+func joinJSON(objects ...[]byte) []byte {
+	var size int
+	for _, obj := range objects {
+		size += len(obj)
+	}
+	result := make([]byte, 0, size)
+	result = append(result, '{')
+	for _, obj := range objects {
+		if len(obj) == 4 && string(obj) == "null" {
+			continue
+		}
+		result = append(result, obj[1:len(obj)-1]...)
+		result = append(result, ',')
+	}
+	result[len(result)-1] = '}'
+	return result
+}

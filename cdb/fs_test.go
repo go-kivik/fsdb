@@ -80,7 +80,7 @@ func TestFSOpen(t *testing.T) {
 		root:  "testdata/open",
 		docID: "yamlautorevstr",
 	})
-	tests.Add("multiple revs", tt{
+	tests.Add("multiple revs, winner selected", tt{
 		root:  "testdata/open",
 		docID: "multiplerevs",
 	})

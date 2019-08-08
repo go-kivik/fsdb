@@ -70,11 +70,7 @@ func (r *Revision) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	result := make([]byte, 0, len(dataJSON)+len(metaJSON)-1)
-	result = append(result, metaJSON[:len(metaJSON)-1]...)
-	result = append(result, ',')
-	result = append(result, dataJSON[1:]...)
-	return result, nil
+	return joinJSON(metaJSON, dataJSON), nil
 }
 
 func (r *Revision) openAttachment(filename string) (string, filesystem.File, error) {
