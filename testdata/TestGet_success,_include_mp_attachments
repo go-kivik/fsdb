@@ -3,9 +3,9 @@
         "foo.txt": {
             "content_type": "text/plain",
             "digest": "md5-7E1ZsnMvLxUyQKj/dGKCpg==",
+            "follows": true,
             "length": 8,
-            "revpos": 2,
-            "stub": true
+            "revpos": 2
         }
     },
     "_id": "withattach",

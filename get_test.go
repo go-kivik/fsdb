@@ -70,16 +70,29 @@ func TestGet(t *testing.T) {
 			Rev:           "2-yyyyyyyyy",
 		},
 	})
-	// tests.Add("success, include attachments", tt{
-	// 	path:    "testdata",
-	// 	dbname:  "db.foo",
-	// 	id:      "withattach",
-	// 	options: map[string]interface{}{"attachments": true},
-	// 	expected: &driver.Document{
-	// 		ContentLength: 196,
-	// 		Rev:           "2-yyyyyyyyy",
-	// 	},
-	// })
+	tests.Add("success, include mp attachments", tt{
+		path:    "testdata",
+		dbname:  "db.foo",
+		id:      "withattach",
+		options: map[string]interface{}{"attachments": true},
+		expected: &driver.Document{
+			ContentLength: 188,
+			Rev:           "2-yyyyyyyyy",
+		},
+	})
+	tests.Add("success, include inline attachments", tt{
+		path:   "testdata",
+		dbname: "db.foo",
+		id:     "withattach",
+		options: map[string]interface{}{
+			"attachments":   true,
+			"header:accept": "application/json",
+		},
+		expected: &driver.Document{
+			ContentLength: 195,
+			Rev:           "2-yyyyyyyyy",
+		},
+	})
 	// tests.Add("specify current rev", tt{
 	// 	path:    "testdata",
 	// 	dbname:  "db.foo",

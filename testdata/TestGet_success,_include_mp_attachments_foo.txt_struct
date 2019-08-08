@@ -1,10 +1,10 @@
 {
     "content_type": "text/plain",
     "stub": false,
-    "follows": false,
+    "follows": true,
     "length": 8,
     "encoding": "",
     "encoded_length": 0,
     "revpos": 2,
-    "digest": "text/plain"
+    "digest": "md5-7E1ZsnMvLxUyQKj/dGKCpg=="
 }

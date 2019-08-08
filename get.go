@@ -82,10 +82,15 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	if err := json.NewEncoder(buf).Encode(doc); err != nil {
 		return nil, err
 	}
+	attsIter, err := doc.Revisions[0].AttachmentsIterator()
+	if err != nil {
+		return nil, err
+	}
 	return &driver.Document{
 		Rev:           doc.Revisions[0].Rev.String(),
 		Body:          ioutil.NopCloser(buf),
 		ContentLength: int64(buf.Len()),
+		Attachments:   attsIter,
 	}, nil
 }
 

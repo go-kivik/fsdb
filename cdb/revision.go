@@ -106,10 +106,10 @@ func (r *Revision) MarshalJSON() ([]byte, error) {
 			RevMeta: r.RevMeta,
 		}
 	}
-	attachments, _ := r.options["attachments"].(bool)
+	stub, follows := r.stubFollows()
 	for _, att := range r.Attachments {
-		att.Follows = false
-		att.Stub = !attachments
+		att.Stub = stub
+		att.Follows = follows
 	}
 	parts := make([]json.RawMessage, 0, 2)
 	metaJSON, err := json.Marshal(meta)
@@ -125,6 +125,15 @@ func (r *Revision) MarshalJSON() ([]byte, error) {
 		parts = append(parts, dataJSON)
 	}
 	return joinJSON(parts...), nil
+}
+
+func (r *Revision) stubFollows() (bool, bool) {
+	attachments, _ := r.options["attachments"].(bool)
+	if !attachments {
+		return true, false
+	}
+	accept, _ := r.options["header:accept"].(string)
+	return false, accept != "application/json"
 }
 
 func (r *Revision) openAttachment(filename string) (string, filesystem.File, error) {
