@@ -192,3 +192,14 @@ func (r *Revision) Delete(ctx context.Context) error {
 	attpath := strings.TrimSuffix(r.path, filepath.Ext(r.path))
 	return os.RemoveAll(attpath)
 }
+
+// NewRevision creates a new revision from i, according to opts.
+func NewRevision(i interface{}) (*Revision, error) {
+	data, err := json.Marshal(i)
+	if err != nil {
+		return nil, err
+	}
+	rev := new(Revision)
+	err = json.Unmarshal(data, &rev)
+	return rev, err
+}

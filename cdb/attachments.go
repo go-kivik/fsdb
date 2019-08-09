@@ -37,14 +37,17 @@ func (a *Attachment) Open() (filesystem.File, error) {
 
 // MarshalJSON implements the json.Marshaler interface.
 func (a *Attachment) MarshalJSON() ([]byte, error) {
-	if a.Stub || a.Follows {
-		if err := a.readMetadata(); err != nil {
-			return nil, err
-		}
-	} else {
-		if err := a.readContent(); err != nil {
-			return nil, err
-		}
+	var err error
+	switch {
+	case len(a.Content) != 0:
+		err = a.setMetadata()
+	case a.Stub || a.Follows:
+		err = a.readMetadata()
+	default:
+		err = a.readContent()
+	}
+	if err != nil {
+		return nil, err
 	}
 	att := struct {
 		Attachment
@@ -82,10 +85,14 @@ func (a *Attachment) readMetadata() error {
 		return err
 	}
 	a.Size, a.Digest, err = digest(f)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
+}
+
+func (a *Attachment) setMetadata() error {
+	a.Size = int64(len(a.Content))
+	var err error
+	_, a.Digest, err = digest(bytes.NewReader(a.Content))
+	return err
 }
 
 type attsIter []*driver.Attachment
