@@ -115,8 +115,8 @@ func (fs *FS) openRevs(docID, revid string) ([]*Revision, error) {
 	return revs, nil
 }
 
-// Open opens the requested document.
-func (fs *FS) Open(docID string, opts kivik.Options) (*Document, error) {
+// OpenDocID opens the requested document by ID (without file extension).
+func (fs *FS) OpenDocID(docID string, opts kivik.Options) (*Document, error) {
 	rev, _ := opts["rev"].(string)
 	revs, err := fs.openRevs(docID, rev)
 	if err != nil {
