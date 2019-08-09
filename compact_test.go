@@ -76,6 +76,17 @@ func TestCompact(t *testing.T) {
 			dbname: "compact.nowinner_noatt",
 		}
 	})
+	tests.Add("clean up old revs", func(t *testing.T) interface{} {
+		tmpdir := copyDir(t, "testdata/compact.oldrevs", 1)
+		tests.Cleanup(func() error {
+			return os.RemoveAll(tmpdir)
+		})
+
+		return tt{
+			path:   tmpdir,
+			dbname: "compact.oldrevs",
+		}
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		fs := tt.fs
