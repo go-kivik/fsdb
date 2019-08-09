@@ -63,35 +63,14 @@ type RevInfo struct {
 func (d *Document) Compact(ctx context.Context) error {
 	revTree := make(map[string]*Revision, 1)
 	// An index of ancestor -> leaf revision
-	index := map[string]string{}
+	index := map[string][]string{}
 	keep := make([]*Revision, 0, 1)
 	for _, rev := range d.Revisions {
 		revID := rev.Rev.String()
-		if leafID, ok := index[revID]; ok {
-			leaf := revTree[leafID]
-			leafpath := strings.TrimSuffix(leaf.path, filepath.Ext(leaf.path)) + "/"
-			basepath := strings.TrimSuffix(rev.path, filepath.Ext(rev.path)) + "/"
-			for filename, att := range rev.Attachments {
-				if _, ok := leaf.Attachments[filename]; !ok {
-					if err := os.Remove(att.path); err != nil {
-						return err
-					}
-					continue
-				}
-				if strings.HasPrefix(att.path, basepath) {
-					name := filepath.Base(att.path)
-					if err := safeMove(att.path, filepath.Join(leafpath, name)); err != nil {
-						lerr := new(os.LinkError)
-						if xerrors.As(err, &lerr) {
-							if strings.HasSuffix(lerr.Error(), ": file exists") {
-								if err := os.Remove(att.path); err != nil {
-									return err
-								}
-								continue
-							}
-						}
-						return err
-					}
+		if leafIDs, ok := index[revID]; ok {
+			for _, leafID := range leafIDs {
+				if err := copyAttachments(revTree[leafID], rev); err != nil {
+					return err
 				}
 			}
 			if err := rev.Delete(ctx); err != nil {
@@ -101,7 +80,7 @@ func (d *Document) Compact(ctx context.Context) error {
 		}
 		keep = append(keep, rev)
 		for _, ancestor := range rev.RevHistory.ancestors()[1:] {
-			index[ancestor] = revID
+			index[ancestor] = append(index[ancestor], revID)
 		}
 		revTree[revID] = rev
 	}
@@ -109,10 +88,31 @@ func (d *Document) Compact(ctx context.Context) error {
 	return nil
 }
 
-func safeMove(oldpath, newpath string) error {
-	err := os.Link(oldpath, newpath)
-	if err != nil {
-		return err
+func copyAttachments(leaf, old *Revision) error {
+	leafpath := strings.TrimSuffix(leaf.path, filepath.Ext(leaf.path)) + "/"
+	basepath := strings.TrimSuffix(old.path, filepath.Ext(old.path)) + "/"
+	for filename, att := range old.Attachments {
+		if _, ok := leaf.Attachments[filename]; !ok {
+			continue
+		}
+		if strings.HasPrefix(att.path, basepath) {
+			name := filepath.Base(att.path)
+			if err := os.MkdirAll(leafpath, 0777); err != nil {
+				return err
+			}
+			if err := os.Link(att.path, filepath.Join(leafpath, name)); err != nil {
+				lerr := new(os.LinkError)
+				if xerrors.As(err, &lerr) {
+					if strings.HasSuffix(lerr.Error(), ": file exists") {
+						if err := os.Remove(att.path); err != nil {
+							return err
+						}
+						continue
+					}
+				}
+				return err
+			}
+		}
 	}
-	return os.Remove(oldpath)
+	return nil
 }

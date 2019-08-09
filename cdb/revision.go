@@ -186,5 +186,9 @@ func (r Revisions) Swap(i, j int) {
 
 // Delete deletes the revision.
 func (r *Revision) Delete(ctx context.Context) error {
-	return os.Remove(r.path)
+	if err := os.Remove(r.path); err != nil {
+		return err
+	}
+	attpath := strings.TrimSuffix(r.path, filepath.Ext(r.path))
+	return os.RemoveAll(attpath)
 }
