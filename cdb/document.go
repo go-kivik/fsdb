@@ -3,8 +3,12 @@ package cdb
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/go-kivik/kivik"
+	"golang.org/x/xerrors"
 )
 
 // Document is a CouchDB document.
@@ -57,30 +61,58 @@ type RevInfo struct {
 
 // Compact cleans up any non-leaf revs, and attempts to consolidate attachments.
 func (d *Document) Compact(ctx context.Context) error {
-	revTree := make(map[string][]*Revision, 1)
+	revTree := make(map[string]*Revision, 1)
 	// An index of ancestor -> leaf revision
 	index := map[string]string{}
+	keep := make([]*Revision, 0, 1)
 	for _, rev := range d.Revisions {
 		revID := rev.Rev.String()
-		if leaf, ok := index[revID]; ok {
-			revTree[leaf] = append(revTree[leaf], rev)
+		if leafID, ok := index[revID]; ok {
+			leaf := revTree[leafID]
+			leafpath := strings.TrimSuffix(leaf.path, filepath.Ext(leaf.path)) + "/"
+			basepath := strings.TrimSuffix(rev.path, filepath.Ext(rev.path)) + "/"
+			for filename, att := range rev.Attachments {
+				if _, ok := leaf.Attachments[filename]; !ok {
+					if err := os.Remove(att.path); err != nil {
+						return err
+					}
+					continue
+				}
+				if strings.HasPrefix(att.path, basepath) {
+					name := filepath.Base(att.path)
+					if err := safeMove(att.path, filepath.Join(leafpath, name)); err != nil {
+						lerr := new(os.LinkError)
+						if xerrors.As(err, &lerr) {
+							if strings.HasSuffix(lerr.Error(), ": file exists") {
+								if err := os.Remove(att.path); err != nil {
+									return err
+								}
+								continue
+							}
+						}
+						return err
+					}
+				}
+			}
+			if err := rev.Delete(ctx); err != nil {
+				return err
+			}
 			continue
 		}
+		keep = append(keep, rev)
 		for _, ancestor := range rev.RevHistory.ancestors()[1:] {
 			index[ancestor] = revID
 		}
-		revTree[revID] = []*Revision{rev}
-	}
-	keep := make([]*Revision, 0, len(revTree))
-	for _, rev := range d.Revisions {
-		if _, ok := revTree[rev.Rev.String()]; ok {
-			keep = append(keep, rev)
-			continue
-		}
-		if err := rev.Delete(ctx); err != nil {
-			return err
-		}
+		revTree[revID] = rev
 	}
 	d.Revisions = keep
 	return nil
+}
+
+func safeMove(oldpath, newpath string) error {
+	err := os.Link(oldpath, newpath)
+	if err != nil {
+		return err
+	}
+	return os.Remove(oldpath)
 }
