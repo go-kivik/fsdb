@@ -1,6 +1,7 @@
 package cdb
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/go-kivik/kivik"
@@ -52,4 +53,34 @@ func (d *Document) revsInfo() {
 type RevInfo struct {
 	Rev    string `json:"rev"`
 	Status string `json:"status"`
+}
+
+// Compact cleans up any non-leaf revs, and attempts to consolidate attachments.
+func (d *Document) Compact(ctx context.Context) error {
+	revTree := make(map[string][]*Revision, 1)
+	// An index of ancestor -> leaf revision
+	index := map[string]string{}
+	for _, rev := range d.Revisions {
+		revID := rev.Rev.String()
+		if leaf, ok := index[revID]; ok {
+			revTree[leaf] = append(revTree[leaf], rev)
+			continue
+		}
+		for _, ancestor := range rev.RevHistory.ancestors()[1:] {
+			index[ancestor] = revID
+		}
+		revTree[revID] = []*Revision{rev}
+	}
+	keep := make([]*Revision, 0, len(revTree))
+	for _, rev := range d.Revisions {
+		if _, ok := revTree[rev.Rev.String()]; ok {
+			keep = append(keep, rev)
+			continue
+		}
+		if err := rev.Delete(ctx); err != nil {
+			return err
+		}
+	}
+	d.Revisions = keep
+	return nil
 }

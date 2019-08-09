@@ -85,5 +85,13 @@ func (d *db) Compact(ctx context.Context) error {
 
 func (d *db) compact(ctx context.Context, fs filesystem.Filesystem) error {
 	docs := docIndex{}
-	return docs.readIndex(ctx, fs, d.path())
+	if err := docs.readIndex(ctx, fs, d.path()); err != nil {
+		return err
+	}
+	for _, doc := range docs {
+		if err := doc.Compact(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }

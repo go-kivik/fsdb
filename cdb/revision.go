@@ -1,6 +1,7 @@
 package cdb
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -181,4 +182,9 @@ func (r Revisions) Less(i, j int) bool {
 
 func (r Revisions) Swap(i, j int) {
 	r[i], r[j] = r[j], r[i]
+}
+
+// Delete deletes the revision.
+func (r *Revision) Delete(ctx context.Context) error {
+	return os.Remove(r.path)
 }
