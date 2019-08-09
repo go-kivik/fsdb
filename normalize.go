@@ -27,24 +27,6 @@ func normalizeDoc(i interface{}) (*internal.Document, error) {
 	return doc, nil
 }
 
-func readDoc(path string) (*internal.Document, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, kerr(err)
-	}
-	ext := filepath.Ext(path)[1:]
-	i, err := decoder.Decode(f, ext)
-	if err != nil {
-		return nil, err
-	}
-	doc, err := normalizeDoc(i)
-	if err != nil {
-		return nil, err
-	}
-	doc.Path = path
-	return doc, nil
-}
-
 func (d *db) openDoc(docID, rev string) (filesystem.File, string, error) {
 	base := id2basename(docID)
 	for _, ext := range decoder.Extensions() {

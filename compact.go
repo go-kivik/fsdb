@@ -8,19 +8,7 @@ import (
 	"github.com/go-kivik/fsdb/cdb"
 	"github.com/go-kivik/fsdb/decoder"
 	"github.com/go-kivik/fsdb/filesystem"
-	"github.com/go-kivik/fsdb/internal"
 )
-
-type docEntry struct {
-	internal.DocMeta
-	Revs docIndex
-}
-
-func newEntry() *docEntry {
-	return &docEntry{
-		Revs: make(docIndex),
-	}
-}
 
 type docIndex map[string]*cdb.Document
 
