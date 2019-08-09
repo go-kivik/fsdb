@@ -11,7 +11,7 @@ import (
 	"github.com/go-kivik/kivik"
 )
 
-func TestFSOpen(t *testing.T) {
+func TestFSOpenDocID(t *testing.T) {
 	type tt struct {
 		fs      filesystem.Filesystem
 		root    string
@@ -88,7 +88,7 @@ func TestFSOpen(t *testing.T) {
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		fs := New(tt.root, tt.fs)
-		result, err := fs.Open(tt.docID, tt.options)
+		result, err := fs.OpenDocID(tt.docID, tt.options)
 		testy.StatusError(t, tt.err, tt.status, err)
 		result.Options = kivik.Options{
 			"revs":          true,

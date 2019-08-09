@@ -1,9 +1,14 @@
 package cdb
 
 import (
+	"context"
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/go-kivik/kivik"
+	"golang.org/x/xerrors"
 )
 
 // Document is a CouchDB document.
@@ -52,4 +57,62 @@ func (d *Document) revsInfo() {
 type RevInfo struct {
 	Rev    string `json:"rev"`
 	Status string `json:"status"`
+}
+
+// Compact cleans up any non-leaf revs, and attempts to consolidate attachments.
+func (d *Document) Compact(ctx context.Context) error {
+	revTree := make(map[string]*Revision, 1)
+	// An index of ancestor -> leaf revision
+	index := map[string][]string{}
+	keep := make([]*Revision, 0, 1)
+	for _, rev := range d.Revisions {
+		revID := rev.Rev.String()
+		if leafIDs, ok := index[revID]; ok {
+			for _, leafID := range leafIDs {
+				if err := copyAttachments(revTree[leafID], rev); err != nil {
+					return err
+				}
+			}
+			if err := rev.Delete(ctx); err != nil {
+				return err
+			}
+			continue
+		}
+		keep = append(keep, rev)
+		for _, ancestor := range rev.RevHistory.ancestors()[1:] {
+			index[ancestor] = append(index[ancestor], revID)
+		}
+		revTree[revID] = rev
+	}
+	d.Revisions = keep
+	return nil
+}
+
+func copyAttachments(leaf, old *Revision) error {
+	leafpath := strings.TrimSuffix(leaf.path, filepath.Ext(leaf.path)) + "/"
+	basepath := strings.TrimSuffix(old.path, filepath.Ext(old.path)) + "/"
+	for filename, att := range old.Attachments {
+		if _, ok := leaf.Attachments[filename]; !ok {
+			continue
+		}
+		if strings.HasPrefix(att.path, basepath) {
+			name := filepath.Base(att.path)
+			if err := os.MkdirAll(leafpath, 0777); err != nil {
+				return err
+			}
+			if err := os.Link(att.path, filepath.Join(leafpath, name)); err != nil {
+				lerr := new(os.LinkError)
+				if xerrors.As(err, &lerr) {
+					if strings.HasSuffix(lerr.Error(), ": file exists") {
+						if err := os.Remove(att.path); err != nil {
+							return err
+						}
+						continue
+					}
+				}
+				return err
+			}
+		}
+	}
+	return nil
 }
