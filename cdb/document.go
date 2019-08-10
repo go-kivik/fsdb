@@ -3,7 +3,6 @@ package cdb
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -138,8 +137,7 @@ func copyAttachments(leaf, old *Revision) error {
 func (d *Document) AddRevision(rev *Revision, optoins kivik.Options) (string, error) {
 	d.Revisions = append(d.Revisions, rev)
 	sort.Sort(d.Revisions)
-	err := d.persist()
-	return rev.Rev.String(), err
+	return rev.Rev.String(), nil
 }
 
 /*
@@ -155,14 +153,67 @@ func (d *Document) persist() error {
 	if d == nil || len(d.Revisions) == 0 {
 		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document has no revisions"}
 	}
+	docID := escapeID(d.ID)
 	for _, rev := range d.Revisions {
-		fmt.Printf("have a rev: %s\n", rev.Rev)
 		if rev.path != "" {
 			continue
 		}
-		if err := rev.persist(filepath.Join(d.path, rev.Rev.String())); err != nil {
+		if err := rev.persist(filepath.Join(d.path, "."+docID, rev.Rev.String())); err != nil {
 			return err
 		}
+	}
+
+	// Make sure the winner is in the first position
+	sort.Sort(d.Revisions)
+
+	winningRev := d.Revisions[0]
+	winningPath := filepath.Join(d.path, docID)
+	if winningPath+filepath.Ext(winningRev.path) == winningRev.path {
+		// Winner already in place, our job is done here
+		return nil
+	}
+
+	// See if some other rev is currently the winning rev, and move it if necessary
+	for _, rev := range d.Revisions[1:] {
+		if winningPath+filepath.Ext(rev.path) == rev.path {
+			// We need to move this rev
+			revpath := filepath.Join(d.path, "."+escapeID(d.ID), rev.Rev.String())
+			if err := d.fs.fs.Mkdir(revpath, 0777); err != nil && !os.IsExist(err) {
+				return err
+			}
+			// First move attachments, since they can exit both places legally.
+			for attname, att := range rev.Attachments {
+				filename := escapeID(attname)
+				newpath := filepath.Join(revpath, filename)
+				if err := d.fs.fs.Rename(att.path, newpath); err != nil {
+					return err
+				}
+				att.path = newpath
+			}
+			// Then make the move final by moving the json doc
+			if err := d.fs.fs.Rename(rev.path, revpath+filepath.Ext(rev.path)); err != nil {
+				return err
+			}
+			break
+		}
+	}
+
+	// Now finally put the new winner in place, first the doc, then attachments
+	if err := d.fs.fs.Rename(winningRev.path, winningPath+filepath.Ext(winningRev.path)); err != nil {
+		return err
+	}
+	winningRev.path = winningPath + filepath.Ext(winningRev.path)
+	if err := d.fs.fs.Mkdir(winningPath, 0777); err != nil && !os.IsExist(err) {
+		return err
+	}
+	// First move attachments, since they can exit both places legally.
+	for attname, att := range winningRev.Attachments {
+		filename := escapeID(attname)
+		newpath := filepath.Join(winningPath, filename)
+		if err := d.fs.fs.Rename(att.path, newpath); err != nil {
+			return err
+		}
+		att.path = newpath
 	}
 
 	return nil

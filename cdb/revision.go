@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -208,17 +209,31 @@ func (fs *FS) NewRevision(i interface{}) (*Revision, error) {
 }
 
 func (r *Revision) persist(path string) error {
+	if err := r.fs.Mkdir(filepath.Dir(path), 0777); err != nil && !os.IsExist(err) {
+		return err
+	}
 	for attname, att := range r.Attachments {
 		if att.path != "" {
 			continue
 		}
-		filename := escapeID(attname)
-		if err := atomicWriteFile(r.fs, filepath.Join(path, filename), bytes.NewReader(att.Content)); err != nil {
+		target := filepath.Join(path, escapeID(attname))
+		if err := atomicWriteFile(r.fs, target, bytes.NewReader(att.Content)); err != nil {
+			fmt.Printf("err1 %s\n", err)
 			return err
 		}
+		att.path = target
 	}
 	f := atomicFileWriter(r.fs, path+".json")
 	defer f.Close() // nolint: errcheck
 	r.options = kivik.Options{"revs": true}
-	return json.NewEncoder(f).Encode(r)
+	if err := json.NewEncoder(f).Encode(r); err != nil {
+		fmt.Printf("err2 %s\n", err)
+		return err
+	}
+	if err := f.Close(); err != nil {
+		fmt.Printf("err3 %s\n", err)
+		return err
+	}
+	r.path = path + ".json"
+	return nil
 }
