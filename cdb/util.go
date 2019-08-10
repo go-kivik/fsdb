@@ -6,7 +6,10 @@ import (
 	"encoding/json"
 	"io"
 	"net/url"
+	"path/filepath"
 	"sync"
+
+	"github.com/go-kivik/fsdb/filesystem"
 )
 
 var reservedKeys = map[string]struct{}{
@@ -80,4 +83,54 @@ func joinJSON(objects ...json.RawMessage) []byte {
 	}
 	result[len(result)-1] = '}'
 	return result
+}
+
+func atomicWriteFile(fs filesystem.Filesystem, path string, r io.Reader) error {
+	f, err := fs.TempFile(filepath.Dir(path), ".tmp."+filepath.Base(path)+"-")
+	if err != nil {
+		return err
+	}
+	if _, err := io.Copy(f, r); err != nil {
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	return fs.Rename(f.Name(), path)
+}
+
+type atomicWriter struct {
+	fs   filesystem.Filesystem
+	path string
+	f    filesystem.File
+	err  error
+}
+
+func (w *atomicWriter) Write(p []byte) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	return w.f.Write(p)
+}
+
+func (w *atomicWriter) Close() error {
+	if w.err != nil {
+		return w.err
+	}
+	if err := w.f.Close(); err != nil {
+		return err
+	}
+	return w.fs.Rename(w.f.Name(), w.path)
+}
+
+// atomicFileWriter returns an io.WriteCloser, which writes to a temp file, then
+// when Close() is called, it renames to the originally requested path.
+func atomicFileWriter(fs filesystem.Filesystem, path string) io.WriteCloser {
+	f, err := fs.TempFile(filepath.Dir(path), ".tmp."+filepath.Base(path)+"-")
+	return &atomicWriter{
+		fs:   fs,
+		path: path,
+		f:    f,
+		err:  err,
+	}
 }

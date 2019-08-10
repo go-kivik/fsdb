@@ -3,9 +3,11 @@ package cdb
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/go-kivik/kivik"
@@ -22,14 +24,17 @@ type Document struct {
 
 	Options kivik.Options `json:"-" yaml:"-"`
 
-	fs *FS
+	// path is the path to the database
+	path string
+	fs   *FS
 }
 
 // NewDocument creates a new document.
-func (fs *FS) NewDocument(docID string) *Document {
+func (fs *FS) NewDocument(path, docID string) *Document {
 	return &Document{
-		ID: docID,
-		fs: fs,
+		ID:   docID,
+		path: path,
+		fs:   fs,
 	}
 }
 
@@ -128,10 +133,37 @@ func copyAttachments(leaf, old *Revision) error {
 	return nil
 }
 
+// AddRevision adds rev to the existing document, according to options. The
+// return value is the new revision ID.
+func (d *Document) AddRevision(rev *Revision, optoins kivik.Options) (string, error) {
+	d.Revisions = append(d.Revisions, rev)
+	sort.Sort(d.Revisions)
+	err := d.persist()
+	return rev.Rev.String(), err
+}
+
+/*
+Persist strategy:
+- For every rev that doesn't exist on disk, create it in {db}/.{docid}/{rev}
+- If winning rev does not exist in {db}/{docid}:
+	- Move old winning rev to {db}/.{docid}/{rev}
+	- Move new winning rev to {db}/{docid}
+*/
+
 // Document persists the contained revs to disk.
 func (d *Document) persist() error {
 	if d == nil || len(d.Revisions) == 0 {
 		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document has no revisions"}
 	}
+	for _, rev := range d.Revisions {
+		fmt.Printf("have a rev: %s\n", rev.Rev)
+		if rev.path != "" {
+			continue
+		}
+		if err := rev.persist(filepath.Join(d.path, rev.Rev.String())); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

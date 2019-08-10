@@ -1,8 +1,10 @@
 package cdb
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -194,12 +196,29 @@ func (r *Revision) Delete(ctx context.Context) error {
 }
 
 // NewRevision creates a new revision from i, according to opts.
-func NewRevision(i interface{}) (*Revision, error) {
+func (fs *FS) NewRevision(i interface{}) (*Revision, error) {
 	data, err := json.Marshal(i)
 	if err != nil {
-		return nil, err
+		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
 	}
 	rev := new(Revision)
-	err = json.Unmarshal(data, &rev)
-	return rev, err
+	rev.fs = fs.fs
+	_ = json.Unmarshal(data, &rev)
+	return rev, nil
+}
+
+func (r *Revision) persist(path string) error {
+	for attname, att := range r.Attachments {
+		if att.path != "" {
+			continue
+		}
+		filename := escapeID(attname)
+		if err := atomicWriteFile(r.fs, filepath.Join(path, filename), bytes.NewReader(att.Content)); err != nil {
+			return err
+		}
+	}
+	f := atomicFileWriter(r.fs, path+".json")
+	defer f.Close() // nolint: errcheck
+	r.options = kivik.Options{"revs": true}
+	return json.NewEncoder(f).Encode(r)
 }

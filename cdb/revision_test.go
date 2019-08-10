@@ -33,7 +33,8 @@ func TestNewRevision(t *testing.T) {
 	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
-		rev, err := NewRevision(tt.i)
+		fs := &FS{}
+		rev, err := fs.NewRevision(tt.i)
 		testy.StatusError(t, tt.err, tt.status, err)
 		rev.options = kivik.Options{
 			"revs":          true,
