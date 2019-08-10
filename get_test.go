@@ -378,7 +378,8 @@ func TestGet(t *testing.T) {
 		if fs == nil {
 			fs = filesystem.Default()
 		}
-		db := newDB(&client{root: dir, fs: fs}, tt.dbname)
+		c := &client{root: dir, fs: fs}
+		db := c.newDB(tt.dbname)
 		if tt.setup != nil {
 			tt.setup(t, db)
 		}

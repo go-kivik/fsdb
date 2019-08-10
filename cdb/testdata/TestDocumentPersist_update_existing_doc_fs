@@ -1,0 +1,8 @@
+{
+    ".foo/1-xxx.yaml": {
+        "content": "_rev: 1-xxx\nvalue: foo\n"
+    },
+    "foo.json": {
+        "content": "{\"_rev\":\"2-yyy\",\"_revisions\":{\"start\":2,\"ids\":[\"yyy\",\"xxx\"]},\"value\":\"bar\"}\n"
+    }
+}

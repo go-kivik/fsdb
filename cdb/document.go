@@ -23,17 +23,14 @@ type Document struct {
 
 	Options kivik.Options `json:"-" yaml:"-"`
 
-	// path is the path to the database
-	path string
-	fs   *FS
+	cdb *FS
 }
 
 // NewDocument creates a new document.
 func (fs *FS) NewDocument(path, docID string) *Document {
 	return &Document{
-		ID:   docID,
-		path: path,
-		fs:   fs,
+		ID:  docID,
+		cdb: fs,
 	}
 }
 
@@ -134,7 +131,7 @@ func copyAttachments(leaf, old *Revision) error {
 
 // AddRevision adds rev to the existing document, according to options. The
 // return value is the new revision ID.
-func (d *Document) AddRevision(rev *Revision, optoins kivik.Options) (string, error) {
+func (d *Document) AddRevision(rev *Revision, options kivik.Options) (string, error) {
 	d.Revisions = append(d.Revisions, rev)
 	sort.Sort(d.Revisions)
 	return rev.Rev.String(), nil
@@ -158,7 +155,7 @@ func (d *Document) persist() error {
 		if rev.path != "" {
 			continue
 		}
-		if err := rev.persist(filepath.Join(d.path, "."+docID, rev.Rev.String())); err != nil {
+		if err := rev.persist(filepath.Join(d.cdb.root, "."+docID, rev.Rev.String())); err != nil {
 			return err
 		}
 	}
@@ -167,7 +164,7 @@ func (d *Document) persist() error {
 	sort.Sort(d.Revisions)
 
 	winningRev := d.Revisions[0]
-	winningPath := filepath.Join(d.path, docID)
+	winningPath := filepath.Join(d.cdb.root, docID)
 	if winningPath+filepath.Ext(winningRev.path) == winningRev.path {
 		// Winner already in place, our job is done here
 		return nil
@@ -177,21 +174,21 @@ func (d *Document) persist() error {
 	for _, rev := range d.Revisions[1:] {
 		if winningPath+filepath.Ext(rev.path) == rev.path {
 			// We need to move this rev
-			revpath := filepath.Join(d.path, "."+escapeID(d.ID), rev.Rev.String())
-			if err := d.fs.fs.Mkdir(revpath, 0777); err != nil && !os.IsExist(err) {
+			revpath := filepath.Join(d.cdb.root, "."+escapeID(d.ID), rev.Rev.String())
+			if err := d.cdb.fs.Mkdir(revpath, 0777); err != nil && !os.IsExist(err) {
 				return err
 			}
 			// First move attachments, since they can exit both places legally.
 			for attname, att := range rev.Attachments {
 				filename := escapeID(attname)
 				newpath := filepath.Join(revpath, filename)
-				if err := d.fs.fs.Rename(att.path, newpath); err != nil {
+				if err := d.cdb.fs.Rename(att.path, newpath); err != nil {
 					return err
 				}
 				att.path = newpath
 			}
 			// Then make the move final by moving the json doc
-			if err := d.fs.fs.Rename(rev.path, revpath+filepath.Ext(rev.path)); err != nil {
+			if err := d.cdb.fs.Rename(rev.path, revpath+filepath.Ext(rev.path)); err != nil {
 				return err
 			}
 			break
@@ -199,18 +196,18 @@ func (d *Document) persist() error {
 	}
 
 	// Now finally put the new winner in place, first the doc, then attachments
-	if err := d.fs.fs.Rename(winningRev.path, winningPath+filepath.Ext(winningRev.path)); err != nil {
+	if err := d.cdb.fs.Rename(winningRev.path, winningPath+filepath.Ext(winningRev.path)); err != nil {
 		return err
 	}
 	winningRev.path = winningPath + filepath.Ext(winningRev.path)
-	if err := d.fs.fs.Mkdir(winningPath, 0777); err != nil && !os.IsExist(err) {
+	if err := d.cdb.fs.Mkdir(winningPath, 0777); err != nil && !os.IsExist(err) {
 		return err
 	}
 	// First move attachments, since they can exit both places legally.
 	for attname, att := range winningRev.Attachments {
 		filename := escapeID(attname)
 		newpath := filepath.Join(winningPath, filename)
-		if err := d.fs.fs.Rename(att.path, newpath); err != nil {
+		if err := d.cdb.fs.Rename(att.path, newpath); err != nil {
 			return err
 		}
 		att.path = newpath

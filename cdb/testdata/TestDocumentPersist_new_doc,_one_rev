@@ -31,8 +31,7 @@
   },
   RevsInfo: ([]cdb.RevInfo) <nil>,
   Options: (kivik.Options) <nil>,
-  path: (string) (len=51) "<tmpdir>",
-  fs: (*cdb.FS)({
+  cdb: (*cdb.FS)({
     fs: (*filesystem.defaultFS)({
     }),
     root: (string) (len=51) "<tmpdir>"

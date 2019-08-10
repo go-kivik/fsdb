@@ -125,6 +125,7 @@ func (fs *FS) OpenDocID(docID string, opts kivik.Options) (*Document, error) {
 	doc := &Document{
 		ID:        docID,
 		Revisions: revs,
+		cdb:       fs,
 	}
 	for _, rev := range doc.Revisions {
 		for filename, att := range rev.Attachments {

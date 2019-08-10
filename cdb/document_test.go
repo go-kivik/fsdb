@@ -2,6 +2,7 @@ package cdb
 
 import (
 	"net/http"
+	"os"
 	"regexp"
 	"testing"
 
@@ -57,6 +58,32 @@ func TestDocumentPersist(t *testing.T) {
 			doc:  doc,
 		}
 	})
+	tests.Add("update existing doc", func(t *testing.T) interface{} {
+		tmpdir := testy.CopyTempDir(t, "testdata/persist", 0)
+		tests.Cleanup(func() error {
+			return os.RemoveAll(tmpdir)
+		})
+
+		cdb := New(tmpdir)
+		doc, err := cdb.OpenDocID("foo", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rev, _ := cdb.NewRevision(map[string]interface{}{
+			"_rev":  "2-yyy",
+			"value": "bar",
+			"_revisions": map[string]interface{}{
+				"start": 2,
+				"ids":   []string{"yyy", "xxx"},
+			},
+		})
+		doc.AddRevision(rev, nil)
+
+		return tt{
+			path: tmpdir,
+			doc:  doc,
+		}
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		err := tt.doc.persist()
@@ -65,7 +92,7 @@ func TestDocumentPersist(t *testing.T) {
 			Regexp:      regexp.MustCompile(regexp.QuoteMeta(tt.path)),
 			Replacement: "<tmpdir>",
 		}
-		if d := testy.DiffInterface(testy.Snapshot(t, "doc"), tt.doc, re); d != nil {
+		if d := testy.DiffInterface(testy.Snapshot(t), tt.doc, re); d != nil {
 			t.Error(d)
 		}
 		if d := testy.DiffAsJSON(testy.Snapshot(t, "fs"), testy.JSONDir{

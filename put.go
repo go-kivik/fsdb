@@ -2,8 +2,6 @@ package fs
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,6 +10,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/go-kivik/fsdb/cdb"
 	"github.com/go-kivik/fsdb/decoder"
 	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
@@ -115,76 +114,90 @@ Current rev lives under:    {db}/{docid}.{ext}
 Historical revs live under: {db}/.{docid}/{rev}
 Attachments:                {db}/{docid}/{filename}
 */
-func (d *db) Put(_ context.Context, docID string, doc interface{}, opts map[string]interface{}) (string, error) {
+func (d *db) Put(_ context.Context, docID string, i interface{}, opts map[string]interface{}) (string, error) {
 	if err := validateID(docID); err != nil {
 		return "", err
 	}
-	filename := id2basename(docID) + ".json"
-	ndoc, err := normalizeDoc(doc)
+	rev, err := d.cdb.NewRevision(i)
 	if err != nil {
 		return "", err
 	}
-	defer ndoc.Cleanup() // nolint: errcheck
-	currev, err := d.currentRev(filename, "json")
-	if err != nil {
+	doc, err := d.cdb.OpenDocID(docID, opts)
+	switch {
+	case kivik.StatusCode(err) == http.StatusNotFound:
+		// Crate new doc
+		doc = &cdb.Document{ID: docID}
+	case err != nil:
 		return "", err
 	}
-	atts := ndoc.Attachments
+	return doc.AddRevision(rev, opts)
 
-	if err := compareRevs(ndoc, opts, currev); err != nil {
-		return "", err
-	}
-	ndoc.ID = docID
-	ndoc.Rev.Increment(fmt.Sprintf("%d %s", ndoc.Rev.Seq+1, ndoc.ID))
-
-	// map of tmpFile:permFile to be renamed
-	toRename := make(map[string]string)
-	defer func() {
-		for filename := range toRename {
-			_ = os.Remove(filename)
-		}
-	}()
-
-	if atts != nil {
-		base := base(filename)
-		if err := os.Mkdir(d.path(base), 0777); err != nil {
-			return "", err
-		}
-		for attname, att := range atts {
-			tmp, err := ioutil.TempFile(d.path(base), ".")
-			if err != nil {
-				return "", err
-			}
-			toRename[tmp.Name()] = d.path(base, attname)
-			if _, err := io.Copy(tmp, att.Content); err != nil {
-				return "", err
-			}
-			att.Stub = true
-		}
-	}
-
-	tmp, err := ioutil.TempFile(d.path(), ".")
-	if err != nil {
-		return "", err
-	}
-	defer tmp.Close() // nolint: errcheck
-	toRename[tmp.Name()] = d.path(filename)
-	if err := json.NewEncoder(tmp).Encode(ndoc); err != nil {
-		return "", err
-	}
-
-	if err := tmp.Close(); err != nil {
-		return "", err
-	}
-	if currev != "" {
-		if err := d.archiveDoc(filename, currev); err != nil {
-			return "", err
-		}
-	}
-	for old, new := range toRename {
-		if err := os.Rename(old, new); err != nil {
-			return "", err
-		}
-	}
-	return ndoc.Rev.String(), nil
+	// filename := id2basename(docID) + ".json"
+	// ndoc, err := normalizeDoc(doc)
+	// if err != nil {
+	// 	return "", err
+	// }
+	// defer ndoc.Cleanup() // nolint: errcheck
+	// currev, err := d.currentRev(filename, "json")
+	// if err != nil {
+	// 	return "", err
+	// }
+	// atts := ndoc.Attachments
+	//
+	// if err := compareRevs(ndoc, opts, currev); err != nil {
+	// 	return "", err
+	// }
+	// ndoc.ID = docID
+	// ndoc.Rev.Increment(fmt.Sprintf("%d %s", ndoc.Rev.Seq+1, ndoc.ID))
+	//
+	// // map of tmpFile:permFile to be renamed
+	// toRename := make(map[string]string)
+	// defer func() {
+	// 	for filename := range toRename {
+	// 		_ = os.Remove(filename)
+	// 	}
+	// }()
+	//
+	// if atts != nil {
+	// 	base := base(filename)
+	// 	if err := os.Mkdir(d.path(base), 0777); err != nil {
+	// 		return "", err
+	// 	}
+	// 	for attname, att := range atts {
+	// 		tmp, err := ioutil.TempFile(d.path(base), ".")
+	// 		if err != nil {
+	// 			return "", err
+	// 		}
+	// 		toRename[tmp.Name()] = d.path(base, attname)
+	// 		if _, err := io.Copy(tmp, att.Content); err != nil {
+	// 			return "", err
+	// 		}
+	// 		att.Stub = true
+	// 	}
+	// }
+	//
+	// tmp, err := ioutil.TempFile(d.path(), ".")
+	// if err != nil {
+	// 	return "", err
+	// }
+	// defer tmp.Close() // nolint: errcheck
+	// toRename[tmp.Name()] = d.path(filename)
+	// if err := json.NewEncoder(tmp).Encode(ndoc); err != nil {
+	// 	return "", err
+	// }
+	//
+	// if err := tmp.Close(); err != nil {
+	// 	return "", err
+	// }
+	// if currev != "" {
+	// 	if err := d.archiveDoc(filename, currev); err != nil {
+	// 		return "", err
+	// 	}
+	// }
+	// for old, new := range toRename {
+	// 	if err := os.Rename(old, new); err != nil {
+	// 		return "", err
+	// 	}
+	// }
+	// return ndoc.Rev.String(), nil
 }
