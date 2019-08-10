@@ -42,7 +42,7 @@ func (a *Attachment) MarshalJSON() ([]byte, error) {
 	case a.Stub:
 		// skip
 	case len(a.Content) != 0:
-		err = a.setMetadata()
+		a.setMetadata()
 	case a.Stub || a.Follows:
 		err = a.readMetadata()
 	default:
@@ -86,15 +86,12 @@ func (a *Attachment) readMetadata() error {
 	if err != nil {
 		return err
 	}
-	a.Size, a.Digest, err = digest(f)
-	return err
+	a.Size, a.Digest = digest(f)
+	return nil
 }
 
-func (a *Attachment) setMetadata() error {
-	a.Size = int64(len(a.Content))
-	var err error
-	_, a.Digest, err = digest(bytes.NewReader(a.Content))
-	return err
+func (a *Attachment) setMetadata() {
+	a.Size, a.Digest = digest(bytes.NewReader(a.Content))
 }
 
 type attsIter []*driver.Attachment

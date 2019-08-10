@@ -3,7 +3,9 @@ package cdb
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -239,4 +241,17 @@ func (r *Revision) persist(path string) error {
 	}
 	r.path = path + ".json"
 	return nil
+}
+
+// hash passes deterministic JSON content of the revision through md5 to
+// generate a hash to be used in the revision ID.
+func (r *Revision) hash() (string, error) {
+	r.options = nil
+	data, err := json.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+	h := md5.New()
+	_, _ = h.Write(data)
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }

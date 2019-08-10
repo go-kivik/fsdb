@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/kivik"
 	"gitlab.com/flimzy/testy"
 )
 
@@ -39,6 +40,22 @@ func TestPut(t *testing.T) {
 		status: http.StatusBadRequest,
 		err:    "json: unsupported type: chan int",
 	})
+	tests.Add("create with revid", func(t *testing.T) interface{} {
+		tmpdir := tempDir(t)
+		tests.Cleanup(cleanTmpdir(tmpdir))
+		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
+			t.Fatal(err)
+		}
+
+		return tt{
+			path:   tmpdir,
+			dbname: "foo",
+			id:     "foo",
+			doc:    map[string]string{"foo": "bar", "_rev": "1-xxx"},
+			status: http.StatusConflict,
+			err:    "Document update conflict.",
+		}
+	})
 	tests.Add("simple create", func(t *testing.T) interface{} {
 		tmpdir := tempDir(t)
 		tests.Cleanup(cleanTmpdir(tmpdir))
@@ -51,7 +68,7 @@ func TestPut(t *testing.T) {
 			dbname:   "foo",
 			id:       "foo",
 			doc:      map[string]string{"foo": "bar"},
-			expected: "1-beea34a62a215ab051862d1e5d93162e",
+			expected: "1-04edfaf9abdaed3c0accf6c463e78fd4",
 		}
 	})
 	// tests.Add("update conflict, doc key", func(t *testing.T) interface{} {
@@ -94,15 +111,15 @@ func TestPut(t *testing.T) {
 	// 		err:    "document update conflict",
 	// 	}
 	// })
-	// tests.Add("revs mismatch", tt{
-	// 	path:    "/tmp",
-	// 	dbname:  "doesntmatter",
-	// 	id:      "foo",
-	// 	doc:     map[string]string{"foo": "bar", "_rev": "2-asdf"},
-	// 	options: map[string]interface{}{"rev": "3-asdf"},
-	// 	status:  http.StatusBadRequest,
-	// 	err:     "document rev from request body and query string have different values",
-	// })
+	tests.Add("revs mismatch", tt{
+		path:    "/tmp",
+		dbname:  "doesntmatter",
+		id:      "foo",
+		doc:     map[string]string{"foo": "bar", "_rev": "2-asdf"},
+		options: kivik.Options{"rev": "3-asdf"},
+		status:  http.StatusBadRequest,
+		err:     "document rev from request body and query string have different values",
+	})
 	// tests.Add("proper update", func(t *testing.T) interface{} {
 	// 	tmpdir := copyDir(t, "testdata/db.put", 1)
 	// 	tests.Cleanup(cleanTmpdir(tmpdir))

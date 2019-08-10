@@ -132,6 +132,29 @@ func copyAttachments(leaf, old *Revision) error {
 // AddRevision adds rev to the existing document, according to options. The
 // return value is the new revision ID.
 func (d *Document) AddRevision(rev *Revision, options kivik.Options) (string, error) {
+	if revid, ok := options["rev"].(string); ok {
+		var newrev RevID
+		if err := newrev.UnmarshalText([]byte(revid)); err != nil {
+			return "", err
+		}
+		if !rev.Rev.IsZero() && rev.Rev.String() != newrev.String() {
+			return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document rev from request body and query string have different values"}
+		}
+		rev.Rev = newrev
+	}
+	if len(d.Revisions) == 0 && !rev.Rev.IsZero() {
+		return "", errConflict
+	}
+	if rev.Rev.IsZero() {
+		hash, err := rev.hash()
+		if err != nil {
+			return "", err
+		}
+		rev.Rev = RevID{
+			Seq: 1,
+			Sum: hash,
+		}
+	}
 	d.Revisions = append(d.Revisions, rev)
 	sort.Sort(d.Revisions)
 	return rev.Rev.String(), nil

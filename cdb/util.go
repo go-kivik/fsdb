@@ -60,10 +60,10 @@ func copyDigest(tgt io.Writer, dst io.Reader) (int64, string, error) {
 	return written, "md5-" + base64.StdEncoding.EncodeToString(h.Sum(nil)), err
 }
 
-func digest(r io.Reader) (int64, string, error) {
+func digest(r io.Reader) (int64, string) {
 	h := md5.New()
-	written, err := io.Copy(h, r)
-	return written, "md5-" + base64.StdEncoding.EncodeToString(h.Sum(nil)), err
+	written, _ := io.Copy(h, r)
+	return written, "md5-" + base64.StdEncoding.EncodeToString(h.Sum(nil))
 
 }
 

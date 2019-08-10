@@ -47,11 +47,15 @@ func TestDocumentPersist(t *testing.T) {
 
 		cdb := New(tmpdir, filesystem.Default())
 		doc := cdb.NewDocument(tmpdir, "foo")
-		rev, _ := cdb.NewRevision(map[string]string{
-			"_rev":  "1-xxx",
+		rev, err := cdb.NewRevision(map[string]string{
 			"value": "bar",
 		})
-		doc.AddRevision(rev, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := doc.AddRevision(rev, nil); err != nil {
+			t.Fatal(err)
+		}
 
 		return tt{
 			path: tmpdir,

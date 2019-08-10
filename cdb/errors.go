@@ -12,6 +12,7 @@ import (
 var (
 	errNotFound         = &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "missing"}
 	errUnrecognizedFile = errors.New("unrecognized file")
+	errConflict         = &kivik.Error{HTTPStatus: http.StatusConflict, Message: "Document update conflict."}
 )
 
 // missing transforms a NotExist error into a standard CouchDBesque 'missing'
