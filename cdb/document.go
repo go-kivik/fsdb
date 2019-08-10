@@ -3,6 +3,7 @@ package cdb
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,13 +14,23 @@ import (
 
 // Document is a CouchDB document.
 type Document struct {
-	ID        string      `json:"_id" yaml:"_id"`
-	Revisions []*Revision `json:"-" yaml:"-"`
+	ID        string    `json:"_id" yaml:"_id"`
+	Revisions Revisions `json:"-" yaml:"-"`
 	// RevsInfo is only used during JSON marshaling, and should never be
 	// consulted as authoritative.
 	RevsInfo []RevInfo `json:"_revs_info,omitempty" yaml:"-"`
 
 	Options kivik.Options `json:"-" yaml:"-"`
+
+	fs *FS
+}
+
+// NewDocument creates a new document.
+func (fs *FS) NewDocument(docID string) *Document {
+	return &Document{
+		ID: docID,
+		fs: fs,
+	}
 }
 
 // MarshalJSON satisfies the json.Marshaler interface.
@@ -113,6 +124,14 @@ func copyAttachments(leaf, old *Revision) error {
 				return err
 			}
 		}
+	}
+	return nil
+}
+
+// Document persists the contained revs to disk.
+func (d *Document) persist() error {
+	if d == nil || len(d.Revisions) == 0 {
+		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document has no revisions"}
 	}
 	return nil
 }
