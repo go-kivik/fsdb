@@ -1,0 +1,14 @@
+{
+    ".bar/1-xxx.yaml": {
+        "content": "_rev: 1-xxx\n_attachments:\n    foo.txt:\n        content_type: text/plain\n"
+    },
+    ".bar/2-yyy/bar.txt": {
+        "content": "Additional content"
+    },
+    "bar.json": {
+        "content": "{\"_rev\":\"2-yyy\",\"_attachments\":{\"bar.txt\":{\"content_type\":\"text/plain\",\"revpos\":2,\"data\":\"QWRkaXRpb25hbCBjb250ZW50\",\"length\":0,\"digest\":\"\",\"stub\":true},\"foo.txt\":{\"content_type\":\"text/plain\",\"revpos\":2,\"length\":0,\"digest\":\"\",\"stub\":true}},\"_revisions\":{\"start\":2,\"ids\":[\"yyy\",\"xxx\"]},\"value\":\"bar\"}\n"
+    },
+    "bar/foo.txt": {
+        "content": "Test content\n"
+    }
+}

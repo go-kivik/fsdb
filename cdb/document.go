@@ -180,6 +180,10 @@ func (d *Document) persist() error {
 			}
 			// First move attachments, since they can exit both places legally.
 			for attname, att := range rev.Attachments {
+				if !strings.HasPrefix(att.path, rev.path) {
+					// This attachment is part of another rev, so skip it
+					continue
+				}
 				filename := escapeID(attname)
 				newpath := filepath.Join(revpath, filename)
 				if err := d.cdb.fs.Rename(att.path, newpath); err != nil {
@@ -205,6 +209,10 @@ func (d *Document) persist() error {
 	}
 	// First move attachments, since they can exit both places legally.
 	for attname, att := range winningRev.Attachments {
+		if !strings.HasPrefix(att.path, winningRev.path) {
+			// This attachment is part of another rev, so skip it
+			continue
+		}
 		filename := escapeID(attname)
 		newpath := filepath.Join(winningPath, filename)
 		if err := d.cdb.fs.Rename(att.path, newpath); err != nil {

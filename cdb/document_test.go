@@ -59,7 +59,7 @@ func TestDocumentPersist(t *testing.T) {
 		}
 	})
 	tests.Add("update existing doc", func(t *testing.T) interface{} {
-		tmpdir := testy.CopyTempDir(t, "testdata/persist", 0)
+		tmpdir := testy.CopyTempDir(t, "testdata/persist.update", 0)
 		tests.Cleanup(func() error {
 			return os.RemoveAll(tmpdir)
 		})
@@ -75,6 +75,42 @@ func TestDocumentPersist(t *testing.T) {
 			"_revisions": map[string]interface{}{
 				"start": 2,
 				"ids":   []string{"yyy", "xxx"},
+			},
+		})
+		doc.AddRevision(rev, nil)
+
+		return tt{
+			path: tmpdir,
+			doc:  doc,
+		}
+	})
+	tests.Add("update existing doc with attachments", func(t *testing.T) interface{} {
+		tmpdir := testy.CopyTempDir(t, "testdata/persist.att", 0)
+		tests.Cleanup(func() error {
+			return os.RemoveAll(tmpdir)
+		})
+
+		cdb := New(tmpdir)
+		doc, err := cdb.OpenDocID("bar", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rev, _ := cdb.NewRevision(map[string]interface{}{
+			"_rev":  "2-yyy",
+			"value": "bar",
+			"_revisions": map[string]interface{}{
+				"start": 2,
+				"ids":   []string{"yyy", "xxx"},
+			},
+			"_attachments": map[string]interface{}{
+				"bar.txt": map[string]interface{}{
+					"content_type": "text/plain",
+					"data":         []byte("Additional content"),
+				},
+				"foo.txt": map[string]interface{}{
+					"content_type": "text/plain",
+					"stub":         true,
+				},
 			},
 		})
 		doc.AddRevision(rev, nil)

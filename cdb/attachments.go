@@ -39,6 +39,8 @@ func (a *Attachment) Open() (filesystem.File, error) {
 func (a *Attachment) MarshalJSON() ([]byte, error) {
 	var err error
 	switch {
+	case a.Stub:
+		// skip
 	case len(a.Content) != 0:
 		err = a.setMetadata()
 	case a.Stub || a.Follows:

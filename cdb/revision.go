@@ -211,9 +211,16 @@ func (r *Revision) persist(path string) error {
 	if err := r.fs.Mkdir(filepath.Dir(path), 0777); err != nil && !os.IsExist(err) {
 		return err
 	}
+	var dirMade bool
 	for attname, att := range r.Attachments {
-		if att.path != "" {
+		if att.Stub || att.path != "" {
 			continue
+		}
+		if !dirMade {
+			if err := r.fs.Mkdir(path, 0777); err != nil && !os.IsExist(err) {
+				return err
+			}
+			dirMade = true
 		}
 		target := filepath.Join(path, escapeID(attname))
 		if err := atomicWriteFile(r.fs, target, bytes.NewReader(att.Content)); err != nil {
