@@ -20,3 +20,11 @@ func (h *RevHistory) ancestors() []string {
 	}
 	return history
 }
+
+// AddRevision returns a new history, with rev added.
+func (h *RevHistory) AddRevision(rev RevID) *RevHistory {
+	return &RevHistory{
+		Start: rev.Seq,
+		IDs:   append([]string{rev.Sum}, h.IDs...),
+	}
+}

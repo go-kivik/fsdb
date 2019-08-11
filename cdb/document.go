@@ -142,18 +142,25 @@ func (d *Document) AddRevision(rev *Revision, options kivik.Options) (string, er
 		}
 		rev.Rev = newrev
 	}
-	if len(d.Revisions) == 0 && !rev.Rev.IsZero() {
+	needRev := len(d.Revisions) > 0
+	haveRev := !rev.Rev.IsZero()
+	if needRev != haveRev {
 		return "", errConflict
 	}
-	if rev.Rev.IsZero() {
-		hash, err := rev.hash()
-		if err != nil {
-			return "", err
+	if len(d.Revisions) > 0 {
+		if history, ok := d.leafHistories()[rev.Rev.String()]; ok {
+			rev.RevHistory = history.AddRevision(rev.Rev)
+		} else {
+			return "", errConflict
 		}
-		rev.Rev = RevID{
-			Seq: 1,
-			Sum: hash,
-		}
+	}
+	hash, err := rev.hash()
+	if err != nil {
+		return "", err
+	}
+	rev.Rev = RevID{
+		Seq: rev.Rev.Seq + 1,
+		Sum: hash,
 	}
 	d.Revisions = append(d.Revisions, rev)
 	sort.Sort(d.Revisions)
@@ -245,4 +252,25 @@ func (d *Document) persist() error {
 	}
 
 	return nil
+}
+
+// leafHistories returns a list of ancestor revision IDs for current leaves.
+func (d *Document) leafHistories() map[string]*RevHistory {
+	if len(d.Revisions) == 1 {
+		return map[string]*RevHistory{
+			d.Revisions[0].Rev.String(): d.Revisions[0].RevHistory,
+		}
+	}
+	histories := make(map[string]*RevHistory, len(d.Revisions))
+	for _, rev := range d.Revisions {
+		histories[rev.Rev.String()] = rev.RevHistory
+	}
+	// Here we know we can skip the winner
+	for _, rev := range d.Revisions[1:] {
+		// and we should skip over the leaf
+		for _, revid := range rev.RevHistory.ancestors()[1:] {
+			delete(histories, revid)
+		}
+	}
+	return histories
 }

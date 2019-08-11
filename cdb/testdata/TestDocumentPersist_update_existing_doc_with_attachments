@@ -5,14 +5,14 @@
       RevMeta: (cdb.RevMeta) {
         Rev: (cdb.RevID) {
           Seq: (int64) 2,
-          Sum: (string) (len=3) "yyy",
-          original: (string) (len=5) "2-yyy"
+          Sum: (string) (len=32) "fb03e1b49e636ec1fefc07d768ff640d",
+          original: (string) ""
         },
         Deleted: (*bool)(<nil>),
         Attachments: (map[string]*cdb.Attachment) (len=2) {
           (string) (len=7) "bar.txt": (*cdb.Attachment)({
             ContentType: (string) (len=10) "text/plain",
-            RevPos: (int64) 2,
+            RevPos: (int64) 1,
             Stub: (bool) true,
             Follows: (bool) false,
             Content: ([]uint8) (len=18) {
@@ -21,12 +21,12 @@
             },
             Size: (int64) 0,
             Digest: (string) "",
-            path: (string) (len=90) "<tmpdir>/.bar/2-yyy/bar.txt",
+            path: (string) "",
             fs: (filesystem.Filesystem) <nil>
           }),
           (string) (len=7) "foo.txt": (*cdb.Attachment)({
             ContentType: (string) (len=10) "text/plain",
-            RevPos: (int64) 2,
+            RevPos: (int64) 1,
             Stub: (bool) true,
             Follows: (bool) false,
             Content: ([]uint8) <nil>,
@@ -37,9 +37,9 @@
           })
         },
         RevHistory: (*cdb.RevHistory)({
-          Start: (int64) 2,
+          Start: (int64) 1,
           IDs: ([]string) (len=2) {
-            (string) (len=3) "yyy",
+            (string) (len=3) "xxx",
             (string) (len=3) "xxx"
           }
         }),

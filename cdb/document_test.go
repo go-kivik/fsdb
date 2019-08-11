@@ -73,15 +73,20 @@ func TestDocumentPersist(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		rev, _ := cdb.NewRevision(map[string]interface{}{
-			"_rev":  "2-yyy",
+		rev, err := cdb.NewRevision(map[string]interface{}{
+			"_rev":  "1-xxx",
 			"value": "bar",
 			"_revisions": map[string]interface{}{
 				"start": 2,
 				"ids":   []string{"yyy", "xxx"},
 			},
 		})
-		doc.AddRevision(rev, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := doc.AddRevision(rev, nil); err != nil {
+			t.Fatal(err)
+		}
 
 		return tt{
 			path: tmpdir,
@@ -99,8 +104,8 @@ func TestDocumentPersist(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		rev, _ := cdb.NewRevision(map[string]interface{}{
-			"_rev":  "2-yyy",
+		rev, err := cdb.NewRevision(map[string]interface{}{
+			"_rev":  "1-xxx",
 			"value": "bar",
 			"_revisions": map[string]interface{}{
 				"start": 2,
@@ -117,7 +122,12 @@ func TestDocumentPersist(t *testing.T) {
 				},
 			},
 		})
-		doc.AddRevision(rev, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := doc.AddRevision(rev, nil); err != nil {
+			t.Fatal(err)
+		}
 
 		return tt{
 			path: tmpdir,

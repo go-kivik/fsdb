@@ -53,7 +53,7 @@ func TestPut(t *testing.T) {
 			id:     "foo",
 			doc:    map[string]string{"foo": "bar", "_rev": "1-xxx"},
 			status: http.StatusConflict,
-			err:    "Document update conflict.",
+			err:    "document update conflict",
 		}
 	})
 	tests.Add("simple create", func(t *testing.T) interface{} {
@@ -71,19 +71,19 @@ func TestPut(t *testing.T) {
 			expected: "1-04edfaf9abdaed3c0accf6c463e78fd4",
 		}
 	})
-	// tests.Add("update conflict, doc key", func(t *testing.T) interface{} {
-	// 	tmpdir := copyDir(t, "testdata/db.put", 1)
-	// 	tests.Cleanup(cleanTmpdir(tmpdir))
-	//
-	// 	return tt{
-	// 		path:   tmpdir,
-	// 		dbname: "db.put",
-	// 		id:     "foo",
-	// 		doc:    map[string]string{"foo": "bar", "_rev": "2-asdf"},
-	// 		status: http.StatusConflict,
-	// 		err:    "document update conflict",
-	// 	}
-	// })
+	tests.Add("update conflict, doc key", func(t *testing.T) interface{} {
+		tmpdir := copyDir(t, "testdata/db.put", 1)
+		tests.Cleanup(cleanTmpdir(tmpdir))
+
+		return tt{
+			path:   tmpdir,
+			dbname: "db.put",
+			id:     "foo",
+			doc:    map[string]string{"foo": "bar", "_rev": "2-asdf"},
+			status: http.StatusConflict,
+			err:    "document update conflict",
+		}
+	})
 	// tests.Add("update conflict, options", func(t *testing.T) interface{} {
 	// 	tmpdir := copyDir(t, "testdata/db.put", 1)
 	// 	tests.Cleanup(cleanTmpdir(tmpdir))
