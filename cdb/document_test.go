@@ -1,6 +1,7 @@
 package cdb
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"regexp"
@@ -53,7 +54,7 @@ func TestDocumentPersist(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, err := doc.AddRevision(rev, nil); err != nil {
+		if _, err := doc.AddRevision(context.TODO(), rev, nil); err != nil {
 			t.Fatal(err)
 		}
 
@@ -84,7 +85,7 @@ func TestDocumentPersist(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, err := doc.AddRevision(rev, nil); err != nil {
+		if _, err := doc.AddRevision(context.TODO(), rev, nil); err != nil {
 			t.Fatal(err)
 		}
 
@@ -136,7 +137,7 @@ func TestDocumentPersist(t *testing.T) {
 	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
-		err := tt.doc.persist()
+		err := tt.doc.persist(context.TODO())
 		testy.StatusError(t, tt.err, tt.status, err)
 		re := testy.Replacement{
 			Regexp:      regexp.MustCompile(regexp.QuoteMeta(tt.path)),

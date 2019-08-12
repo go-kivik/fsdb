@@ -131,12 +131,12 @@ func copyAttachments(leaf, old *Revision) error {
 
 // AddRevision adds rev to the existing document, according to options, and
 // persists it to disk. The return value is the new revision ID.
-func (d *Document) AddRevision(rev *Revision, options kivik.Options) (string, error) {
+func (d *Document) AddRevision(ctx context.Context, rev *Revision, options kivik.Options) (string, error) {
 	revid, err := d.addRevision(rev, options)
 	if err != nil {
 		return "", err
 	}
-	err = d.persist()
+	err = d.persist(ctx)
 	return revid, err
 }
 
@@ -185,7 +185,7 @@ Persist strategy:
 		- Move old winning rev to {db}/.{docid}/{rev}
 		- Move new winning rev to {db}/{docid}
 */
-func (d *Document) persist() error {
+func (d *Document) persist(ctx context.Context) error {
 	if d == nil || len(d.Revisions) == 0 {
 		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document has no revisions"}
 	}
@@ -194,7 +194,10 @@ func (d *Document) persist() error {
 		if rev.path != "" {
 			continue
 		}
-		if err := rev.persist(filepath.Join(d.cdb.root, "."+docID, rev.Rev.String())); err != nil {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		if err := rev.persist(ctx, filepath.Join(d.cdb.root, "."+docID, rev.Rev.String())); err != nil {
 			return err
 		}
 	}
@@ -212,6 +215,9 @@ func (d *Document) persist() error {
 	// See if some other rev is currently the winning rev, and move it if necessary
 	for _, rev := range d.Revisions[1:] {
 		if winningPath+filepath.Ext(rev.path) == rev.path {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
 			// We need to move this rev
 			revpath := filepath.Join(d.cdb.root, "."+escapeID(d.ID), rev.Rev.String())
 			if err := d.cdb.fs.Mkdir(revpath, 0777); err != nil && !os.IsExist(err) {
@@ -251,6 +257,9 @@ func (d *Document) persist() error {
 		if !strings.HasPrefix(att.path, winningRev.path) {
 			// This attachment is part of another rev, so skip it
 			continue
+		}
+		if err := ctx.Err(); err != nil {
+			return err
 		}
 		filename := escapeID(attname)
 		newpath := filepath.Join(winningPath, filename)

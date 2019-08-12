@@ -209,7 +209,7 @@ func (fs *FS) NewRevision(i interface{}) (*Revision, error) {
 	return rev, nil
 }
 
-func (r *Revision) persist(path string) error {
+func (r *Revision) persist(ctx context.Context, path string) error {
 	if err := r.fs.Mkdir(filepath.Dir(path), 0777); err != nil && !os.IsExist(err) {
 		return err
 	}
@@ -217,6 +217,9 @@ func (r *Revision) persist(path string) error {
 	for attname, att := range r.Attachments {
 		if att.Stub || att.path != "" {
 			continue
+		}
+		if err := ctx.Err(); err != nil {
+			return err
 		}
 		if !dirMade {
 			if err := r.fs.Mkdir(path, 0777); err != nil && !os.IsExist(err) {

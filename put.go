@@ -113,7 +113,7 @@ Current rev lives under:    {db}/{docid}.{ext}
 Historical revs live under: {db}/.{docid}/{rev}
 Attachments:                {db}/{docid}/{filename}
 */
-func (d *db) Put(_ context.Context, docID string, i interface{}, opts map[string]interface{}) (string, error) {
+func (d *db) Put(ctx context.Context, docID string, i interface{}, opts map[string]interface{}) (string, error) {
 	if err := validateID(docID); err != nil {
 		return "", err
 	}
@@ -129,7 +129,7 @@ func (d *db) Put(_ context.Context, docID string, i interface{}, opts map[string
 	case err != nil:
 		return "", err
 	}
-	return doc.AddRevision(rev, opts)
+	return doc.AddRevision(ctx, rev, opts)
 
 	// filename := id2basename(docID) + ".json"
 	// ndoc, err := normalizeDoc(doc)
