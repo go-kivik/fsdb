@@ -10,7 +10,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/go-kivik/fsdb/cdb"
 	"github.com/go-kivik/fsdb/decoder"
 	"github.com/go-kivik/fsdb/internal"
 	"github.com/go-kivik/kivik"
@@ -126,7 +125,7 @@ func (d *db) Put(_ context.Context, docID string, i interface{}, opts map[string
 	switch {
 	case kivik.StatusCode(err) == http.StatusNotFound:
 		// Crate new doc
-		doc = &cdb.Document{ID: docID}
+		doc = d.cdb.NewDocument("", docID)
 	case err != nil:
 		return "", err
 	}

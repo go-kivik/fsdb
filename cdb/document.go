@@ -129,9 +129,18 @@ func copyAttachments(leaf, old *Revision) error {
 	return nil
 }
 
-// AddRevision adds rev to the existing document, according to options. The
-// return value is the new revision ID.
+// AddRevision adds rev to the existing document, according to options, and
+// persists it to disk. The return value is the new revision ID.
 func (d *Document) AddRevision(rev *Revision, options kivik.Options) (string, error) {
+	revid, err := d.addRevision(rev, options)
+	if err != nil {
+		return "", err
+	}
+	err = d.persist()
+	return revid, err
+}
+
+func (d *Document) addRevision(rev *Revision, options kivik.Options) (string, error) {
 	if revid, ok := options["rev"].(string); ok {
 		var newrev RevID
 		if err := newrev.UnmarshalText([]byte(revid)); err != nil {
@@ -167,15 +176,15 @@ func (d *Document) AddRevision(rev *Revision, options kivik.Options) (string, er
 	return rev.Rev.String(), nil
 }
 
-/*
-Persist strategy:
-- For every rev that doesn't exist on disk, create it in {db}/.{docid}/{rev}
-- If winning rev does not exist in {db}/{docid}:
-	- Move old winning rev to {db}/.{docid}/{rev}
-	- Move new winning rev to {db}/{docid}
-*/
+/* persist updates the current rev state on disk.
 
-// Document persists the contained revs to disk.
+Persist strategy:
+
+	- For every rev that doesn't exist on disk, create it in {db}/.{docid}/{rev}
+	- If winning rev does not exist in {db}/{docid}:
+		- Move old winning rev to {db}/.{docid}/{rev}
+		- Move new winning rev to {db}/{docid}
+*/
 func (d *Document) persist() error {
 	if d == nil || len(d.Revisions) == 0 {
 		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document has no revisions"}

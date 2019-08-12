@@ -84,33 +84,33 @@ func TestPut(t *testing.T) {
 			err:    "document update conflict",
 		}
 	})
-	// tests.Add("update conflict, options", func(t *testing.T) interface{} {
-	// 	tmpdir := copyDir(t, "testdata/db.put", 1)
-	// 	tests.Cleanup(cleanTmpdir(tmpdir))
-	//
-	// 	return tt{
-	// 		path:    tmpdir,
-	// 		dbname:  "db.put",
-	// 		id:      "foo",
-	// 		doc:     map[string]string{"foo": "bar"},
-	// 		options: map[string]interface{}{"rev": "2-asdf"},
-	// 		status:  http.StatusConflict,
-	// 		err:     "document update conflict",
-	// 	}
-	// })
-	// tests.Add("no explicit rev", func(t *testing.T) interface{} {
-	// 	tmpdir := copyDir(t, "testdata/db.put", 1)
-	// 	tests.Cleanup(cleanTmpdir(tmpdir))
-	//
-	// 	return tt{
-	// 		path:   tmpdir,
-	// 		dbname: "db.put",
-	// 		id:     "foo",
-	// 		doc:    map[string]string{"foo": "bar"},
-	// 		status: http.StatusConflict,
-	// 		err:    "document update conflict",
-	// 	}
-	// })
+	tests.Add("update conflict, options", func(t *testing.T) interface{} {
+		tmpdir := copyDir(t, "testdata/db.put", 1)
+		tests.Cleanup(cleanTmpdir(tmpdir))
+
+		return tt{
+			path:    tmpdir,
+			dbname:  "db.put",
+			id:      "foo",
+			doc:     map[string]string{"foo": "bar"},
+			options: map[string]interface{}{"rev": "2-asdf"},
+			status:  http.StatusConflict,
+			err:     "document update conflict",
+		}
+	})
+	tests.Add("no explicit rev", func(t *testing.T) interface{} {
+		tmpdir := copyDir(t, "testdata/db.put", 1)
+		tests.Cleanup(cleanTmpdir(tmpdir))
+
+		return tt{
+			path:   tmpdir,
+			dbname: "db.put",
+			id:     "foo",
+			doc:    map[string]string{"foo": "bar"},
+			status: http.StatusConflict,
+			err:    "document update conflict",
+		}
+	})
 	tests.Add("revs mismatch", tt{
 		path:    "/tmp",
 		dbname:  "doesntmatter",
@@ -120,18 +120,18 @@ func TestPut(t *testing.T) {
 		status:  http.StatusBadRequest,
 		err:     "document rev from request body and query string have different values",
 	})
-	// tests.Add("proper update", func(t *testing.T) interface{} {
-	// 	tmpdir := copyDir(t, "testdata/db.put", 1)
-	// 	tests.Cleanup(cleanTmpdir(tmpdir))
-	//
-	// 	return tt{
-	// 		path:     tmpdir,
-	// 		dbname:   "db.put",
-	// 		id:       "foo",
-	// 		doc:      map[string]string{"foo": "quxx", "_rev": "1-beea34a62a215ab051862d1e5d93162e"},
-	// 		expected: "2-a1de8ffe0af07dec9193ddf8d4b18135",
-	// 	}
-	// })
+	tests.Add("proper update", func(t *testing.T) interface{} {
+		tmpdir := copyDir(t, "testdata/db.put", 1)
+		tests.Cleanup(cleanTmpdir(tmpdir))
+
+		return tt{
+			path:     tmpdir,
+			dbname:   "db.put",
+			id:       "foo",
+			doc:      map[string]string{"foo": "quxx", "_rev": "1-beea34a62a215ab051862d1e5d93162e"},
+			expected: "2-ff3a4f106331244679a6cac83a74ae48",
+		}
+	})
 	// tests.Add("design doc", func(t *testing.T) interface{} {
 	// 	tmpdir := tempDir(t)
 	// 	tests.Cleanup(cleanTmpdir(tmpdir))

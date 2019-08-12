@@ -1,1 +1,5 @@
-{}
+{
+    "foo/foo.json": {
+        "content": "{\"_rev\":\"1-04edfaf9abdaed3c0accf6c463e78fd4\",\"_revisions\":{\"start\":0,\"ids\":[]},\"foo\":\"bar\"}\n"
+    }
+}

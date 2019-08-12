@@ -125,7 +125,7 @@ func TestDocumentPersist(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, err := doc.AddRevision(rev, nil); err != nil {
+		if _, err := doc.addRevision(rev, nil); err != nil {
 			t.Fatal(err)
 		}
 
