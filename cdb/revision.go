@@ -119,7 +119,7 @@ func (r *Revision) MarshalJSON() ([]byte, error) {
 	}
 	stub, follows := r.stubFollows()
 	for _, att := range r.Attachments {
-		att.Stub = stub
+		att.outputStub = stub
 		att.Follows = follows
 	}
 	parts := make([]json.RawMessage, 0, 2)

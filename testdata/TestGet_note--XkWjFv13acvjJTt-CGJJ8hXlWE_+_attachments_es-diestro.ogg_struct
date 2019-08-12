@@ -1,6 +1,6 @@
 {
     "content_type": "audio/ogg",
-    "stub": false,
+    "stub": true,
     "follows": true,
     "length": 3533,
     "encoding": "",

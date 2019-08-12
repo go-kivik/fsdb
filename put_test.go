@@ -166,29 +166,29 @@ func TestPut(t *testing.T) {
 		status: http.StatusBadRequest,
 		err:    "json: cannot unmarshal number into Go struct field RevMeta._attachments of type map[string]*cdb.Attachment",
 	})
-	// tests.Add("attachment", func(t *testing.T) interface{} {
-	// 	tmpdir := tempDir(t)
-	// 	tests.Cleanup(cleanTmpdir(tmpdir))
-	// 	if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
-	// 		t.Fatal(err)
-	// 	}
-	//
-	// 	return tt{
-	// 		path:   tmpdir,
-	// 		dbname: "foo",
-	// 		id:     "foo",
-	// 		doc: map[string]interface{}{
-	// 			"foo": "bar",
-	// 			"_attachments": map[string]interface{}{
-	// 				"foo.txt": map[string]interface{}{
-	// 					"content_type": "text/plain",
-	// 					"data":         []byte("Testing"),
-	// 				},
-	// 			},
-	// 		},
-	// 		expected: "1-beea34a62a215ab051862d1e5d93162e",
-	// 	}
-	// })
+	tests.Add("attachment", func(t *testing.T) interface{} {
+		tmpdir := tempDir(t)
+		tests.Cleanup(cleanTmpdir(tmpdir))
+		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
+			t.Fatal(err)
+		}
+
+		return tt{
+			path:   tmpdir,
+			dbname: "foo",
+			id:     "foo",
+			doc: map[string]interface{}{
+				"foo": "bar",
+				"_attachments": map[string]interface{}{
+					"foo.txt": map[string]interface{}{
+						"content_type": "text/plain",
+						"data":         []byte("Testing"),
+					},
+				},
+			},
+			expected: "1-aea914b09cf6a83d4d3b1970c924d925",
+		}
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		if tt.path == "" {

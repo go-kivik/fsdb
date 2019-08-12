@@ -5,7 +5,7 @@
       RevMeta: (cdb.RevMeta) {
         Rev: (cdb.RevID) {
           Seq: (int64) 2,
-          Sum: (string) (len=32) "fb03e1b49e636ec1fefc07d768ff640d",
+          Sum: (string) (len=32) "1963dc3c4e4d057b047b7d3675358757",
           original: (string) ""
         },
         Deleted: (*bool)(<nil>),
@@ -13,16 +13,17 @@
           (string) (len=7) "bar.txt": (*cdb.Attachment)({
             ContentType: (string) (len=10) "text/plain",
             RevPos: (int64) 1,
-            Stub: (bool) true,
+            Stub: (bool) false,
             Follows: (bool) false,
             Content: ([]uint8) (len=18) {
               00000000  41 64 64 69 74 69 6f 6e  61 6c 20 63 6f 6e 74 65  |Additional conte|
               00000010  6e 74                                             |nt|
             },
-            Size: (int64) 0,
-            Digest: (string) "",
-            path: (string) "",
-            fs: (filesystem.Filesystem) <nil>
+            Size: (int64) 18,
+            Digest: (string) (len=28) "md5-gnmB5zRLleRxMgtaAnivSw==",
+            path: (string) (len=83) "<tmpdir>/bar/bar.txt",
+            fs: (filesystem.Filesystem) <nil>,
+            outputStub: (bool) true
           }),
           (string) (len=7) "foo.txt": (*cdb.Attachment)({
             ContentType: (string) (len=10) "text/plain",
@@ -33,7 +34,8 @@
             Size: (int64) 0,
             Digest: (string) "",
             path: (string) "",
-            fs: (filesystem.Filesystem) <nil>
+            fs: (filesystem.Filesystem) <nil>,
+            outputStub: (bool) true
           })
         },
         RevHistory: (*cdb.RevHistory)({
@@ -74,7 +76,8 @@
             Digest: (string) "",
             path: (string) (len=83) "<tmpdir>/bar/foo.txt",
             fs: (*filesystem.defaultFS)({
-            })
+            }),
+            outputStub: (bool) false
           })
         },
         RevHistory: (*cdb.RevHistory)({

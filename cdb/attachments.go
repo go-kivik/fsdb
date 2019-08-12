@@ -25,6 +25,11 @@ type Attachment struct {
 	path string
 	// fs is the filesystem to use for disk access.
 	fs filesystem.Filesystem
+
+	// outputStub dictates whether MarshalJSON should output a stub. This is
+	// distinct from Stub, which indicates whether UnmarshalJSON read Stub, as
+	// from user input.
+	outputStub bool
 }
 
 // Open opens the attachment for reading.
@@ -39,11 +44,9 @@ func (a *Attachment) Open() (filesystem.File, error) {
 func (a *Attachment) MarshalJSON() ([]byte, error) {
 	var err error
 	switch {
-	case a.Stub:
-		// skip
 	case len(a.Content) != 0:
 		a.setMetadata()
-	case a.Stub || a.Follows:
+	case a.outputStub || a.Follows:
 		err = a.readMetadata()
 	default:
 		err = a.readContent()
@@ -53,16 +56,19 @@ func (a *Attachment) MarshalJSON() ([]byte, error) {
 	}
 	att := struct {
 		Attachment
-		Stub    *bool `json:"stub,omitempty"`    // nolint: govet
-		Follows *bool `json:"follows,omitempty"` // nolint: govet
+		Content *[]byte `json:"data,omitempty"`    // nolint: govet
+		Stub    *bool   `json:"stub,omitempty"`    // nolint: govet
+		Follows *bool   `json:"follows,omitempty"` // nolint: govet
 	}{
 		Attachment: *a,
 	}
-	if a.Stub {
-		att.Stub = &a.Stub
-	}
-	if a.Follows {
+	switch {
+	case a.outputStub:
+		att.Stub = &a.outputStub
+	case a.Follows:
 		att.Follows = &a.Follows
+	case len(a.Content) > 0:
+		att.Content = &a.Content
 	}
 	return json.Marshal(att)
 }
@@ -82,6 +88,9 @@ func (a *Attachment) readContent() error {
 }
 
 func (a *Attachment) readMetadata() error {
+	if a.path == "" {
+		return nil
+	}
 	f, err := a.fs.Open(a.path)
 	if err != nil {
 		return err

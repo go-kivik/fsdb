@@ -254,13 +254,13 @@ func (d *Document) persist(ctx context.Context) error {
 	if err := d.cdb.fs.Rename(winningRev.path, winningPath+filepath.Ext(winningRev.path)); err != nil {
 		return err
 	}
-	winningRev.path = winningPath + filepath.Ext(winningRev.path)
 	if err := d.cdb.fs.Mkdir(winningPath, 0777); err != nil && !os.IsExist(err) {
 		return err
 	}
+	revpath := filepath.Join(d.cdb.root, "."+escapeID(d.ID), winningRev.Rev.String())
 	// First move attachments, since they can exit both places legally.
 	for attname, att := range winningRev.Attachments {
-		if !strings.HasPrefix(att.path, winningRev.path) {
+		if !strings.HasPrefix(att.path, revpath) {
 			// This attachment is part of another rev, so skip it
 			continue
 		}
@@ -274,6 +274,7 @@ func (d *Document) persist(ctx context.Context) error {
 		}
 		att.path = newpath
 	}
+	winningRev.path = winningPath + filepath.Ext(winningRev.path)
 
 	return nil
 }
