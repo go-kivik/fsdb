@@ -171,6 +171,12 @@ func (d *Document) addRevision(rev *Revision, options kivik.Options) (string, er
 		Seq: rev.Rev.Seq + 1,
 		Sum: hash,
 	}
+	if len(d.Revisions) == 0 {
+		rev.RevHistory = &RevHistory{
+			Start: rev.Rev.Seq,
+			IDs:   []string{rev.Rev.Sum},
+		}
+	}
 	d.Revisions = append(d.Revisions, rev)
 	sort.Sort(d.Revisions)
 	return rev.Rev.String(), nil
