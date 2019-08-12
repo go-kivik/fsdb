@@ -125,7 +125,7 @@ func (d *db) Put(_ context.Context, docID string, i interface{}, opts map[string
 	switch {
 	case kivik.StatusCode(err) == http.StatusNotFound:
 		// Crate new doc
-		doc = d.cdb.NewDocument("", docID)
+		doc = d.cdb.NewDocument(docID)
 	case err != nil:
 		return "", err
 	}

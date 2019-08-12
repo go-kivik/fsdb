@@ -27,7 +27,7 @@ type Document struct {
 }
 
 // NewDocument creates a new document.
-func (fs *FS) NewDocument(path, docID string) *Document {
+func (fs *FS) NewDocument(docID string) *Document {
 	return &Document{
 		ID:  docID,
 		cdb: fs,

@@ -36,7 +36,7 @@ func TestDocumentPersist(t *testing.T) {
 
 		return tt{
 			path:   tmpdir,
-			doc:    cdb.NewDocument(tmpdir, "foo"),
+			doc:    cdb.NewDocument("foo"),
 			status: http.StatusBadRequest,
 			err:    "document has no revisions",
 		}
@@ -46,7 +46,7 @@ func TestDocumentPersist(t *testing.T) {
 		tests.Cleanup(testy.TempDir(t, &tmpdir))
 
 		cdb := New(tmpdir, filesystem.Default())
-		doc := cdb.NewDocument(tmpdir, "foo")
+		doc := cdb.NewDocument("foo")
 		rev, err := cdb.NewRevision(map[string]string{
 			"value": "bar",
 		})
