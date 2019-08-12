@@ -1,5 +1,5 @@
 {
     "foo/_design%2Ffoo.json": {
-        "content": "{\"_id\":\"_design/foo\",\"_rev\":\"1-9c52d211374283d5def378aa0e10709d\",\"foo\":\"bar\"}\n"
+        "content": "{\"_rev\":\"1-04edfaf9abdaed3c0accf6c463e78fd4\",\"_revisions\":{\"start\":0,\"ids\":[]},\"foo\":\"bar\"}\n"
     }
 }

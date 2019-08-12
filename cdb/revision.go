@@ -205,7 +205,9 @@ func (fs *FS) NewRevision(i interface{}) (*Revision, error) {
 	}
 	rev := new(Revision)
 	rev.fs = fs.fs
-	_ = json.Unmarshal(data, &rev)
+	if err := json.Unmarshal(data, &rev); err != nil {
+		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
+	}
 	return rev, nil
 }
 

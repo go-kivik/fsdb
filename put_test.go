@@ -132,40 +132,40 @@ func TestPut(t *testing.T) {
 			expected: "2-ff3a4f106331244679a6cac83a74ae48",
 		}
 	})
-	// tests.Add("design doc", func(t *testing.T) interface{} {
-	// 	tmpdir := tempDir(t)
-	// 	tests.Cleanup(cleanTmpdir(tmpdir))
-	// 	if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
-	// 		t.Fatal(err)
-	// 	}
-	//
-	// 	return tt{
-	// 		path:     tmpdir,
-	// 		dbname:   "foo",
-	// 		id:       "_design/foo",
-	// 		doc:      map[string]string{"foo": "bar"},
-	// 		expected: "1-9c52d211374283d5def378aa0e10709d",
-	// 	}
-	// })
-	// tests.Add("invalid doc id", tt{
-	// 	path:   "/tmp",
-	// 	dbname: "doesntmatter",
-	// 	id:     "_oink",
-	// 	doc:    map[string]string{"foo": "bar"},
-	// 	status: http.StatusBadRequest,
-	// 	err:    "only reserved document ids may start with underscore",
-	// })
-	// tests.Add("invalid attachments", tt{
-	// 	path:   "/tmp",
-	// 	dbname: "doesntmatter",
-	// 	id:     "foo",
-	// 	doc: map[string]interface{}{
-	// 		"foo":          "bar",
-	// 		"_attachments": 123,
-	// 	},
-	// 	status: http.StatusBadRequest,
-	// 	err:    "json: cannot unmarshal number into Go struct field DocMeta._attachments of type internal.Attachments",
-	// })
+	tests.Add("design doc", func(t *testing.T) interface{} {
+		tmpdir := tempDir(t)
+		tests.Cleanup(cleanTmpdir(tmpdir))
+		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
+			t.Fatal(err)
+		}
+
+		return tt{
+			path:     tmpdir,
+			dbname:   "foo",
+			id:       "_design/foo",
+			doc:      map[string]string{"foo": "bar"},
+			expected: "1-04edfaf9abdaed3c0accf6c463e78fd4",
+		}
+	})
+	tests.Add("invalid doc id", tt{
+		path:   "/tmp",
+		dbname: "doesntmatter",
+		id:     "_oink",
+		doc:    map[string]string{"foo": "bar"},
+		status: http.StatusBadRequest,
+		err:    "only reserved document ids may start with underscore",
+	})
+	tests.Add("invalid attachments", tt{
+		path:   "/tmp",
+		dbname: "doesntmatter",
+		id:     "foo",
+		doc: map[string]interface{}{
+			"foo":          "bar",
+			"_attachments": 123,
+		},
+		status: http.StatusBadRequest,
+		err:    "json: cannot unmarshal number into Go struct field RevMeta._attachments of type map[string]*cdb.Attachment",
+	})
 	// tests.Add("attachment", func(t *testing.T) interface{} {
 	// 	tmpdir := tempDir(t)
 	// 	tests.Cleanup(cleanTmpdir(tmpdir))
