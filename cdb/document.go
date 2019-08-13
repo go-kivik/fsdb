@@ -3,6 +3,7 @@ package cdb
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -171,8 +172,21 @@ func (d *Document) addRevision(rev *Revision, options kivik.Options) (string, er
 		return "", errConflict
 	}
 	if len(d.Revisions) > 0 {
-		if history, ok := d.leafHistories()[rev.Rev.String()]; ok {
-			rev.RevHistory = history.AddRevision(rev.Rev)
+		if oldrev, ok := d.leaves()[rev.Rev.String()]; ok {
+			rev.RevHistory = oldrev.RevHistory.AddRevision(rev.Rev)
+			for attname, att := range rev.Attachments {
+				if !att.Stub {
+					continue
+				}
+				filename, err := unescapeID(attname)
+				if err != nil {
+					return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", attname), Err: err}
+				}
+				oldatt := oldrev.Attachments[attname]
+				if att.Digest != "" && att.Digest != oldatt.Digest {
+					return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
+				}
+			}
 		} else {
 			return "", errConflict
 		}
@@ -293,23 +307,22 @@ func (d *Document) persist(ctx context.Context) error {
 	return nil
 }
 
-// leafHistories returns a list of ancestor revision IDs for current leaves.
-func (d *Document) leafHistories() map[string]*RevHistory {
+// leaves returns a map of leave revid to rev
+func (d *Document) leaves() map[string]*Revision {
 	if len(d.Revisions) == 1 {
-		return map[string]*RevHistory{
-			d.Revisions[0].Rev.String(): d.Revisions[0].RevHistory,
+		return map[string]*Revision{
+			d.Revisions[0].Rev.String(): d.Revisions[0],
 		}
 	}
-	histories := make(map[string]*RevHistory, len(d.Revisions))
+	leaves := make(map[string]*Revision, len(d.Revisions))
 	for _, rev := range d.Revisions {
-		histories[rev.Rev.String()] = rev.RevHistory
+		leaves[rev.Rev.String()] = rev
 	}
-	// Here we know we can skip the winner
-	for _, rev := range d.Revisions[1:] {
-		// and we should skip over the leaf
+	for _, rev := range d.Revisions {
+		// Skp over the known leaf
 		for _, revid := range rev.RevHistory.Ancestors()[1:] {
-			delete(histories, revid)
+			delete(leaves, revid)
 		}
 	}
-	return histories
+	return leaves
 }

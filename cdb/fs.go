@@ -46,6 +46,11 @@ func (fs *FS) readMainRev(base string) (*Revision, error) {
 	if err := decode.Decode(f, ext, rev); err != nil {
 		return nil, err
 	}
+	for _, att := range rev.Attachments {
+		if att.RevPos == 0 {
+			att.RevPos = rev.Rev.Seq
+		}
+	}
 	return rev, nil
 }
 
@@ -62,6 +67,11 @@ func (fs *FS) readSubRev(path string) (*Revision, error) {
 	rev.fs = fs.fs
 	if err := decode.Decode(f, ext, rev); err != nil {
 		return nil, err
+	}
+	for _, att := range rev.Attachments {
+		if att.RevPos == 0 {
+			att.RevPos = rev.Rev.Seq
+		}
 	}
 	return rev, nil
 }

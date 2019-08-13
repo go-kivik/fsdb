@@ -10,6 +10,14 @@ import (
 	"github.com/go-kivik/kivik/driver"
 )
 
+/*
+When uploading attachment stubs:
+- revpos must match, or be omitted
+- digest must match
+- length is ignored
+- content_type is ignored
+*/
+
 // Attachment represents a file attachment.
 type Attachment struct {
 	ContentType string `json:"content_type" yaml:"content_type"`
