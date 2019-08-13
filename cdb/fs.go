@@ -129,12 +129,12 @@ func (fs *FS) OpenDocID(docID string, opts kivik.Options) (*Document, error) {
 	}
 	for _, rev := range doc.Revisions {
 		for filename, att := range rev.Attachments {
-			path, file, err := rev.openAttachment(filename)
+			file, err := rev.openAttachment(filename)
 			if err != nil {
 				return nil, err
 			}
 			_ = file.Close()
-			att.path = path
+			att.path = file.Name()
 			att.fs = fs.fs
 		}
 	}

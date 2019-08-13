@@ -147,11 +147,11 @@ func (r *Revision) stubFollows() (bool, bool) {
 	return false, accept != "application/json"
 }
 
-func (r *Revision) openAttachment(filename string) (string, filesystem.File, error) {
+func (r *Revision) openAttachment(filename string) (filesystem.File, error) {
 	path := strings.TrimSuffix(r.path, filepath.Ext(r.path))
 	f, err := r.fs.Open(filepath.Join(path, filename))
 	if !os.IsNotExist(err) {
-		return filepath.Join(path, filename), f, err
+		return f, err
 	}
 	basename := filepath.Base(path)
 	path = strings.TrimSuffix(path, basename)
@@ -163,10 +163,10 @@ func (r *Revision) openAttachment(filename string) (string, filesystem.File, err
 		fullpath := filepath.Join(path, rev, filename)
 		f, err := r.fs.Open(fullpath)
 		if !os.IsNotExist(err) {
-			return fullpath, f, err
+			return f, err
 		}
 	}
-	return "", nil, errNotFound
+	return nil, errNotFound
 }
 
 // Revisions is a sortable list of document revisions.
