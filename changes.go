@@ -9,7 +9,6 @@ package fs
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -58,7 +57,8 @@ func (c *changes) Next(ch *driver.Change) error {
 				base := strings.TrimSuffix(candidate.Name(), "."+ext)
 				docid, err := filename2id(base)
 				if err != nil {
-					return fmt.Errorf("Invalid docid: %s", candidate.Name())
+					// ignore unrecognized files
+					continue
 				}
 				if ignoreDocID(docid) {
 					continue
