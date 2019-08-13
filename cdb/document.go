@@ -186,6 +186,9 @@ func (d *Document) addRevision(rev *Revision, options kivik.Options) (string, er
 				if att.Digest != "" && att.Digest != oldatt.Digest {
 					return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
 				}
+				if att.RevPos != 0 && att.RevPos != oldatt.RevPos {
+					return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
+				}
 			}
 		} else {
 			return "", errConflict

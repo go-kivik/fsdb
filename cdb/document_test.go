@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/kivik"
 	"gitlab.com/flimzy/testy"
 )
 
@@ -151,6 +152,110 @@ func TestDocumentPersist(t *testing.T) {
 			NoMD5Sum:    true,
 			FileContent: true,
 		}); d != nil {
+			t.Error(d)
+		}
+	})
+}
+
+func TestDocumentAddRevision(t *testing.T) {
+	type tt struct {
+		path     string
+		doc      *Document
+		rev      *Revision
+		options  kivik.Options
+		status   int
+		err      string
+		expected string
+	}
+	tests := testy.NewTable()
+	tests.Add("stub with bad digest", func(t *testing.T) interface{} {
+		tmpdir := testy.CopyTempDir(t, "testdata/persist.att", 0)
+		tests.Cleanup(func() error {
+			return os.RemoveAll(tmpdir)
+		})
+
+		cdb := New(tmpdir)
+		doc, err := cdb.OpenDocID("bar", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rev, err := cdb.NewRevision(map[string]interface{}{
+			"_rev":  "1-xxx",
+			"value": "bar",
+			"_revisions": map[string]interface{}{
+				"start": 2,
+				"ids":   []string{"yyy", "xxx"},
+			},
+			"_attachments": map[string]interface{}{
+				"foo.txt": map[string]interface{}{
+					"content_type": "text/plain",
+					"stub":         true,
+					"digest":       "md5-asdf",
+				},
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return tt{
+			path:   tmpdir,
+			doc:    doc,
+			rev:    rev,
+			status: http.StatusBadRequest,
+			err:    "invalid attachment data for foo.txt",
+		}
+	})
+	tests.Add("stub with wrong revpos", func(t *testing.T) interface{} {
+		tmpdir := testy.CopyTempDir(t, "testdata/persist.att", 0)
+		tests.Cleanup(func() error {
+			return os.RemoveAll(tmpdir)
+		})
+
+		cdb := New(tmpdir)
+		doc, err := cdb.OpenDocID("bar", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rev, err := cdb.NewRevision(map[string]interface{}{
+			"_rev":  "1-xxx",
+			"value": "bar",
+			"_revisions": map[string]interface{}{
+				"start": 2,
+				"ids":   []string{"yyy", "xxx"},
+			},
+			"_attachments": map[string]interface{}{
+				"foo.txt": map[string]interface{}{
+					"content_type": "text/plain",
+					"stub":         true,
+					"revpos":       6,
+				},
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return tt{
+			path:   tmpdir,
+			doc:    doc,
+			rev:    rev,
+			status: http.StatusBadRequest,
+			err:    "invalid attachment data for foo.txt",
+		}
+	})
+
+	tests.Run(t, func(t *testing.T, tt tt) {
+		revid, err := tt.doc.addRevision(tt.rev, tt.options)
+		testy.StatusError(t, tt.err, tt.status, err)
+		if revid != tt.expected {
+			t.Errorf("Unexpected revd: %s", revid)
+		}
+		re := testy.Replacement{
+			Regexp:      regexp.MustCompile(regexp.QuoteMeta(tt.path)),
+			Replacement: "<tmpdir>",
+		}
+		if d := testy.DiffInterface(testy.Snapshot(t), tt.doc, re); d != nil {
 			t.Error(d)
 		}
 	})
