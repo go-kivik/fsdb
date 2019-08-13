@@ -16,6 +16,7 @@ import (
 func TestRevsDiff(t *testing.T) {
 	type tt struct {
 		ctx          context.Context
+		fs           filesystem.Filesystem
 		path, dbname string
 		revMap       interface{}
 		status       int
@@ -64,11 +65,12 @@ func TestRevsDiff(t *testing.T) {
 			dir = tempDir(t)
 			defer rmdir(t, dir)
 		}
-		db := &db{
-			client: &client{root: dir},
-			dbName: tt.dbname,
-			fs:     filesystem.Default(),
+		fs := tt.fs
+		if fs == nil {
+			fs = filesystem.Default()
 		}
+		c := &client{root: dir, fs: fs}
+		db := c.newDB(tt.dbname)
 		ctx := tt.ctx
 		if ctx == nil {
 			ctx = context.Background()

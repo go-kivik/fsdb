@@ -11,9 +11,9 @@ type RevHistory struct {
 	IDs   []string `json:"ids" yaml:"ids"`
 }
 
-// ancestors returns the full, known revision history, newest first, starting
+// Ancestors returns the full, known revision history, newest first, starting
 // with the current rev.
-func (h *RevHistory) ancestors() []string {
+func (h *RevHistory) Ancestors() []string {
 	history := make([]string, len(h.IDs))
 	for i, id := range h.IDs {
 		history[i] = fmt.Sprintf("%d-%s", h.Start-int64(i), id)

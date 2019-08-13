@@ -159,7 +159,7 @@ func (r *Revision) openAttachment(filename string) (string, filesystem.File, err
 		// We're working with the main rev
 		path += "." + basename
 	}
-	for _, rev := range r.RevHistory.ancestors() {
+	for _, rev := range r.RevHistory.Ancestors() {
 		fullpath := filepath.Join(path, rev, filename)
 		f, err := r.fs.Open(fullpath)
 		if !os.IsNotExist(err) {
