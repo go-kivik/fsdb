@@ -11,14 +11,6 @@ import (
 	"github.com/go-kivik/kivik"
 )
 
-func id2basename(id string) string {
-	id = url.PathEscape(id)
-	if id[0] == '.' {
-		return "%2E" + id[1:]
-	}
-	return id
-}
-
 func filename2id(filename string) (string, error) {
 	return url.PathUnescape(filename)
 }
