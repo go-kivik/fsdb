@@ -10,24 +10,12 @@ package fs
 
 import (
 	"context"
-	"os"
 
-	"github.com/go-kivik/fsdb/decoder"
 	"github.com/go-kivik/kivik/driver"
 )
 
 func (d *db) Security(ctx context.Context) (*driver.Security, error) {
-	for _, ext := range decoder.Extensions() {
-		f, err := os.Open(d.path("_security." + ext))
-		if err == nil {
-			defer f.Close() // nolint: errcheck
-			return decoder.DecodeSecurity(f, ext)
-		}
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-	}
-	return &driver.Security{}, nil
+	return d.cdb.ReadSecurity(ctx, d.path())
 }
 
 func (d *db) SetSecurity(_ context.Context, _ *driver.Security) error {

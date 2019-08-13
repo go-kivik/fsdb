@@ -4,16 +4,16 @@
 // supports only one-off changes feeds (no continuous support), and this is
 // implemented by scanning the database directory, and returning each document
 // and its most recent revision only.
+
 package fs
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"strings"
 
-	"github.com/go-kivik/fsdb/decoder"
+	"github.com/go-kivik/fsdb/cdb/decode"
 	"github.com/go-kivik/kivik/driver"
 )
 
@@ -52,12 +52,13 @@ func (c *changes) Next(ch *driver.Change) error {
 		if candidate.IsDir() {
 			continue
 		}
-		for _, ext := range decoder.Extensions() {
+		for _, ext := range decode.Extensions() {
 			if strings.HasSuffix(candidate.Name(), "."+ext) {
 				base := strings.TrimSuffix(candidate.Name(), "."+ext)
 				docid, err := filename2id(base)
 				if err != nil {
-					return fmt.Errorf("Invalid docid: %s", candidate.Name())
+					// ignore unrecognized files
+					continue
 				}
 				if ignoreDocID(docid) {
 					continue
