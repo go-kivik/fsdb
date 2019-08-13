@@ -21,7 +21,7 @@ When uploading attachment stubs:
 // Attachment represents a file attachment.
 type Attachment struct {
 	ContentType string `json:"content_type" yaml:"content_type"`
-	RevPos      int64  `json:"revpos,omitempty" yaml:"revpos,omitempty"`
+	RevPos      *int64 `json:"revpos,omitempty" yaml:"revpos,omitempty"`
 	Stub        bool   `json:"stub,omitempty" yaml:"stub,omitempty"`
 	Follows     bool   `json:"follows,omitempty" yaml:"follows,omitempty"`
 	Content     []byte `json:"data,omitempty" yaml:"content,omitempty"`
@@ -149,16 +149,19 @@ func (r *Revision) AttachmentsIterator() (driver.Attachments, error) {
 		if err != nil {
 			return nil, err
 		}
-		iter = append(iter, &driver.Attachment{
+		drAtt := &driver.Attachment{
 			Filename:    filename,
 			Content:     f,
 			ContentType: att.ContentType,
 			Stub:        att.Stub,
 			Follows:     att.Follows,
 			Size:        att.Size,
-			RevPos:      att.RevPos,
 			Digest:      att.Digest,
-		})
+		}
+		if att.RevPos != nil {
+			drAtt.RevPos = *att.RevPos
+		}
+		iter = append(iter, drAtt)
 	}
 	return &iter, nil
 }

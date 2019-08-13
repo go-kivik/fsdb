@@ -12,7 +12,7 @@
         Attachments: (map[string]*cdb.Attachment) (len=2) {
           (string) (len=7) "bar.txt": (*cdb.Attachment)({
             ContentType: (string) (len=10) "text/plain",
-            RevPos: (int64) 1,
+            RevPos: (*int64)(2),
             Stub: (bool) false,
             Follows: (bool) false,
             Content: ([]uint8) (len=18) {
@@ -27,7 +27,7 @@
           }),
           (string) (len=7) "foo.txt": (*cdb.Attachment)({
             ContentType: (string) (len=10) "text/plain",
-            RevPos: (int64) 1,
+            RevPos: (*int64)(1),
             Stub: (bool) true,
             Follows: (bool) false,
             Content: ([]uint8) <nil>,
@@ -68,7 +68,7 @@
         Attachments: (map[string]*cdb.Attachment) (len=1) {
           (string) (len=7) "foo.txt": (*cdb.Attachment)({
             ContentType: (string) (len=10) "text/plain",
-            RevPos: (int64) 1,
+            RevPos: (*int64)(1),
             Stub: (bool) false,
             Follows: (bool) false,
             Content: ([]uint8) <nil>,

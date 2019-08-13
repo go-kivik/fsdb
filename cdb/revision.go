@@ -204,8 +204,9 @@ func (fs *FS) NewRevision(i interface{}) (*Revision, error) {
 		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
 	}
 	for _, att := range rev.Attachments {
-		if att.RevPos == 0 {
-			att.RevPos = rev.Rev.Seq
+		if att.RevPos == nil {
+			revpos := rev.Rev.Seq
+			att.RevPos = &revpos
 		}
 	}
 	return rev, nil

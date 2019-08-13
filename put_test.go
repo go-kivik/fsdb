@@ -186,7 +186,7 @@ func TestPut(t *testing.T) {
 					},
 				},
 			},
-			expected: "1-aea914b09cf6a83d4d3b1970c924d925",
+			expected: "1-c706e75b505ddddeed04b959cfcb0ace",
 		}
 	})
 	tests.Add("new_edits=false, no rev", func(t *testing.T) interface{} {

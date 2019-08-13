@@ -171,26 +171,15 @@ func (d *Document) addRevision(rev *Revision, options kivik.Options) (string, er
 	if needRev != haveRev {
 		return "", errConflict
 	}
+	var oldrev *Revision
 	if len(d.Revisions) > 0 {
-		if oldrev, ok := d.leaves()[rev.Rev.String()]; ok {
-			rev.RevHistory = oldrev.RevHistory.AddRevision(rev.Rev)
-			for attname, att := range rev.Attachments {
-				if !att.Stub {
-					continue
-				}
-				filename, err := unescapeID(attname)
-				if err != nil {
-					return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", attname), Err: err}
-				}
-				oldatt := oldrev.Attachments[attname]
-				if att.Digest != "" && att.Digest != oldatt.Digest {
-					return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
-				}
-			}
-		} else {
+		var ok bool
+		if oldrev, ok = d.leaves()[rev.Rev.String()]; !ok {
 			return "", errConflict
 		}
+		rev.RevHistory = oldrev.RevHistory.AddRevision(rev.Rev)
 	}
+
 	hash, err := rev.hash()
 	if err != nil {
 		return "", err
@@ -199,6 +188,30 @@ func (d *Document) addRevision(rev *Revision, options kivik.Options) (string, er
 		Seq: rev.Rev.Seq + 1,
 		Sum: hash,
 	}
+
+	for attname, att := range rev.Attachments {
+		if !att.Stub {
+			revpos := rev.Rev.Seq
+			att.RevPos = &revpos
+			continue
+		}
+		filename, err := unescapeID(attname)
+		if err != nil {
+			return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", filename), Err: err}
+		}
+		if oldrev == nil {
+			// Can't upload stubs if there's no previous revision
+			return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", filename), Err: err}
+		}
+		oldatt := oldrev.Attachments[attname]
+		if att.Digest != "" && att.Digest != oldatt.Digest {
+			return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
+		}
+		if att.RevPos != nil && *att.RevPos != *oldatt.RevPos {
+			return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
+		}
+	}
+
 	if len(d.Revisions) == 0 {
 		rev.RevHistory = &RevHistory{
 			Start: rev.Rev.Seq,
