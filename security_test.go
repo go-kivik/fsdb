@@ -4,11 +4,13 @@ import (
 	"context"
 	"testing"
 
+	"github.com/go-kivik/fsdb/filesystem"
 	"gitlab.com/flimzy/testy"
 )
 
 func TestSecurity(t *testing.T) {
 	type tt struct {
+		fs           filesystem.Filesystem
 		path, dbname string
 		status       int
 		err          string
@@ -30,10 +32,12 @@ func TestSecurity(t *testing.T) {
 			dir = tempDir(t)
 			defer rmdir(t, dir)
 		}
-		db := &db{
-			client: &client{root: dir},
-			dbName: tt.dbname,
+		fs := tt.fs
+		if fs == nil {
+			fs = filesystem.Default()
 		}
+		c := &client{root: dir, fs: fs}
+		db := c.newDB(tt.dbname)
 		sec, err := db.Security(context.Background())
 		testy.StatusErrorRE(t, tt.err, tt.status, err)
 		if d := testy.DiffAsJSON(testy.Snapshot(t), sec); d != nil {
