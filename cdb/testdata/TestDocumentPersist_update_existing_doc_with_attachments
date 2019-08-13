@@ -72,8 +72,8 @@
             Stub: (bool) false,
             Follows: (bool) false,
             Content: ([]uint8) <nil>,
-            Size: (int64) 0,
-            Digest: (string) "",
+            Size: (int64) 13,
+            Digest: (string) (len=28) "md5-EMUuEXyjHv9UCGbpjbnwxQ==",
             path: (string) (len=83) "<tmpdir>/bar/foo.txt",
             fs: (*filesystem.defaultFS)({
             }),

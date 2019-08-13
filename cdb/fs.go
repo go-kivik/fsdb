@@ -46,11 +46,8 @@ func (fs *FS) readMainRev(base string) (*Revision, error) {
 	if err := decode.Decode(f, ext, rev); err != nil {
 		return nil, err
 	}
-	for _, att := range rev.Attachments {
-		if att.RevPos == nil {
-			revpos := rev.Rev.Seq
-			att.RevPos = &revpos
-		}
+	if err := rev.restoreAttachments(); err != nil {
+		return nil, err
 	}
 	return rev, nil
 }
@@ -69,13 +66,28 @@ func (fs *FS) readSubRev(path string) (*Revision, error) {
 	if err := decode.Decode(f, ext, rev); err != nil {
 		return nil, err
 	}
-	for _, att := range rev.Attachments {
-		if att.RevPos == nil {
-			revpos := rev.Rev.Seq
-			att.RevPos = &revpos
-		}
+	if err := rev.restoreAttachments(); err != nil {
+		return nil, err
 	}
 	return rev, nil
+}
+
+func (r *Revision) restoreAttachments() error {
+	for attname, att := range r.Attachments {
+		if att.RevPos == nil {
+			revpos := r.Rev.Seq
+			att.RevPos = &revpos
+		}
+		if att.Size == 0 || att.Digest == "" {
+			f, err := r.openAttachment(attname)
+			if err != nil {
+				return err
+			}
+			att.Size, att.Digest = digest(f)
+			_ = f.Close()
+		}
+	}
+	return nil
 }
 
 func (fs *FS) openRevs(docID, revid string) ([]*Revision, error) {
