@@ -2,7 +2,6 @@ package cdb
 
 import (
 	"bytes"
-	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -16,10 +15,12 @@ type RevID struct {
 	original string
 }
 
+// Changed returns true if the rev has changed since being read.
 func (r *RevID) Changed() bool {
 	return r.String() != r.original
 }
 
+// UnmarshalText xatisfies the json.Unmarshaler interface.
 func (r *RevID) UnmarshalText(p []byte) error {
 	r.original = string(p)
 	if bytes.Contains(p, []byte("-")) {
@@ -43,6 +44,7 @@ func (r *RevID) UnmarshalText(p []byte) error {
 	return nil
 }
 
+// UnmarshalJSON satisfies the json.Unmarshaler interface.
 func (r *RevID) UnmarshalJSON(p []byte) error {
 	if p[0] == '"' {
 		var str string
@@ -66,6 +68,7 @@ func (r *RevID) UnmarshalJSON(p []byte) error {
 	return json.Unmarshal(p, &r.Seq)
 }
 
+// MarshalText satisfies the encoding.TextMarshaler interface.
 func (r RevID) MarshalText() ([]byte, error) {
 	return []byte(r.String()), nil
 }
@@ -77,16 +80,12 @@ func (r RevID) String() string {
 	return fmt.Sprintf("%d-%s", r.Seq, r.Sum)
 }
 
+// IsZero returns true if r is uninitialized.
 func (r *RevID) IsZero() bool {
 	return r.Seq == 0
 }
 
-func (r *RevID) Increment(payload ...string) {
-	r.Seq++
-	if len(payload) == 0 {
-		r.Sum = ""
-		return
-	}
-	data := strings.Join(payload, "")
-	r.Sum = fmt.Sprintf("%x", md5.Sum([]byte(data)))
+// Equal returns true if rev and revid are equal.
+func (r RevID) Equal(revid RevID) bool {
+	return r.Seq == revid.Seq && r.Sum == revid.Sum
 }

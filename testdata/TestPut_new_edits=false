@@ -1,0 +1,8 @@
+{
+    "db.put/.foo/1-beea34a62a215ab051862d1e5d93162e.json": {
+        "content": "{\n    \"_id\": \"foo\",\n    \"_rev\": \"1-beea34a62a215ab051862d1e5d93162e\",\n    \"foo\": \"bar\"\n}\n"
+    },
+    "db.put/foo.json": {
+        "content": "{\"_rev\":\"1-other\",\"_revisions\":{\"start\":1,\"ids\":[\"other\"]},\"foo\":\"bar\"}\n"
+    }
+}
