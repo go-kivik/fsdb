@@ -7,12 +7,17 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-kivik/fsdb/decoder"
+	"github.com/go-kivik/fsdb/cdb"
+	"github.com/go-kivik/fsdb/cdb/decode"
 	"github.com/go-kivik/kivik"
 )
 
 func filename2id(filename string) (string, error) {
 	return url.PathUnescape(filename)
+}
+
+type revDoc struct {
+	Rev cdb.RevID `json:"_rev" yaml:"_rev"`
 }
 
 func (d *db) currentRev(docID, ext string) (string, error) {
@@ -23,11 +28,9 @@ func (d *db) currentRev(docID, ext string) (string, error) {
 		}
 		return "", err
 	}
-	r, err := decoder.Rev(f, ext)
-	if err != nil {
-		return "", err
-	}
-	return r.String(), nil
+	rd := new(revDoc)
+	err = decode.Decode(f, ext, rd)
+	return rd.Rev.String(), err
 }
 
 var reservedPrefixes = []string{"_local/", "_design/"}
