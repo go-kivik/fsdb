@@ -2,11 +2,10 @@ package fs
 
 import (
 	"context"
-	"path/filepath"
 	"strings"
 
 	"github.com/go-kivik/fsdb/cdb"
-	"github.com/go-kivik/fsdb/decoder"
+	"github.com/go-kivik/fsdb/cdb/decode"
 	"github.com/go-kivik/fsdb/filesystem"
 )
 
@@ -31,7 +30,7 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 		}
 		switch {
 		case !info.IsDir():
-			id, _, ok := explodeFilename(info.Name())
+			id, _, ok := decode.ExplodeFilename(info.Name())
 			if !ok {
 				// ignore unrecognized files
 				continue
@@ -53,18 +52,6 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 		i[docID] = doc
 	}
 	return nil
-}
-
-func explodeFilename(filename string) (basename, ext string, ok bool) {
-	dotExt := filepath.Ext(filename)
-	basename = strings.TrimSuffix(filename, dotExt)
-	ext = strings.TrimPrefix(dotExt, ".")
-	for _, e := range decoder.Extensions() {
-		if e == ext {
-			return basename, ext, true
-		}
-	}
-	return "", "", false
 }
 
 func (d *db) Compact(ctx context.Context) error {

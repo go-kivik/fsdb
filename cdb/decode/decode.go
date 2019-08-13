@@ -3,6 +3,7 @@ package decode
 import (
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-kivik/fsdb/filesystem"
@@ -39,4 +40,14 @@ func Decode(r io.Reader, ext string, i interface{}) error {
 		return xerrors.Errorf("No decoder for %s", ext)
 	}
 	return dec.Decode(r, i)
+}
+
+// ExplodeFilename returns the base name, extension, and a boolean indicating
+// whether the extension is decodable.
+func ExplodeFilename(filename string) (basename, ext string, ok bool) {
+	dotExt := filepath.Ext(filename)
+	basename = strings.TrimSuffix(filename, dotExt)
+	ext = strings.TrimPrefix(dotExt, ".")
+	_, ok = decoders[ext]
+	return basename, ext, ok
 }
