@@ -13,7 +13,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-kivik/fsdb/decoder"
+	"github.com/go-kivik/fsdb/cdb/decode"
 	"github.com/go-kivik/kivik/driver"
 )
 
@@ -52,7 +52,7 @@ func (c *changes) Next(ch *driver.Change) error {
 		if candidate.IsDir() {
 			continue
 		}
-		for _, ext := range decoder.Extensions() {
+		for _, ext := range decode.Extensions() {
 			if strings.HasSuffix(candidate.Name(), "."+ext) {
 				base := strings.TrimSuffix(candidate.Name(), "."+ext)
 				docid, err := filename2id(base)
