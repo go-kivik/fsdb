@@ -3,6 +3,7 @@ package cdb
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -173,6 +174,19 @@ func (d *Document) addRevision(rev *Revision, options kivik.Options) (string, er
 	if len(d.Revisions) > 0 {
 		if oldrev, ok := d.leaves()[rev.Rev.String()]; ok {
 			rev.RevHistory = oldrev.RevHistory.AddRevision(rev.Rev)
+			for attname, att := range rev.Attachments {
+				if !att.Stub {
+					continue
+				}
+				filename, err := unescapeID(attname)
+				if err != nil {
+					return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", attname), Err: err}
+				}
+				oldatt := oldrev.Attachments[attname]
+				if att.Digest != "" && att.Digest != oldatt.Digest {
+					return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
+				}
+			}
 		} else {
 			return "", errConflict
 		}
