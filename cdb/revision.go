@@ -93,11 +93,6 @@ func (r *Revision) finalizeUnmarshal() error {
 			IDs:   ids,
 		}
 	}
-	for _, att := range r.Attachments {
-		if att.RevPos == 0 {
-			att.RevPos = r.Rev.Seq
-		}
-	}
 	return nil
 }
 
@@ -207,6 +202,11 @@ func (fs *FS) NewRevision(i interface{}) (*Revision, error) {
 	rev.fs = fs.fs
 	if err := json.Unmarshal(data, &rev); err != nil {
 		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
+	}
+	for _, att := range rev.Attachments {
+		if att.RevPos == 0 {
+			att.RevPos = rev.Rev.Seq
+		}
 	}
 	return rev, nil
 }

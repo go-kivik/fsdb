@@ -12,7 +12,7 @@ import (
 
 /*
 When uploading attachment stubs:
-- revpos must match
+- revpos must match, or be omitted
 - digest must match
 - length is ignored
 - content_type is ignored
