@@ -91,7 +91,7 @@ func (d *Document) Compact(ctx context.Context) error {
 			continue
 		}
 		keep = append(keep, rev)
-		for _, ancestor := range rev.RevHistory.ancestors()[1:] {
+		for _, ancestor := range rev.RevHistory.Ancestors()[1:] {
 			index[ancestor] = append(index[ancestor], revID)
 		}
 		revTree[revID] = rev
@@ -293,7 +293,7 @@ func (d *Document) leafHistories() map[string]*RevHistory {
 	// Here we know we can skip the winner
 	for _, rev := range d.Revisions[1:] {
 		// and we should skip over the leaf
-		for _, revid := range rev.RevHistory.ancestors()[1:] {
+		for _, revid := range rev.RevHistory.Ancestors()[1:] {
 			delete(histories, revid)
 		}
 	}

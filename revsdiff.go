@@ -3,7 +3,6 @@ package fs
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -84,7 +83,7 @@ func (r *revDiffRows) next() (docID string, missing []string, err error) {
 	for len(revs) > 0 {
 		rev := maxRev(revs)
 		delete(revs, rev)
-		ndoc, err := r.db.get(r.ctx, docID, kivik.Options{
+		doc, err := r.db.cdb.OpenDocID(docID, kivik.Options{
 			"rev": rev,
 		})
 		if kivik.StatusCode(err) == http.StatusNotFound {
@@ -94,10 +93,8 @@ func (r *revDiffRows) next() (docID string, missing []string, err error) {
 		if err != nil {
 			return "", nil, err
 		}
-		revisions := ndoc.GetRevisions()
-		for i, id := range revisions.IDs {
-			rev := fmt.Sprintf("%d-%s", revisions.Start+1-int64(i), id)
-			delete(revs, rev)
+		for _, revid := range doc.Revisions[0].RevHistory.Ancestors()[1:] {
+			delete(revs, revid)
 		}
 	}
 	if len(missing) == 0 {

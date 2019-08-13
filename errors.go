@@ -8,10 +8,6 @@ import (
 	"golang.org/x/xerrors"
 )
 
-var (
-	errNotFound = &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "missing"}
-)
-
 func kerr(err error) error {
 	if err == nil {
 		return nil
