@@ -47,8 +47,9 @@ func (fs *FS) readMainRev(base string) (*Revision, error) {
 		return nil, err
 	}
 	for _, att := range rev.Attachments {
-		if att.RevPos == 0 {
-			att.RevPos = rev.Rev.Seq
+		if att.RevPos == nil {
+			revpos := rev.Rev.Seq
+			att.RevPos = &revpos
 		}
 	}
 	return rev, nil
@@ -69,8 +70,9 @@ func (fs *FS) readSubRev(path string) (*Revision, error) {
 		return nil, err
 	}
 	for _, att := range rev.Attachments {
-		if att.RevPos == 0 {
-			att.RevPos = rev.Rev.Seq
+		if att.RevPos == nil {
+			revpos := rev.Rev.Seq
+			att.RevPos = &revpos
 		}
 	}
 	return rev, nil

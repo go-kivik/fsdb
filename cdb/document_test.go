@@ -244,6 +244,44 @@ func TestDocumentAddRevision(t *testing.T) {
 			err:    "invalid attachment data for foo.txt",
 		}
 	})
+	tests.Add("stub with 0 revpos", func(t *testing.T) interface{} {
+		tmpdir := testy.CopyTempDir(t, "testdata/persist.att", 0)
+		tests.Cleanup(func() error {
+			return os.RemoveAll(tmpdir)
+		})
+
+		cdb := New(tmpdir)
+		doc, err := cdb.OpenDocID("bar", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rev, err := cdb.NewRevision(map[string]interface{}{
+			"_rev":  "1-xxx",
+			"value": "bar",
+			"_revisions": map[string]interface{}{
+				"start": 2,
+				"ids":   []string{"yyy", "xxx"},
+			},
+			"_attachments": map[string]interface{}{
+				"foo.txt": map[string]interface{}{
+					"content_type": "text/plain",
+					"stub":         true,
+					"revpos":       0,
+				},
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return tt{
+			path:   tmpdir,
+			doc:    doc,
+			rev:    rev,
+			status: http.StatusBadRequest,
+			err:    "invalid attachment data for foo.txt",
+		}
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		revid, err := tt.doc.addRevision(tt.rev, tt.options)
