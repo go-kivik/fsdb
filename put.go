@@ -48,11 +48,16 @@ func validateID(id string) error {
 }
 
 /*
-File naming strategy:
-Current rev lives under:    {db}/{docid}.{ext}
-Historical revs live under: {db}/.{docid}/{rev}
-Attachments:                {db}/{docid}/{filename}
+TODO:
+URL query params:
+batch
+new_edits
+
+output_format?
+
+X-Couch-Full-Commit header/option
 */
+
 func (d *db) Put(ctx context.Context, docID string, i interface{}, opts map[string]interface{}) (string, error) {
 	if err := validateID(docID); err != nil {
 		return "", err

@@ -72,7 +72,7 @@ func TestPut(t *testing.T) {
 		}
 	})
 	tests.Add("update conflict, doc key", func(t *testing.T) interface{} {
-		tmpdir := copyDir(t, "testdata/db.put", 1)
+		tmpdir := testy.CopyTempDir(t, "testdata/db.put", 1)
 		tests.Cleanup(cleanTmpdir(tmpdir))
 
 		return tt{
@@ -187,6 +187,57 @@ func TestPut(t *testing.T) {
 				},
 			},
 			expected: "1-aea914b09cf6a83d4d3b1970c924d925",
+		}
+	})
+	tests.Add("new_edits=false, no rev", func(t *testing.T) interface{} {
+		tmpdir := tempDir(t)
+		tests.Cleanup(cleanTmpdir(tmpdir))
+		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
+			t.Fatal(err)
+		}
+
+		return tt{
+			path:   tmpdir,
+			dbname: "foo",
+			id:     "foo",
+			doc: map[string]string{
+				"foo": "bar",
+			},
+			options: map[string]interface{}{"new_edits": false},
+			status:  http.StatusBadRequest,
+			err:     "_rev required with new_edits=false",
+		}
+	})
+	tests.Add("new_edits=false, rev already exists", func(t *testing.T) interface{} {
+		tmpdir := testy.CopyTempDir(t, "testdata/db.put", 1)
+		tests.Cleanup(cleanTmpdir(tmpdir))
+
+		return tt{
+			path:   tmpdir,
+			dbname: "db.put",
+			id:     "foo",
+			doc: map[string]string{
+				"_rev": "1-beea34a62a215ab051862d1e5d93162e",
+				"foo":  "bar",
+			},
+			options:  map[string]interface{}{"new_edits": false},
+			expected: "1-beea34a62a215ab051862d1e5d93162e",
+		}
+	})
+	tests.Add("new_edits=false", func(t *testing.T) interface{} {
+		tmpdir := testy.CopyTempDir(t, "testdata/db.put", 1)
+		tests.Cleanup(cleanTmpdir(tmpdir))
+
+		return tt{
+			path:   tmpdir,
+			dbname: "db.put",
+			id:     "foo",
+			doc: map[string]string{
+				"_rev": "1-other",
+				"foo":  "bar",
+			},
+			options:  map[string]interface{}{"new_edits": false},
+			expected: "1-other",
 		}
 	})
 
