@@ -1,6 +1,6 @@
 {
     "content_type": "text/plain",
-    "stub": false,
+    "stub": true,
     "follows": true,
     "length": 8,
     "encoding": "",

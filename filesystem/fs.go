@@ -3,6 +3,7 @@ package filesystem
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
 )
 
@@ -12,6 +13,8 @@ type Filesystem interface {
 	Open(string) (File, error)
 	Create(string) (File, error)
 	Stat(string) (os.FileInfo, error)
+	TempFile(dir, pattern string) (File, error)
+	Rename(oldpath, newpath string) error
 }
 
 type defaultFS struct{}
@@ -26,12 +29,20 @@ func (fs *defaultFS) Open(name string) (File, error) {
 	return os.Open(name)
 }
 
+func (fs *defaultFS) TempFile(dir, pattern string) (File, error) {
+	return ioutil.TempFile(dir, pattern)
+}
+
 func (fs *defaultFS) Create(name string) (File, error) {
 	return os.Create(name)
 }
 
 func (fs *defaultFS) Stat(name string) (os.FileInfo, error) {
 	return os.Stat(name)
+}
+
+func (fs *defaultFS) Rename(oldpath, newpath string) error {
+	return os.Rename(oldpath, newpath)
 }
 
 // File represents a file object.

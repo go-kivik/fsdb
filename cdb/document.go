@@ -3,8 +3,10 @@ package cdb
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/go-kivik/kivik"
@@ -13,13 +15,23 @@ import (
 
 // Document is a CouchDB document.
 type Document struct {
-	ID        string      `json:"_id" yaml:"_id"`
-	Revisions []*Revision `json:"-" yaml:"-"`
+	ID        string    `json:"_id" yaml:"_id"`
+	Revisions Revisions `json:"-" yaml:"-"`
 	// RevsInfo is only used during JSON marshaling, and should never be
 	// consulted as authoritative.
 	RevsInfo []RevInfo `json:"_revs_info,omitempty" yaml:"-"`
 
 	Options kivik.Options `json:"-" yaml:"-"`
+
+	cdb *FS
+}
+
+// NewDocument creates a new document.
+func (fs *FS) NewDocument(docID string) *Document {
+	return &Document{
+		ID:  docID,
+		cdb: fs,
+	}
 }
 
 // MarshalJSON satisfies the json.Marshaler interface.
@@ -115,4 +127,175 @@ func copyAttachments(leaf, old *Revision) error {
 		}
 	}
 	return nil
+}
+
+// AddRevision adds rev to the existing document, according to options, and
+// persists it to disk. The return value is the new revision ID.
+func (d *Document) AddRevision(ctx context.Context, rev *Revision, options kivik.Options) (string, error) {
+	revid, err := d.addRevision(rev, options)
+	if err != nil {
+		return "", err
+	}
+	err = d.persist(ctx)
+	return revid, err
+}
+
+func (d *Document) addRevision(rev *Revision, options kivik.Options) (string, error) {
+	if revid, ok := options["rev"].(string); ok {
+		var newrev RevID
+		if err := newrev.UnmarshalText([]byte(revid)); err != nil {
+			return "", err
+		}
+		if !rev.Rev.IsZero() && rev.Rev.String() != newrev.String() {
+			return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document rev from request body and query string have different values"}
+		}
+		rev.Rev = newrev
+	}
+	needRev := len(d.Revisions) > 0
+	haveRev := !rev.Rev.IsZero()
+	if needRev != haveRev {
+		return "", errConflict
+	}
+	if len(d.Revisions) > 0 {
+		if history, ok := d.leafHistories()[rev.Rev.String()]; ok {
+			rev.RevHistory = history.AddRevision(rev.Rev)
+		} else {
+			return "", errConflict
+		}
+	}
+	hash, err := rev.hash()
+	if err != nil {
+		return "", err
+	}
+	rev.Rev = RevID{
+		Seq: rev.Rev.Seq + 1,
+		Sum: hash,
+	}
+	if len(d.Revisions) == 0 {
+		rev.RevHistory = &RevHistory{
+			Start: rev.Rev.Seq,
+			IDs:   []string{rev.Rev.Sum},
+		}
+	}
+	d.Revisions = append(d.Revisions, rev)
+	sort.Sort(d.Revisions)
+	return rev.Rev.String(), nil
+}
+
+/* persist updates the current rev state on disk.
+
+Persist strategy:
+
+	- For every rev that doesn't exist on disk, create it in {db}/.{docid}/{rev}
+	- If winning rev does not exist in {db}/{docid}:
+		- Move old winning rev to {db}/.{docid}/{rev}
+		- Move new winning rev to {db}/{docid}
+*/
+func (d *Document) persist(ctx context.Context) error {
+	if d == nil || len(d.Revisions) == 0 {
+		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document has no revisions"}
+	}
+	docID := escapeID(d.ID)
+	for _, rev := range d.Revisions {
+		if rev.path != "" {
+			continue
+		}
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		if err := rev.persist(ctx, filepath.Join(d.cdb.root, "."+docID, rev.Rev.String())); err != nil {
+			return err
+		}
+	}
+
+	// Make sure the winner is in the first position
+	sort.Sort(d.Revisions)
+
+	winningRev := d.Revisions[0]
+	winningPath := filepath.Join(d.cdb.root, docID)
+	if winningPath+filepath.Ext(winningRev.path) == winningRev.path {
+		// Winner already in place, our job is done here
+		return nil
+	}
+
+	// See if some other rev is currently the winning rev, and move it if necessary
+	for _, rev := range d.Revisions[1:] {
+		if winningPath+filepath.Ext(rev.path) == rev.path {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+			// We need to move this rev
+			revpath := filepath.Join(d.cdb.root, "."+escapeID(d.ID), rev.Rev.String())
+			if err := d.cdb.fs.Mkdir(revpath, 0777); err != nil && !os.IsExist(err) {
+				return err
+			}
+			// First move attachments, since they can exit both places legally.
+			for attname, att := range rev.Attachments {
+				if !strings.HasPrefix(att.path, rev.path) {
+					// This attachment is part of another rev, so skip it
+					continue
+				}
+				filename := escapeID(attname)
+				newpath := filepath.Join(revpath, filename)
+				if err := d.cdb.fs.Rename(att.path, newpath); err != nil {
+					return err
+				}
+				att.path = newpath
+			}
+			// Then make the move final by moving the json doc
+			if err := d.cdb.fs.Rename(rev.path, revpath+filepath.Ext(rev.path)); err != nil {
+				return err
+			}
+			break
+		}
+	}
+
+	// Now finally put the new winner in place, first the doc, then attachments
+	if err := d.cdb.fs.Rename(winningRev.path, winningPath+filepath.Ext(winningRev.path)); err != nil {
+		return err
+	}
+	if err := d.cdb.fs.Mkdir(winningPath, 0777); err != nil && !os.IsExist(err) {
+		return err
+	}
+	revpath := filepath.Join(d.cdb.root, "."+escapeID(d.ID), winningRev.Rev.String())
+	// First move attachments, since they can exit both places legally.
+	for attname, att := range winningRev.Attachments {
+		if !strings.HasPrefix(att.path, revpath) {
+			// This attachment is part of another rev, so skip it
+			continue
+		}
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		filename := escapeID(attname)
+		newpath := filepath.Join(winningPath, filename)
+		if err := d.cdb.fs.Rename(att.path, newpath); err != nil {
+			return err
+		}
+		att.path = newpath
+	}
+	winningRev.path = winningPath + filepath.Ext(winningRev.path)
+
+	return nil
+}
+
+// leafHistories returns a list of ancestor revision IDs for current leaves.
+func (d *Document) leafHistories() map[string]*RevHistory {
+	if len(d.Revisions) == 1 {
+		return map[string]*RevHistory{
+			d.Revisions[0].Rev.String(): d.Revisions[0].RevHistory,
+		}
+	}
+	histories := make(map[string]*RevHistory, len(d.Revisions))
+	for _, rev := range d.Revisions {
+		histories[rev.Rev.String()] = rev.RevHistory
+	}
+	// Here we know we can skip the winner
+	for _, rev := range d.Revisions[1:] {
+		// and we should skip over the leaf
+		for _, revid := range rev.RevHistory.ancestors()[1:] {
+			delete(histories, revid)
+		}
+	}
+	return histories
 }

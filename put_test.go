@@ -7,11 +7,14 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/kivik"
 	"gitlab.com/flimzy/testy"
 )
 
 func TestPut(t *testing.T) {
 	type tt struct {
+		fs       filesystem.Filesystem
 		path     string
 		dbname   string
 		id       string
@@ -22,6 +25,37 @@ func TestPut(t *testing.T) {
 		expected string
 	}
 	tests := testy.NewTable()
+	tests.Add("invalid docID", tt{
+		path:   "doesntmatter",
+		dbname: "doesntmatter",
+		id:     "_foo",
+		status: http.StatusBadRequest,
+		err:    "only reserved document ids may start with underscore",
+	})
+	tests.Add("invalid document", tt{
+		path:   "doesntmatter",
+		dbname: "doesntmatter",
+		id:     "foo",
+		doc:    make(chan int),
+		status: http.StatusBadRequest,
+		err:    "json: unsupported type: chan int",
+	})
+	tests.Add("create with revid", func(t *testing.T) interface{} {
+		tmpdir := tempDir(t)
+		tests.Cleanup(cleanTmpdir(tmpdir))
+		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
+			t.Fatal(err)
+		}
+
+		return tt{
+			path:   tmpdir,
+			dbname: "foo",
+			id:     "foo",
+			doc:    map[string]string{"foo": "bar", "_rev": "1-xxx"},
+			status: http.StatusConflict,
+			err:    "document update conflict",
+		}
+	})
 	tests.Add("simple create", func(t *testing.T) interface{} {
 		tmpdir := tempDir(t)
 		tests.Cleanup(cleanTmpdir(tmpdir))
@@ -34,7 +68,7 @@ func TestPut(t *testing.T) {
 			dbname:   "foo",
 			id:       "foo",
 			doc:      map[string]string{"foo": "bar"},
-			expected: "1-beea34a62a215ab051862d1e5d93162e",
+			expected: "1-04edfaf9abdaed3c0accf6c463e78fd4",
 		}
 	})
 	tests.Add("update conflict, doc key", func(t *testing.T) interface{} {
@@ -82,7 +116,7 @@ func TestPut(t *testing.T) {
 		dbname:  "doesntmatter",
 		id:      "foo",
 		doc:     map[string]string{"foo": "bar", "_rev": "2-asdf"},
-		options: map[string]interface{}{"rev": "3-asdf"},
+		options: kivik.Options{"rev": "3-asdf"},
 		status:  http.StatusBadRequest,
 		err:     "document rev from request body and query string have different values",
 	})
@@ -95,7 +129,7 @@ func TestPut(t *testing.T) {
 			dbname:   "db.put",
 			id:       "foo",
 			doc:      map[string]string{"foo": "quxx", "_rev": "1-beea34a62a215ab051862d1e5d93162e"},
-			expected: "2-a1de8ffe0af07dec9193ddf8d4b18135",
+			expected: "2-ff3a4f106331244679a6cac83a74ae48",
 		}
 	})
 	tests.Add("design doc", func(t *testing.T) interface{} {
@@ -110,7 +144,7 @@ func TestPut(t *testing.T) {
 			dbname:   "foo",
 			id:       "_design/foo",
 			doc:      map[string]string{"foo": "bar"},
-			expected: "1-9c52d211374283d5def378aa0e10709d",
+			expected: "1-04edfaf9abdaed3c0accf6c463e78fd4",
 		}
 	})
 	tests.Add("invalid doc id", tt{
@@ -130,7 +164,7 @@ func TestPut(t *testing.T) {
 			"_attachments": 123,
 		},
 		status: http.StatusBadRequest,
-		err:    "json: cannot unmarshal number into Go struct field DocMeta._attachments of type internal.Attachments",
+		err:    "json: cannot unmarshal number into Go struct field RevMeta._attachments of type map[string]*cdb.Attachment",
 	})
 	tests.Add("attachment", func(t *testing.T) interface{} {
 		tmpdir := tempDir(t)
@@ -152,7 +186,7 @@ func TestPut(t *testing.T) {
 					},
 				},
 			},
-			expected: "1-beea34a62a215ab051862d1e5d93162e",
+			expected: "1-aea914b09cf6a83d4d3b1970c924d925",
 		}
 	})
 
@@ -160,10 +194,12 @@ func TestPut(t *testing.T) {
 		if tt.path == "" {
 			t.Fatalf("path must be set")
 		}
-		db := &db{
-			client: &client{root: tt.path},
-			dbName: tt.dbname,
+		fs := tt.fs
+		if fs == nil {
+			fs = filesystem.Default()
 		}
+		c := &client{root: tt.path, fs: fs}
+		db := c.newDB(tt.dbname)
 		rev, err := db.Put(context.Background(), tt.id, tt.doc, tt.options)
 		testy.StatusError(t, tt.err, tt.status, err)
 		if rev != tt.expected {

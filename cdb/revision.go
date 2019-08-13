@@ -1,8 +1,12 @@
 package cdb
 
 import (
+	"bytes"
 	"context"
+	"crypto/md5"
 	"encoding/json"
+	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -115,7 +119,7 @@ func (r *Revision) MarshalJSON() ([]byte, error) {
 	}
 	stub, follows := r.stubFollows()
 	for _, att := range r.Attachments {
-		att.Stub = stub
+		att.outputStub = stub
 		att.Follows = follows
 	}
 	parts := make([]json.RawMessage, 0, 2)
@@ -191,4 +195,68 @@ func (r *Revision) Delete(ctx context.Context) error {
 	}
 	attpath := strings.TrimSuffix(r.path, filepath.Ext(r.path))
 	return os.RemoveAll(attpath)
+}
+
+// NewRevision creates a new revision from i, according to opts.
+func (fs *FS) NewRevision(i interface{}) (*Revision, error) {
+	data, err := json.Marshal(i)
+	if err != nil {
+		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
+	}
+	rev := new(Revision)
+	rev.fs = fs.fs
+	if err := json.Unmarshal(data, &rev); err != nil {
+		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
+	}
+	return rev, nil
+}
+
+func (r *Revision) persist(ctx context.Context, path string) error {
+	if err := r.fs.Mkdir(filepath.Dir(path), 0777); err != nil && !os.IsExist(err) {
+		return err
+	}
+	var dirMade bool
+	for attname, att := range r.Attachments {
+		if att.Stub || att.path != "" {
+			continue
+		}
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		if !dirMade {
+			if err := r.fs.Mkdir(path, 0777); err != nil && !os.IsExist(err) {
+				return err
+			}
+			dirMade = true
+		}
+		target := filepath.Join(path, escapeID(attname))
+		if err := atomicWriteFile(r.fs, target, bytes.NewReader(att.Content)); err != nil {
+			return err
+		}
+		att.path = target
+	}
+	f := atomicFileWriter(r.fs, path+".json")
+	defer f.Close() // nolint: errcheck
+	r.options = kivik.Options{"revs": true}
+	if err := json.NewEncoder(f).Encode(r); err != nil {
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	r.path = path + ".json"
+	return nil
+}
+
+// hash passes deterministic JSON content of the revision through md5 to
+// generate a hash to be used in the revision ID.
+func (r *Revision) hash() (string, error) {
+	r.options = nil
+	data, err := json.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+	h := md5.New()
+	_, _ = h.Write(data)
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }

@@ -25,6 +25,11 @@ type Attachment struct {
 	path string
 	// fs is the filesystem to use for disk access.
 	fs filesystem.Filesystem
+
+	// outputStub dictates whether MarshalJSON should output a stub. This is
+	// distinct from Stub, which indicates whether UnmarshalJSON read Stub, as
+	// from user input.
+	outputStub bool
 }
 
 // Open opens the attachment for reading.
@@ -37,27 +42,33 @@ func (a *Attachment) Open() (filesystem.File, error) {
 
 // MarshalJSON implements the json.Marshaler interface.
 func (a *Attachment) MarshalJSON() ([]byte, error) {
-	if a.Stub || a.Follows {
-		if err := a.readMetadata(); err != nil {
-			return nil, err
-		}
-	} else {
-		if err := a.readContent(); err != nil {
-			return nil, err
-		}
+	var err error
+	switch {
+	case len(a.Content) != 0:
+		a.setMetadata()
+	case a.outputStub || a.Follows:
+		err = a.readMetadata()
+	default:
+		err = a.readContent()
+	}
+	if err != nil {
+		return nil, err
 	}
 	att := struct {
 		Attachment
-		Stub    *bool `json:"stub,omitempty"`    // nolint: govet
-		Follows *bool `json:"follows,omitempty"` // nolint: govet
+		Content *[]byte `json:"data,omitempty"`    // nolint: govet
+		Stub    *bool   `json:"stub,omitempty"`    // nolint: govet
+		Follows *bool   `json:"follows,omitempty"` // nolint: govet
 	}{
 		Attachment: *a,
 	}
-	if a.Stub {
-		att.Stub = &a.Stub
-	}
-	if a.Follows {
+	switch {
+	case a.outputStub:
+		att.Stub = &a.outputStub
+	case a.Follows:
 		att.Follows = &a.Follows
+	case len(a.Content) > 0:
+		att.Content = &a.Content
 	}
 	return json.Marshal(att)
 }
@@ -77,15 +88,19 @@ func (a *Attachment) readContent() error {
 }
 
 func (a *Attachment) readMetadata() error {
+	if a.path == "" {
+		return nil
+	}
 	f, err := a.fs.Open(a.path)
 	if err != nil {
 		return err
 	}
-	a.Size, a.Digest, err = digest(f)
-	if err != nil {
-		return err
-	}
+	a.Size, a.Digest = digest(f)
 	return nil
+}
+
+func (a *Attachment) setMetadata() {
+	a.Size, a.Digest = digest(bytes.NewReader(a.Content))
 }
 
 type attsIter []*driver.Attachment

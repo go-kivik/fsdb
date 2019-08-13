@@ -1,6 +1,6 @@
 {
     "foo/foo.json": {
-        "content": "{\"_id\":\"foo\",\"_rev\":\"1-beea34a62a215ab051862d1e5d93162e\",\"_attachments\":{\"foo.txt\":{\"content_type\":\"text/plain\",\"stub\":true,\"length\":7,\"digest\":\"md5-fa6a5a3224d7da66d9e0bdec25f62cf0\"}},\"foo\":\"bar\"}\n"
+        "content": "{\"_rev\":\"1-aea914b09cf6a83d4d3b1970c924d925\",\"_attachments\":{\"foo.txt\":{\"content_type\":\"text/plain\",\"length\":7,\"digest\":\"md5-+mpaMiTX2mbZ4L3sJfYs8A==\",\"stub\":true}},\"_revisions\":{\"start\":1,\"ids\":[\"aea914b09cf6a83d4d3b1970c924d925\"]},\"foo\":\"bar\"}\n"
     },
     "foo/foo/foo.txt": {
         "content": "Testing"
