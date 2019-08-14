@@ -10,11 +10,13 @@ import (
 // Filesystem is a filesystem implemenatation.
 type Filesystem interface {
 	Mkdir(name string, perm os.FileMode) error
+	MkdirAll(path string, perm os.FileMode) error
 	Open(string) (File, error)
 	Create(string) (File, error)
 	Stat(string) (os.FileInfo, error)
 	TempFile(dir, pattern string) (File, error)
 	Rename(oldpath, newpath string) error
+	Remove(name string) error
 }
 
 type defaultFS struct{}
@@ -23,6 +25,10 @@ var _ Filesystem = &defaultFS{}
 
 func (fs *defaultFS) Mkdir(name string, perm os.FileMode) error {
 	return os.Mkdir(name, perm)
+}
+
+func (fs *defaultFS) MkdirAll(path string, perm os.FileMode) error {
+	return os.MkdirAll(path, perm)
 }
 
 func (fs *defaultFS) Open(name string) (File, error) {
@@ -43,6 +49,10 @@ func (fs *defaultFS) Stat(name string) (os.FileInfo, error) {
 
 func (fs *defaultFS) Rename(oldpath, newpath string) error {
 	return os.Rename(oldpath, newpath)
+}
+
+func (fs *defaultFS) Remove(name string) error {
+	return os.Remove(name)
 }
 
 // File represents a file object.

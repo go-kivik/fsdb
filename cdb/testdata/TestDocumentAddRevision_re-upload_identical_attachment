@@ -5,32 +5,19 @@
       RevMeta: (cdb.RevMeta) {
         Rev: (cdb.RevID) {
           Seq: (int64) 2,
-          Sum: (string) (len=32) "1963dc3c4e4d057b047b7d3675358757",
+          Sum: (string) (len=32) "61afc657ebc34041a2568f5d5ab9fc71",
           original: (string) ""
         },
         Deleted: (*bool)(<nil>),
-        Attachments: (map[string]*cdb.Attachment) (len=2) {
-          (string) (len=7) "bar.txt": (*cdb.Attachment)({
-            ContentType: (string) (len=10) "text/plain",
-            RevPos: (*int64)(2),
-            Stub: (bool) false,
-            Follows: (bool) false,
-            Content: ([]uint8) <nil>,
-            Size: (int64) 18,
-            Digest: (string) (len=28) "md5-gnmB5zRLleRxMgtaAnivSw==",
-            path: (string) (len=83) "<tmpdir>/bar/bar.txt",
-            fs: (*filesystem.defaultFS)({
-            }),
-            outputStub: (bool) true
-          }),
+        Attachments: (map[string]*cdb.Attachment) (len=1) {
           (string) (len=7) "foo.txt": (*cdb.Attachment)({
             ContentType: (string) (len=10) "text/plain",
             RevPos: (*int64)(1),
             Stub: (bool) true,
             Follows: (bool) false,
             Content: ([]uint8) <nil>,
-            Size: (int64) 0,
-            Digest: (string) "",
+            Size: (int64) 13,
+            Digest: (string) (len=28) "md5-EMUuEXyjHv9UCGbpjbnwxQ==",
             path: (string) "",
             fs: (*filesystem.defaultFS)({
             }),
@@ -45,16 +32,13 @@
           }
         }),
         isMain: (bool) false,
-        path: (string) (len=80) "<tmpdir>/bar.json",
+        path: (string) "",
         fs: (*filesystem.defaultFS)({
         })
       },
-      Data: (map[string]interface {}) (len=1) {
-        (string) (len=5) "value": (string) (len=3) "bar"
+      Data: (map[string]interface {}) {
       },
-      options: (kivik.Options) (len=1) {
-        (string) (len=4) "revs": (bool) true
-      }
+      options: (kivik.Options) <nil>
     }),
     (*cdb.Revision)({
       RevMeta: (cdb.RevMeta) {
@@ -73,7 +57,7 @@
             Content: ([]uint8) <nil>,
             Size: (int64) 13,
             Digest: (string) (len=28) "md5-EMUuEXyjHv9UCGbpjbnwxQ==",
-            path: (string) (len=83) "<tmpdir>/bar/foo.txt",
+            path: (string) (len=81) "<tmpdir>/bar/foo.txt",
             fs: (*filesystem.defaultFS)({
             }),
             outputStub: (bool) false
@@ -86,7 +70,7 @@
           }
         }),
         isMain: (bool) true,
-        path: (string) (len=80) "<tmpdir>/bar.yaml",
+        path: (string) (len=78) "<tmpdir>/bar.yaml",
         fs: (*filesystem.defaultFS)({
         })
       },
@@ -100,6 +84,6 @@
   cdb: (*cdb.FS)({
     fs: (*filesystem.defaultFS)({
     }),
-    root: (string) (len=71) "<tmpdir>"
+    root: (string) (len=69) "<tmpdir>"
   })
 })
