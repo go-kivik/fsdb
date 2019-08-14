@@ -141,20 +141,24 @@ func (d *Document) AddRevision(ctx context.Context, rev *Revision, options kivik
 	return revid, err
 }
 
+func (d *Document) addOldEdit(rev *Revision) (string, error) {
+	if rev.Rev.IsZero() {
+		return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "_rev required with new_edits=false"}
+	}
+	for _, r := range d.Revisions {
+		if r.Rev.Equal(rev.Rev) {
+			// If the rev already exists, do nothing, but report success.
+			return r.Rev.String(), nil
+		}
+	}
+	d.Revisions = append(d.Revisions, rev)
+	sort.Sort(d.Revisions)
+	return rev.Rev.String(), nil
+}
+
 func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik.Options) (string, error) {
 	if newEdits, ok := options["new_edits"].(bool); ok && !newEdits {
-		if rev.Rev.IsZero() {
-			return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "_rev required with new_edits=false"}
-		}
-		for _, r := range d.Revisions {
-			if r.Rev.Equal(rev.Rev) {
-				// If the rev already exists, do nothing, but report success.
-				return r.Rev.String(), nil
-			}
-		}
-		d.Revisions = append(d.Revisions, rev)
-		sort.Sort(d.Revisions)
-		return rev.Rev.String(), nil
+		return d.addOldEdit(rev)
 	}
 	if revid, ok := options["rev"].(string); ok {
 		var newrev RevID
