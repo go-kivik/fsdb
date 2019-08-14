@@ -1,7 +1,6 @@
 package cdb
 
 import (
-	"bytes"
 	"context"
 	"crypto/md5"
 	"encoding/json"
@@ -230,11 +229,10 @@ func (r *Revision) persist(ctx context.Context, path string) error {
 			}
 			dirMade = true
 		}
-		target := filepath.Join(path, escapeID(attname))
-		if err := atomicWriteFile(r.fs, target, bytes.NewReader(att.Content)); err != nil {
+		att.fs = r.fs
+		if err := att.persist(path, attname); err != nil {
 			return err
 		}
-		att.path = target
 	}
 	f := atomicFileWriter(r.fs, path+".json")
 	defer f.Close() // nolint: errcheck

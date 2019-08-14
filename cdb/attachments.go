@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"path/filepath"
 
 	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/kivik/driver"
@@ -109,6 +110,16 @@ func (a *Attachment) readMetadata() error {
 
 func (a *Attachment) setMetadata() {
 	a.Size, a.Digest = digest(bytes.NewReader(a.Content))
+}
+
+func (a *Attachment) persist(path, attname string) error {
+	target := filepath.Join(path, escapeID(attname))
+	if err := atomicWriteFile(a.fs, target, bytes.NewReader(a.Content)); err != nil {
+		return err
+	}
+	a.Content = nil
+	a.path = target
+	return nil
 }
 
 type attsIter []*driver.Attachment

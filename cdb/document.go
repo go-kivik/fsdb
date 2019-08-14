@@ -133,7 +133,7 @@ func copyAttachments(leaf, old *Revision) error {
 // AddRevision adds rev to the existing document, according to options, and
 // persists it to disk. The return value is the new revision ID.
 func (d *Document) AddRevision(ctx context.Context, rev *Revision, options kivik.Options) (string, error) {
-	revid, err := d.addRevision(rev, options)
+	revid, err := d.addRevision(ctx, rev, options)
 	if err != nil {
 		return "", err
 	}
@@ -141,7 +141,7 @@ func (d *Document) AddRevision(ctx context.Context, rev *Revision, options kivik
 	return revid, err
 }
 
-func (d *Document) addRevision(rev *Revision, options kivik.Options) (string, error) {
+func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik.Options) (string, error) {
 	if newEdits, ok := options["new_edits"].(bool); ok && !newEdits {
 		if rev.Rev.IsZero() {
 			return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "_rev required with new_edits=false"}
@@ -189,8 +189,27 @@ func (d *Document) addRevision(rev *Revision, options kivik.Options) (string, er
 		Sum: hash,
 	}
 
+	revpath := filepath.Join(d.cdb.root, "."+escapeID(d.ID), rev.Rev.String())
+	var dirMade bool
 	for attname, att := range rev.Attachments {
+		att.fs = d.cdb.fs
+		if err := ctx.Err(); err != nil {
+			return "", err
+		}
+		var oldatt *Attachment
+		if oldrev != nil {
+			oldatt = oldrev.Attachments[attname]
+		}
 		if !att.Stub {
+			if !dirMade {
+				if err := d.cdb.fs.MkdirAll(revpath, 0777); err != nil && !os.IsExist(err) {
+					return "", err
+				}
+				dirMade = true
+			}
+			if err := att.persist(revpath, attname); err != nil {
+				return "", err
+			}
 			revpos := rev.Rev.Seq
 			att.RevPos = &revpos
 			continue
@@ -203,7 +222,6 @@ func (d *Document) addRevision(rev *Revision, options kivik.Options) (string, er
 			// Can't upload stubs if there's no previous revision
 			return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", filename), Err: err}
 		}
-		oldatt := oldrev.Attachments[attname]
 		if att.Digest != "" && att.Digest != oldatt.Digest {
 			return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
 		}

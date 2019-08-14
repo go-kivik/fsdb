@@ -15,14 +15,12 @@
             RevPos: (*int64)(2),
             Stub: (bool) false,
             Follows: (bool) false,
-            Content: ([]uint8) (len=18) {
-              00000000  41 64 64 69 74 69 6f 6e  61 6c 20 63 6f 6e 74 65  |Additional conte|
-              00000010  6e 74                                             |nt|
-            },
+            Content: ([]uint8) <nil>,
             Size: (int64) 18,
             Digest: (string) (len=28) "md5-gnmB5zRLleRxMgtaAnivSw==",
             path: (string) (len=83) "<tmpdir>/bar/bar.txt",
-            fs: (filesystem.Filesystem) <nil>,
+            fs: (*filesystem.defaultFS)({
+            }),
             outputStub: (bool) true
           }),
           (string) (len=7) "foo.txt": (*cdb.Attachment)({
@@ -34,7 +32,8 @@
             Size: (int64) 0,
             Digest: (string) "",
             path: (string) "",
-            fs: (filesystem.Filesystem) <nil>,
+            fs: (*filesystem.defaultFS)({
+            }),
             outputStub: (bool) true
           })
         },
