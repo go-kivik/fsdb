@@ -312,6 +312,37 @@ func TestDocumentAddRevision(t *testing.T) {
 			expected: "1-0d696002c4b5b08c525de1235479d839",
 		}
 	})
+	tests.Add("re-upload identical attachment", func(t *testing.T) interface{} {
+		tmpdir := testy.CopyTempDir(t, "testdata/persist.att", 0)
+		tests.Cleanup(func() error {
+			return os.RemoveAll(tmpdir)
+		})
+
+		cdb := New(tmpdir)
+		doc, err := cdb.OpenDocID("bar", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rev, err := cdb.NewRevision(map[string]interface{}{
+			"_rev": "1-xxx",
+			"_attachments": map[string]interface{}{
+				"foo.txt": map[string]interface{}{
+					"content_type": "text/plain",
+					"data":         []byte("Test content\n"),
+				},
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return tt{
+			path:     tmpdir,
+			doc:      doc,
+			rev:      rev,
+			expected: "2-61afc657ebc34041a2568f5d5ab9fc71",
+		}
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		revid, err := tt.doc.addRevision(context.TODO(), tt.rev, tt.options)

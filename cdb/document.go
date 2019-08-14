@@ -201,6 +201,8 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 			oldatt = oldrev.Attachments[attname]
 		}
 		if !att.Stub {
+			revpos := rev.Rev.Seq
+			att.RevPos = &revpos
 			if !dirMade {
 				if err := d.cdb.fs.MkdirAll(revpath, 0777); err != nil && !os.IsExist(err) {
 					return "", err
@@ -210,8 +212,14 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 			if err := att.persist(revpath, attname); err != nil {
 				return "", err
 			}
-			revpos := rev.Rev.Seq
-			att.RevPos = &revpos
+			if oldatt != nil && oldatt.Digest == att.Digest {
+				if err := att.fs.Remove(att.path); err != nil {
+					return "", err
+				}
+				att.path = ""
+				att.Stub = true
+				att.RevPos = oldatt.RevPos
+			}
 			continue
 		}
 		filename, err := unescapeID(attname)
