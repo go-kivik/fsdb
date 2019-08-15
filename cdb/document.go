@@ -181,7 +181,6 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 		if oldrev, ok = d.leaves()[rev.Rev.String()]; !ok {
 			return "", errConflict
 		}
-		rev.RevHistory = oldrev.RevHistory.AddRevision(rev.Rev)
 	}
 
 	hash, err := rev.hash()
@@ -191,6 +190,9 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 	rev.Rev = RevID{
 		Seq: rev.Rev.Seq + 1,
 		Sum: hash,
+	}
+	if oldrev != nil {
+		rev.RevHistory = oldrev.RevHistory.AddRevision(rev.Rev)
 	}
 
 	revpath := filepath.Join(d.cdb.root, "."+escapeID(d.ID), rev.Rev.String())

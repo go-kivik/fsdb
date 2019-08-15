@@ -11,9 +11,9 @@
         Deleted: (*bool)(<nil>),
         Attachments: (map[string]*cdb.Attachment) <nil>,
         RevHistory: (*cdb.RevHistory)({
-          Start: (int64) 1,
+          Start: (int64) 2,
           IDs: ([]string) (len=2) {
-            (string) (len=3) "xxx",
+            (string) (len=32) "4a1ad3451c706a07d491d31a9fc2a593",
             (string) (len=3) "xxx"
           }
         }),
