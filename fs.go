@@ -115,15 +115,12 @@ func (c *client) CreateDB(ctx context.Context, dbName string, options map[string
 	if exists {
 		return &kivik.Error{HTTPStatus: http.StatusPreconditionFailed, Message: "database already exists"}
 	}
-	if err := os.Mkdir(c.root+"/"+cdb.EscapeID(dbName), dirMode); err != nil {
-		return err
-	}
-	return nil
+	return os.Mkdir(filepath.Join(c.root, cdb.EscapeID(dbName)), dirMode)
 }
 
 // DBExistsreturns true if the database exists.
 func (c *client) DBExists(_ context.Context, dbName string, _ map[string]interface{}) (bool, error) {
-	_, err := os.Stat(c.root + "/" + cdb.EscapeID(dbName))
+	_, err := os.Stat(filepath.Join(c.root, cdb.EscapeID(dbName)))
 	if err == nil {
 		return true, nil
 	}
@@ -142,7 +139,8 @@ func (c *client) DestroyDB(ctx context.Context, dbName string, options map[strin
 	if !exists {
 		return &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "database does not exist"}
 	}
-	return os.RemoveAll(c.root + "/" + cdb.EscapeID(dbName))
+	// FIXME #65: Be safer here about unrecognized files
+	return os.RemoveAll(filepath.Join(c.root, cdb.EscapeID(dbName)))
 }
 
 func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) (driver.DB, error) {
