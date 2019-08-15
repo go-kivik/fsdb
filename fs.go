@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/go-kivik/fsdb/cdb"
 	"github.com/go-kivik/fsdb/filesystem"
@@ -138,14 +140,37 @@ func (c *client) DestroyDB(ctx context.Context, dbName string, options map[strin
 }
 
 func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) (driver.DB, error) {
-	return c.newDB(dbName), nil
+	return c.newDB(dbName)
 }
 
-func (c *client) newDB(dbName string) *db {
+// dbPath returns the full DB path, or an error if the dbpath conflicts with
+// the client root path.
+func (c *client) dbPath(dbname string) (string, error) {
+	if c.root == "" {
+		if strings.HasPrefix(dbname, "file://") {
+			addr, err := url.Parse(dbname)
+			if err != nil {
+				return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
+			}
+			return addr.Path, nil
+		}
+		return dbname, nil
+	}
+	if !validDBNameRE.MatchString(dbname) {
+		return "", illegalDBName(dbname)
+	}
+	return filepath.Join(c.root, dbname), nil
+}
+
+func (c *client) newDB(dbname string) (*db, error) {
+	path, err := c.dbPath(dbname)
+	if err != nil {
+		return nil, err
+	}
 	return &db{
 		client: c,
-		dbName: dbName,
+		dbName: dbname,
 		fs:     c.fs,
-		cdb:    cdb.New(filepath.Join(c.root, cdb.EscapeID(dbName)), c.fs),
-	}
+		cdb:    cdb.New(path, c.fs),
+	}, nil
 }

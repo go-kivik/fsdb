@@ -26,11 +26,13 @@ func TestRevsDiff(t *testing.T) {
 	}
 	tests := testy.NewTable()
 	tests.Add("invalid revMap", tt{
+		dbname: "foo",
 		revMap: make(chan int),
 		status: http.StatusBadRequest,
 		err:    "json: unsupported type: chan int",
 	})
 	tests.Add("empty map", tt{
+		dbname: "foo",
 		revMap: map[string][]string{},
 	})
 	tests.Add("real test", tt{
@@ -70,7 +72,10 @@ func TestRevsDiff(t *testing.T) {
 			fs = filesystem.Default()
 		}
 		c := &client{root: dir, fs: fs}
-		db := c.newDB(tt.dbname)
+		db, err := c.newDB(tt.dbname)
+		if err != nil {
+			t.Fatal(err)
+		}
 		ctx := tt.ctx
 		if ctx == nil {
 			ctx = context.Background()
