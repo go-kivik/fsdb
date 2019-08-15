@@ -236,7 +236,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("note--XkWjFv13acvjJTt-CGJJ8hXlWE", tt{
 		path:   "testdata",
-		dbname: "db.att",
+		dbname: "db_att",
 		id:     "note--XkWjFv13acvjJTt-CGJJ8hXlWE",
 		expected: &driver.Document{
 			ContentLength: 849,
@@ -245,7 +245,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("note--XkWjFv13acvjJTt-CGJJ8hXlWE + attachments", tt{
 		path:    "testdata",
-		dbname:  "db.att",
+		dbname:  "db_att",
 		id:      "note--XkWjFv13acvjJTt-CGJJ8hXlWE",
 		options: kivik.Options{"attachments": true},
 		expected: &driver.Document{
