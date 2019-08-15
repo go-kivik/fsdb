@@ -155,6 +155,10 @@ func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) 
 // dbPath returns the full DB path and the dbname, or an error if the dbpath
 // conflicts with the client root path.
 func (c *client) dbPath(path string) (string, string, error) {
+	// As a special case, skip validation on this one
+	if c.root == "" && path == "." {
+		return ".", ".", nil
+	}
 	dbname := path
 	if c.root == "" {
 		if strings.HasPrefix(path, "file://") {
