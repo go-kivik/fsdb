@@ -3,7 +3,6 @@ package fs
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"testing"
 
 	"github.com/go-kivik/fsdb/filesystem"
@@ -20,18 +19,6 @@ func TestCreateDB(t *testing.T) {
 		want   *client
 	}
 	tests := testy.NewTable()
-	tests.Add("not a dir", tt{
-		driver: &fsDriver{},
-		path:   "testdata/foo.txt",
-		status: http.StatusBadRequest,
-		err:    "testdata/foo.txt is not a directory",
-	})
-	tests.Add("not exist", tt{
-		driver: &fsDriver{},
-		path:   "testdata/doesnotexist",
-		status: http.StatusNotFound,
-		err:    "stat testdata/doesnotexist: no such file or directory",
-	})
 	tests.Add("success", tt{
 		driver: &fsDriver{},
 		path:   "testdata",
