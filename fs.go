@@ -152,15 +152,15 @@ func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) 
 	return c.newDB(dbName)
 }
 
-// dbPath returns the full DB path, or an error if the dbpath conflicts with
-// the client root path.
-func (c *client) dbPath(path string) (string, error) {
+// dbPath returns the full DB path and the dbname, or an error if the dbpath
+// conflicts with the client root path.
+func (c *client) dbPath(path string) (string, string, error) {
 	dbname := path
 	if c.root == "" {
 		if strings.HasPrefix(path, "file://") {
 			addr, err := url.Parse(path)
 			if err != nil {
-				return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
+				return "", "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
 			}
 			path = addr.Path
 		}
@@ -171,19 +171,19 @@ func (c *client) dbPath(path string) (string, error) {
 		path = filepath.Join(c.root, dbname)
 	}
 	if !validDBNameRE.MatchString(dbname) {
-		return "", illegalDBName(dbname)
+		return "", "", illegalDBName(dbname)
 	}
-	return path, nil
+	return path, dbname, nil
 }
 
 func (c *client) newDB(dbname string) (*db, error) {
-	path, err := c.dbPath(dbname)
+	path, name, err := c.dbPath(dbname)
 	if err != nil {
 		return nil, err
 	}
 	return &db{
 		client: c,
-		dbName: dbname,
+		dbName: name,
 		fs:     c.fs,
 		cdb:    cdb.New(path, c.fs),
 	}, nil

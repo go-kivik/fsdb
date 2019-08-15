@@ -1,0 +1,14 @@
+(*fs.db)({
+  client: (*fs.client)({
+    version: (*driver.Version)(<nil>),
+    root: (string) "",
+    fs: (filesystem.Filesystem) <nil>
+  }),
+  dbName: (string) (len=3) "bar",
+  fs: (filesystem.Filesystem) <nil>,
+  cdb: (*cdb.FS)({
+    fs: (*filesystem.defaultFS)({
+    }),
+    root: (string) (len=8) "/foo/bar"
+  })
+})
