@@ -34,6 +34,11 @@ func TestAllDBs(t *testing.T) {
 			"get_split_atts",
 		},
 	})
+	tests.Add("No root path", tt{
+		path:   "",
+		status: http.StatusBadRequest,
+		err:    "no root path provided",
+	})
 
 	d := &fsDriver{}
 	tests.Run(t, func(t *testing.T, tt tt) {

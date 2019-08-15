@@ -87,7 +87,10 @@ func (c *client) Version(_ context.Context) (*driver.Version, error) {
 var validDBNameRE = regexp.MustCompile("^[a-z_][a-z0-9_$()+/-]*$")
 
 // AllDBs returns a list of all DBs present in the configured root dir.
-func (c *client) AllDBs(_ context.Context, _ map[string]interface{}) ([]string, error) {
+func (c *client) AllDBs(ctx context.Context, _ map[string]interface{}) ([]string, error) {
+	if c.root == "" {
+		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no root path provided"}
+	}
 	files, err := ioutil.ReadDir(c.root)
 	if err != nil {
 		return nil, err
