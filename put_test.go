@@ -250,7 +250,10 @@ func TestPut(t *testing.T) {
 			fs = filesystem.Default()
 		}
 		c := &client{root: tt.path, fs: fs}
-		db := c.newDB(tt.dbname)
+		db, err := c.newDB(tt.dbname)
+		if err != nil {
+			t.Fatal(err)
+		}
 		rev, err := db.Put(context.Background(), tt.id, tt.doc, tt.options)
 		testy.StatusError(t, tt.err, tt.status, err)
 		if rev != tt.expected {

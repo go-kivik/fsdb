@@ -1,12 +1,18 @@
 package fs
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/go-kivik/kivik"
 	"golang.org/x/xerrors"
 )
+
+func illegalDBName(dbname string) error {
+	return &kivik.Error{HTTPStatus: http.StatusBadRequest,
+		Message: fmt.Sprintf("Name: '%s'. Only lowercase characters (a-z), digits (0-9), and any of the characters _, $, (, ), +, -, and / are allowed. Must begin with a letter.", dbname)}
+}
 
 func kerr(err error) error {
 	if err == nil {

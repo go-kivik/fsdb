@@ -16,7 +16,9 @@ func TestSecurity(t *testing.T) {
 		err          string
 	}
 	tests := testy.NewTable()
-	tests.Add("no security object", tt{})
+	tests.Add("no security object", tt{
+		dbname: "foo",
+	})
 	tests.Add("json security obj", tt{
 		path:   "testdata",
 		dbname: "db_foo",
@@ -37,7 +39,10 @@ func TestSecurity(t *testing.T) {
 			fs = filesystem.Default()
 		}
 		c := &client{root: dir, fs: fs}
-		db := c.newDB(tt.dbname)
+		db, err := c.newDB(tt.dbname)
+		if err != nil {
+			t.Fatal(err)
+		}
 		sec, err := db.Security(context.Background())
 		testy.StatusErrorRE(t, tt.err, tt.status, err)
 		if d := testy.DiffAsJSON(testy.Snapshot(t), sec); d != nil {
