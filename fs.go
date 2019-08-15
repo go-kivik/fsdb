@@ -44,7 +44,25 @@ type client struct {
 
 var _ driver.Client = &client{}
 
+func parseFileURL(dir string) (string, error) {
+	parsed, err := url.Parse(dir)
+	if parsed.Scheme != "" && parsed.Scheme != "file" {
+		return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("Unsupported URL scheme '%s'. Wrong driver?", parsed.Scheme)}
+	}
+	if !strings.HasPrefix("file://", dir) {
+		return dir, nil
+	}
+	if err != nil {
+		return "", err
+	}
+	return parsed.Path, nil
+}
+
 func (d *fsDriver) NewClient(dir string) (driver.Client, error) {
+	path, err := parseFileURL(dir)
+	if err != nil {
+		return nil, err
+	}
 	fs := d.fs
 	if fs == nil {
 		fs = filesystem.Default()
@@ -56,7 +74,7 @@ func (d *fsDriver) NewClient(dir string) (driver.Client, error) {
 			RawResponse: json.RawMessage(fmt.Sprintf(`{"version":"%s","vendor":{"name":"%s"}}`, Version, Vendor)),
 		},
 		fs:   fs,
-		root: dir,
+		root: path,
 	}, nil
 }
 
