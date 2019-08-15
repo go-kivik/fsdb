@@ -228,10 +228,7 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 			}
 			continue
 		}
-		filename, err := UnescapeID(attname)
-		if err != nil {
-			return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", filename), Err: err}
-		}
+		filename := EscapeID(attname)
 		if oldrev == nil {
 			// Can't upload stubs if there's no previous revision
 			return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", filename), Err: err}
