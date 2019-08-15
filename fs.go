@@ -155,6 +155,7 @@ func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) 
 // dbPath returns the full DB path, or an error if the dbpath conflicts with
 // the client root path.
 func (c *client) dbPath(path string) (string, error) {
+	dbname := path
 	if c.root == "" {
 		if strings.HasPrefix(path, "file://") {
 			addr, err := url.Parse(path)
@@ -163,19 +164,16 @@ func (c *client) dbPath(path string) (string, error) {
 			}
 			path = addr.Path
 		}
-		dbname := path
 		if strings.Contains(dbname, "/") {
 			dbname = dbname[strings.LastIndex(dbname, "/")+1:]
 		}
-		if !validDBNameRE.MatchString(dbname) {
-			return "", illegalDBName(dbname)
-		}
-		return path, nil
+	} else {
+		path = filepath.Join(c.root, dbname)
 	}
-	if !validDBNameRE.MatchString(path) {
-		return "", illegalDBName(path)
+	if !validDBNameRE.MatchString(dbname) {
+		return "", illegalDBName(dbname)
 	}
-	return filepath.Join(c.root, path), nil
+	return path, nil
 }
 
 func (c *client) newDB(dbname string) (*db, error) {
