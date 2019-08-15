@@ -1,5 +1,5 @@
 /*
-Package fsdb provides a filesystem-backed Kivik driver. This driver is very
+Package fs provides a filesystem-backed Kivik driver. This driver is very
 much a work in progress. Please refer to the GitHub page for current status and
 ongoing changes. https://github.com/go-kivik/fsdb
 
@@ -25,6 +25,19 @@ For example:
 
     db := client.DB(ctx, "foo")
 
-would look for document files in `/home/usr/some/path/foo`
+would look for document files in `/home/usr/some/path/foo`.
+
+Connection Strings
+
+This driver supports three types of connection strings to the New() method:
+
+ - Local filesystem path. This may be relative or absolute. Examples:
+   `/home/user/some/path` and './some/path'
+ - A full file:// URL. Example: 'file:///home/user/some/path'
+ - An empty string (""), which requires the full path to the database is passed
+   to the `DB()` method. In this case, the argument to `DB()` accepts the first
+   two formats, with the final path element being the database name. Some
+   client-level methods, such as AllDBs(), are unavailable, when using an empty
+   connection string.
 */
 package fs
