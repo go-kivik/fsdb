@@ -45,9 +45,6 @@ type client struct {
 var _ driver.Client = &client{}
 
 func (d *fsDriver) NewClient(dir string) (driver.Client, error) {
-	if err := validateRootDir(dir); err != nil {
-		return nil, kerr(err)
-	}
 	fs := d.fs
 	if fs == nil {
 		fs = filesystem.Default()
@@ -61,18 +58,6 @@ func (d *fsDriver) NewClient(dir string) (driver.Client, error) {
 		fs:   fs,
 		root: dir,
 	}, nil
-}
-
-func validateRootDir(dir string) error {
-	// See if the target path exists, and is a directory
-	info, err := os.Stat(dir)
-	if err != nil {
-		return kerr(err)
-	}
-	if !info.IsDir() {
-		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("%s is not a directory", dir)}
-	}
-	return nil
 }
 
 // Version returns the configured server info.
