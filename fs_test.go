@@ -34,6 +34,11 @@ func TestAllDBs(t *testing.T) {
 			"get_split_atts",
 		},
 	})
+	tests.Add("No root path", tt{
+		path:   "",
+		status: http.StatusBadRequest,
+		err:    "no root path provided",
+	})
 
 	d := &fsDriver{}
 	tests.Run(t, func(t *testing.T, tt tt) {
@@ -81,6 +86,12 @@ func TestClientdbPath(t *testing.T) {
 		root:   "",
 		dbname: "file:///foo/bar",
 		path:   "/foo/bar",
+	})
+	tests.Add("file:// url for db with invalid db name", tt{
+		root:   "",
+		dbname: "file:///foo/bar.baz",
+		status: http.StatusBadRequest,
+		err:    `Name: 'bar.baz'. Only lowercase characters (a-z), digits (0-9), and any of the characters _, $, (, ), +, -, and / are allowed. Must begin with a letter.`,
 	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {

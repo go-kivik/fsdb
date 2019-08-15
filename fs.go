@@ -87,14 +87,22 @@ func (c *client) Version(_ context.Context) (*driver.Version, error) {
 var validDBNameRE = regexp.MustCompile("^[a-z_][a-z0-9_$()+/-]*$")
 
 // AllDBs returns a list of all DBs present in the configured root dir.
-func (c *client) AllDBs(_ context.Context, _ map[string]interface{}) ([]string, error) {
+func (c *client) AllDBs(ctx context.Context, _ map[string]interface{}) ([]string, error) {
+	if c.root == "" {
+		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no root path provided"}
+	}
 	files, err := ioutil.ReadDir(c.root)
 	if err != nil {
 		return nil, err
 	}
 	filenames := make([]string, 0, len(files))
 	for _, file := range files {
-		if !validDBNameRE.MatchString(file.Name()) {
+		dbname, err := cdb.UnescapeID(file.Name())
+		if err != nil {
+			// FIXME #64: Add option to warn about non-matching files?
+			continue
+		}
+		if !validDBNameRE.MatchString(dbname) {
 			// FIXME #64: Add option to warn about non-matching files?
 			continue
 		}
@@ -112,15 +120,12 @@ func (c *client) CreateDB(ctx context.Context, dbName string, options map[string
 	if exists {
 		return &kivik.Error{HTTPStatus: http.StatusPreconditionFailed, Message: "database already exists"}
 	}
-	if err := os.Mkdir(c.root+"/"+cdb.EscapeID(dbName), dirMode); err != nil {
-		return err
-	}
-	return nil
+	return os.Mkdir(filepath.Join(c.root, cdb.EscapeID(dbName)), dirMode)
 }
 
 // DBExistsreturns true if the database exists.
 func (c *client) DBExists(_ context.Context, dbName string, _ map[string]interface{}) (bool, error) {
-	_, err := os.Stat(c.root + "/" + cdb.EscapeID(dbName))
+	_, err := os.Stat(filepath.Join(c.root, cdb.EscapeID(dbName)))
 	if err == nil {
 		return true, nil
 	}
@@ -139,7 +144,8 @@ func (c *client) DestroyDB(ctx context.Context, dbName string, options map[strin
 	if !exists {
 		return &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "database does not exist"}
 	}
-	return os.RemoveAll(c.root + "/" + cdb.EscapeID(dbName))
+	// FIXME #65: Be safer here about unrecognized files
+	return os.RemoveAll(filepath.Join(c.root, cdb.EscapeID(dbName)))
 }
 
 func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) (driver.DB, error) {
@@ -148,21 +154,26 @@ func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) 
 
 // dbPath returns the full DB path, or an error if the dbpath conflicts with
 // the client root path.
-func (c *client) dbPath(dbname string) (string, error) {
+func (c *client) dbPath(path string) (string, error) {
+	dbname := path
 	if c.root == "" {
-		if strings.HasPrefix(dbname, "file://") {
-			addr, err := url.Parse(dbname)
+		if strings.HasPrefix(path, "file://") {
+			addr, err := url.Parse(path)
 			if err != nil {
 				return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
 			}
-			return addr.Path, nil
+			path = addr.Path
 		}
-		return dbname, nil
+		if strings.Contains(dbname, "/") {
+			dbname = dbname[strings.LastIndex(dbname, "/")+1:]
+		}
+	} else {
+		path = filepath.Join(c.root, dbname)
 	}
 	if !validDBNameRE.MatchString(dbname) {
 		return "", illegalDBName(dbname)
 	}
-	return filepath.Join(c.root, dbname), nil
+	return path, nil
 }
 
 func (c *client) newDB(dbname string) (*db, error) {
