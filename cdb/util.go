@@ -25,7 +25,8 @@ var reservedKeys = map[string]struct{}{
 	// * Can these be PUT?
 }
 
-func escapeID(id string) string {
+// EscapeID escapes a document or database ID to be a safe filename.
+func EscapeID(id string) string {
 	if id == "" {
 		return id
 	}
@@ -36,7 +37,8 @@ func escapeID(id string) string {
 	return id
 }
 
-func unescapeID(filename string) (string, error) {
+// UnescapeID unescapes a filename into a document or database ID.
+func UnescapeID(filename string) (string, error) {
 	return url.PathUnescape(filename)
 }
 

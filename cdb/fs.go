@@ -92,7 +92,7 @@ func (r *Revision) restoreAttachments() error {
 
 func (fs *FS) openRevs(docID, revid string) ([]*Revision, error) {
 	revs := make(Revisions, 0, 1)
-	base := escapeID(docID)
+	base := EscapeID(docID)
 	rev, err := fs.readMainRev(filepath.Join(fs.root, base))
 	if err != nil && err != errNotFound {
 		return nil, err
