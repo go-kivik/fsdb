@@ -1,5 +1,5 @@
 {
-    "db.put/foo.json": {
+    "db_put/foo.json": {
         "content": "{\n    \"_id\": \"foo\",\n    \"_rev\": \"1-beea34a62a215ab051862d1e5d93162e\",\n    \"foo\": \"bar\"\n}\n"
     }
 }

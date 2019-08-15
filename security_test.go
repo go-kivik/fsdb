@@ -19,11 +19,11 @@ func TestSecurity(t *testing.T) {
 	tests.Add("no security object", tt{})
 	tests.Add("json security obj", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 	})
 	tests.Add("yaml security obj", tt{
 		path:   "testdata",
-		dbname: "db.bar",
+		dbname: "db_bar",
 	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {

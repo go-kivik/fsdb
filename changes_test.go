@@ -21,7 +21,7 @@ func TestChanges(t *testing.T) {
 	tests.Add("success", tt{
 		db: &db{
 			client: &client{root: "testdata"},
-			dbName: "db.foo",
+			dbName: "db_foo",
 		},
 	})
 

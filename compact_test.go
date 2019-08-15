@@ -55,47 +55,47 @@ func TestCompact(t *testing.T) {
 		err:    "permission denied$",
 	})
 	tests.Add("no attachments", func(t *testing.T) interface{} {
-		tmpdir := copyDir(t, "testdata/compact.noatt", 1)
+		tmpdir := copyDir(t, "testdata/compact_noatt", 1)
 		tests.Cleanup(func() error {
 			return os.RemoveAll(tmpdir)
 		})
 
 		return tt{
 			path:   tmpdir,
-			dbname: "compact.noatt",
+			dbname: "compact_noatt",
 		}
 	})
 	tests.Add("non-winning revs only, no attachments", func(t *testing.T) interface{} {
-		tmpdir := copyDir(t, "testdata/compact.nowinner_noatt", 1)
+		tmpdir := copyDir(t, "testdata/compact_nowinner_noatt", 1)
 		tests.Cleanup(func() error {
 			return os.RemoveAll(tmpdir)
 		})
 
 		return tt{
 			path:   tmpdir,
-			dbname: "compact.nowinner_noatt",
+			dbname: "compact_nowinner_noatt",
 		}
 	})
 	tests.Add("clean up old revs", func(t *testing.T) interface{} {
-		tmpdir := copyDir(t, "testdata/compact.oldrevs", 1)
+		tmpdir := copyDir(t, "testdata/compact_oldrevs", 1)
 		tests.Cleanup(func() error {
 			return os.RemoveAll(tmpdir)
 		})
 
 		return tt{
 			path:   tmpdir,
-			dbname: "compact.oldrevs",
+			dbname: "compact_oldrevs",
 		}
 	})
 	tests.Add("clean up old revs with atts", func(t *testing.T) interface{} {
-		tmpdir := copyDir(t, "testdata/compact.oldrevsatt", 1)
+		tmpdir := copyDir(t, "testdata/compact_oldrevsatt", 1)
 		tests.Cleanup(func() error {
 			return os.RemoveAll(tmpdir)
 		})
 
 		return tt{
 			path:   tmpdir,
-			dbname: "compact.oldrevsatt",
+			dbname: "compact_oldrevsatt",
 		}
 	})
 

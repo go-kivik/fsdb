@@ -28,10 +28,13 @@ func TestGet(t *testing.T) {
 	}
 	tests := testy.NewTable()
 	tests.Add("no id", tt{
+		path:   "",
+		dbname: "foo",
 		status: http.StatusBadRequest,
 		err:    "no docid specified",
 	})
 	tests.Add("not found", tt{
+		dbname: "asdf",
 		id:     "foo",
 		status: http.StatusNotFound,
 		err:    `^missing$`,
@@ -43,6 +46,7 @@ func TestGet(t *testing.T) {
 					return nil, &kivik.Error{HTTPStatus: http.StatusForbidden, Err: errors.New("permission denied")}
 				},
 			},
+			dbname: "foo",
 			id:     "foo",
 			status: http.StatusForbidden,
 			err:    "permission denied$",
@@ -50,7 +54,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("success, no attachments", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "noattach",
 		expected: &driver.Document{
 			ContentLength: 53,
@@ -59,7 +63,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("success, attachment stub", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "withattach",
 		expected: &driver.Document{
 			ContentLength: 185,
@@ -68,7 +72,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("success, include mp attachments", tt{
 		path:    "testdata",
-		dbname:  "db.foo",
+		dbname:  "db_foo",
 		id:      "withattach",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{
@@ -78,7 +82,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("success, include inline attachments", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "withattach",
 		options: map[string]interface{}{
 			"attachments":   true,
@@ -91,7 +95,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("specify current rev", tt{
 		path:    "testdata",
-		dbname:  "db.foo",
+		dbname:  "db_foo",
 		id:      "noattach",
 		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
 		expected: &driver.Document{
@@ -101,7 +105,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("specify old rev", tt{
 		path:    "testdata",
-		dbname:  "db.foo",
+		dbname:  "db_foo",
 		id:      "withattach",
 		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
 		expected: &driver.Document{
@@ -111,7 +115,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("autorev", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "autorev",
 		expected: &driver.Document{
 			ContentLength: 42,
@@ -120,7 +124,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("intrev", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "intrev",
 		expected: &driver.Document{
 			ContentLength: 41,
@@ -129,7 +133,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("norev", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "norev",
 		expected: &driver.Document{
 			ContentLength: 40,
@@ -138,7 +142,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("noid", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "noid",
 		expected: &driver.Document{
 			ContentLength: 39,
@@ -147,7 +151,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("wrong id", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "wrongid",
 		expected: &driver.Document{
 			ContentLength: 42,
@@ -156,7 +160,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("yaml", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "yamltest",
 		expected: &driver.Document{
 			ContentLength: 43,
@@ -165,7 +169,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("specify current rev yaml", tt{
 		path:    "testdata",
-		dbname:  "db.foo",
+		dbname:  "db_foo",
 		id:      "yamltest",
 		options: map[string]interface{}{"rev": "3-"},
 		expected: &driver.Document{
@@ -175,7 +179,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("specify old rev yaml", tt{
 		path:    "testdata",
-		dbname:  "db.foo",
+		dbname:  "db_foo",
 		id:      "yamltest",
 		options: map[string]interface{}{"rev": "2-xxx"},
 		expected: &driver.Document{
@@ -185,7 +189,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("specify bogus rev yaml", tt{
 		path:    "testdata",
-		dbname:  "db.foo",
+		dbname:  "db_foo",
 		id:      "yamltest",
 		options: map[string]interface{}{"rev": "1-oink"},
 		status:  http.StatusNotFound,
@@ -193,7 +197,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("ddoc yaml", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "_design/users",
 		expected: &driver.Document{
 			ContentLength: 115,
@@ -202,7 +206,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("ddoc rev yaml", tt{
 		path:    "testdata",
-		dbname:  "db.foo",
+		dbname:  "db_foo",
 		id:      "_design/users",
 		options: map[string]interface{}{"rev": "2-"},
 		expected: &driver.Document{
@@ -212,7 +216,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("revs", tt{
 		path:    "testdata",
-		dbname:  "db.foo",
+		dbname:  "db_foo",
 		id:      "wrongid",
 		options: map[string]interface{}{"revs": true},
 		expected: &driver.Document{
@@ -222,7 +226,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("revs real", tt{
 		path:    "testdata",
-		dbname:  "db.foo",
+		dbname:  "db_foo",
 		id:      "noattach",
 		options: map[string]interface{}{"revs": true},
 		expected: &driver.Document{
@@ -251,7 +255,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("revs_info=true", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "autorev",
 		options: kivik.Options{
 			"revs_info": true,
@@ -263,7 +267,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("revs, explicit", tt{
 		path:    "testdata",
-		dbname:  "db.foo",
+		dbname:  "db_foo",
 		id:      "withrevs",
 		options: map[string]interface{}{"revs": true},
 		expected: &driver.Document{
@@ -273,7 +277,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("specify current rev, revs_info=true", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "yamltest",
 		options: map[string]interface{}{
 			"rev":       "3-",
@@ -286,7 +290,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("specify conflicting rev, revs_info=true", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "yamltest",
 		options: map[string]interface{}{
 			"rev":       "2-xxx",
@@ -299,7 +303,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("specify rev, revs=true", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		id:     "withrevs",
 		options: map[string]interface{}{
 			"rev":  "8-asdf",
@@ -315,7 +319,7 @@ func TestGet(t *testing.T) {
 		// {db}/.{docid}/{rev}/{filename}, while the winning rev is at
 		// the friendlier location of {db}/{docid}.{ext}
 		path:    "testdata",
-		dbname:  "db.foo",
+		dbname:  "db_foo",
 		id:      "abortedput",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{
@@ -328,7 +332,7 @@ func TestGet(t *testing.T) {
 		// {db}/.{docid}/{rev}/{filename}, while the winning rev is at
 		// the friendlier location of {db}/{docid}.{ext}
 		path:   "testdata",
-		dbname: "get.nowinner",
+		dbname: "get_nowinner",
 		id:     "foo",
 		expected: &driver.Document{
 			ContentLength: 42,
@@ -340,7 +344,7 @@ func TestGet(t *testing.T) {
 		// {db}/.{docid}/{rev}/{filename}, while the winning rev is at
 		// the friendlier location of {db}/{docid}.{ext}
 		path:   "testdata",
-		dbname: "get.nowinner",
+		dbname: "get_nowinner",
 		id:     "bar",
 		expected: &driver.Document{
 			ContentLength: 39,
@@ -349,7 +353,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("atts split between winning and revs dir", tt{
 		path:    "testdata",
-		dbname:  "get.split_atts",
+		dbname:  "get_split_atts",
 		id:      "foo",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{
@@ -359,7 +363,7 @@ func TestGet(t *testing.T) {
 	})
 	tests.Add("atts split between two revs", tt{
 		path:    "testdata",
-		dbname:  "get.split_atts",
+		dbname:  "get_split_atts",
 		id:      "bar",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{

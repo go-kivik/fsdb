@@ -1,5 +1,5 @@
 {
-    "compact.noatt/foo.yaml": {
+    "compact_noatt/foo.yaml": {
         "content": "_id: foo\n_rev: 1\nfoo: bar\n"
     }
 }
