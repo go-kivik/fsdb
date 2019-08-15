@@ -89,13 +89,8 @@ func (c *client) AllDBs(_ context.Context, _ map[string]interface{}) ([]string, 
 	}
 	filenames := make([]string, 0, len(files))
 	for _, file := range files {
-		if file.Name()[0] == '.' {
-			// As a special case, we skip over dot files
-			continue
-		}
 		if !validDBNameRE.MatchString(file.Name()) {
-			// Warn about bad filenames
-			fmt.Printf("kivik: Filename does not conform to database name standards: %s/%s\n", c.root, file.Name())
+			// FIXME #64: Add option to warn about non-matching files?
 			continue
 		}
 		filenames = append(filenames, file.Name())
