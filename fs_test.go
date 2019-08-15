@@ -58,12 +58,14 @@ func TestClientdbPath(t *testing.T) {
 		status int
 		err    string
 		path   string
+		name   string
 	}
 	tests := testy.NewTable()
 	tests.Add("normal", tt{
 		root:   "/foo/bar",
 		dbname: "baz",
 		path:   "/foo/bar/baz",
+		name:   "baz",
 	})
 	tests.Add("conflicting absolute paths", tt{
 		root:   "foo",
@@ -75,6 +77,7 @@ func TestClientdbPath(t *testing.T) {
 		root:   "",
 		dbname: "/foo/bar",
 		path:   "/foo/bar",
+		name:   "bar",
 	})
 	tests.Add("invalid file url", tt{
 		root:   "",
@@ -86,6 +89,7 @@ func TestClientdbPath(t *testing.T) {
 		root:   "",
 		dbname: "file:///foo/bar",
 		path:   "/foo/bar",
+		name:   "bar",
 	})
 	tests.Add("file:// url for db with invalid db name", tt{
 		root:   "",
@@ -96,10 +100,40 @@ func TestClientdbPath(t *testing.T) {
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		c := &client{root: tt.root}
-		result, err := c.dbPath(tt.dbname)
+		path, name, err := c.dbPath(tt.dbname)
 		testy.StatusError(t, tt.err, tt.status, err)
-		if result != tt.path {
-			t.Errorf("Unexpected result: %s", result)
+		if path != tt.path {
+			t.Errorf("Unexpected path: %s", path)
+		}
+		if name != tt.name {
+			t.Errorf("Unexpected name: %s", name)
+		}
+	})
+}
+
+func TestClientnewDB(t *testing.T) {
+	type tt struct {
+		root   string
+		dbname string
+		status int
+		err    string
+	}
+	tests := testy.NewTable()
+	tests.Add("simple", tt{
+		root:   "/foo",
+		dbname: "bar",
+	})
+	tests.Add("complete path", tt{
+		root:   "",
+		dbname: "/foo/bar",
+	})
+
+	tests.Run(t, func(t *testing.T, tt tt) {
+		c := &client{root: tt.root}
+		result, err := c.newDB(tt.dbname)
+		testy.StatusError(t, tt.err, tt.status, err)
+		if d := testy.DiffInterface(testy.Snapshot(t), result); d != nil {
+			t.Error(d)
 		}
 	})
 }
