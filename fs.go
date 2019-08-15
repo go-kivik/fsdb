@@ -154,21 +154,28 @@ func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) 
 
 // dbPath returns the full DB path, or an error if the dbpath conflicts with
 // the client root path.
-func (c *client) dbPath(dbname string) (string, error) {
+func (c *client) dbPath(path string) (string, error) {
 	if c.root == "" {
-		if strings.HasPrefix(dbname, "file://") {
-			addr, err := url.Parse(dbname)
+		if strings.HasPrefix(path, "file://") {
+			addr, err := url.Parse(path)
 			if err != nil {
 				return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
 			}
-			return addr.Path, nil
+			path = addr.Path
 		}
-		return dbname, nil
+		dbname := path
+		if strings.Contains(dbname, "/") {
+			dbname = dbname[strings.LastIndex(dbname, "/")+1:]
+		}
+		if !validDBNameRE.MatchString(dbname) {
+			return "", illegalDBName(dbname)
+		}
+		return path, nil
 	}
-	if !validDBNameRE.MatchString(dbname) {
-		return "", illegalDBName(dbname)
+	if !validDBNameRE.MatchString(path) {
+		return "", illegalDBName(path)
 	}
-	return filepath.Join(c.root, dbname), nil
+	return filepath.Join(c.root, path), nil
 }
 
 func (c *client) newDB(dbname string) (*db, error) {
