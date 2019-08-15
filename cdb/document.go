@@ -195,7 +195,7 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 		rev.RevHistory = oldrev.RevHistory.AddRevision(rev.Rev)
 	}
 
-	revpath := filepath.Join(d.cdb.root, "."+escapeID(d.ID), rev.Rev.String())
+	revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), rev.Rev.String())
 	var dirMade bool
 	for attname, att := range rev.Attachments {
 		att.fs = d.cdb.fs
@@ -228,10 +228,7 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 			}
 			continue
 		}
-		filename, err := unescapeID(attname)
-		if err != nil {
-			return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", filename), Err: err}
-		}
+		filename := EscapeID(attname)
 		if oldrev == nil {
 			// Can't upload stubs if there's no previous revision
 			return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", filename), Err: err}
@@ -268,7 +265,7 @@ func (d *Document) persist(ctx context.Context) error {
 	if d == nil || len(d.Revisions) == 0 {
 		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document has no revisions"}
 	}
-	docID := escapeID(d.ID)
+	docID := EscapeID(d.ID)
 	for _, rev := range d.Revisions {
 		if rev.path != "" {
 			continue
@@ -298,7 +295,7 @@ func (d *Document) persist(ctx context.Context) error {
 				return err
 			}
 			// We need to move this rev
-			revpath := filepath.Join(d.cdb.root, "."+escapeID(d.ID), rev.Rev.String())
+			revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), rev.Rev.String())
 			if err := d.cdb.fs.Mkdir(revpath, 0777); err != nil && !os.IsExist(err) {
 				return err
 			}
@@ -308,8 +305,7 @@ func (d *Document) persist(ctx context.Context) error {
 					// This attachment is part of another rev, so skip it
 					continue
 				}
-				filename := escapeID(attname)
-				newpath := filepath.Join(revpath, filename)
+				newpath := filepath.Join(revpath, EscapeID(attname))
 				if err := d.cdb.fs.Rename(att.path, newpath); err != nil {
 					return err
 				}
@@ -330,7 +326,7 @@ func (d *Document) persist(ctx context.Context) error {
 	if err := d.cdb.fs.Mkdir(winningPath, 0777); err != nil && !os.IsExist(err) {
 		return err
 	}
-	revpath := filepath.Join(d.cdb.root, "."+escapeID(d.ID), winningRev.Rev.String())
+	revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), winningRev.Rev.String())
 	// First move attachments, since they can exit both places legally.
 	for attname, att := range winningRev.Attachments {
 		if !strings.HasPrefix(att.path, revpath) {
@@ -340,8 +336,7 @@ func (d *Document) persist(ctx context.Context) error {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		filename := escapeID(attname)
-		newpath := filepath.Join(winningPath, filename)
+		newpath := filepath.Join(winningPath, EscapeID(attname))
 		if err := d.cdb.fs.Rename(att.path, newpath); err != nil {
 			return err
 		}
