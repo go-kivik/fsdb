@@ -35,7 +35,7 @@ func TestRevsDiff(t *testing.T) {
 	})
 	tests.Add("real test", tt{
 		path:   "testdata",
-		dbname: "db.foo",
+		dbname: "db_foo",
 		revMap: map[string][]string{
 			"yamltest": {"3-", "2-xxx", "1-oink"},
 			"autorev":  {"6-", "5-", "4-"},
@@ -48,7 +48,7 @@ func TestRevsDiff(t *testing.T) {
 		return tt{
 			ctx:    ctx,
 			path:   "testdata",
-			dbname: "db.foo",
+			dbname: "db_foo",
 			revMap: map[string][]string{
 				"yamltest": {"3-", "2-xxx", "1-oink"},
 				"autorev":  {"6-", "5-", "4-"},
