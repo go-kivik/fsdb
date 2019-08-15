@@ -97,7 +97,12 @@ func (c *client) AllDBs(ctx context.Context, _ map[string]interface{}) ([]string
 	}
 	filenames := make([]string, 0, len(files))
 	for _, file := range files {
-		if !validDBNameRE.MatchString(file.Name()) {
+		dbname, err := cdb.UnescapeID(file.Name())
+		if err != nil {
+			// FIXME #64: Add option to warn about non-matching files?
+			continue
+		}
+		if !validDBNameRE.MatchString(dbname) {
 			// FIXME #64: Add option to warn about non-matching files?
 			continue
 		}
