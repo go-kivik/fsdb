@@ -97,6 +97,12 @@ func TestClientdbPath(t *testing.T) {
 		status: http.StatusBadRequest,
 		err:    `Name: 'bar.baz'. Only lowercase characters (a-z), digits (0-9), and any of the characters _, $, (, ), +, -, and / are allowed. Must begin with a letter.`,
 	})
+	tests.Add("dot", tt{
+		root:   "",
+		dbname: ".",
+		path:   ".",
+		name:   ".",
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		c := &client{root: tt.root}
