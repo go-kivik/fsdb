@@ -1,5 +1,6 @@
 {
     ".foo/1-0d696002c4b5b08c525de1235479d839/foo.txt": {
+        "size": 17,
         "content": "some test content"
     }
 }
