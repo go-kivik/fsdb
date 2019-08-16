@@ -17,6 +17,7 @@ type Filesystem interface {
 	TempFile(dir, pattern string) (File, error)
 	Rename(oldpath, newpath string) error
 	Remove(name string) error
+	Link(oldname, newname string) error
 }
 
 type defaultFS struct{}
@@ -53,6 +54,10 @@ func (fs *defaultFS) Rename(oldpath, newpath string) error {
 
 func (fs *defaultFS) Remove(name string) error {
 	return os.Remove(name)
+}
+
+func (fs *defaultFS) Link(oldname, newname string) error {
+	return os.Link(oldname, newname)
 }
 
 // File represents a file object.

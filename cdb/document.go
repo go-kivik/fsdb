@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/kivik"
 	"golang.org/x/xerrors"
 )
@@ -82,7 +83,7 @@ func (d *Document) Compact(ctx context.Context) error {
 		revID := rev.Rev.String()
 		if leafIDs, ok := index[revID]; ok {
 			for _, leafID := range leafIDs {
-				if err := copyAttachments(revTree[leafID], rev); err != nil {
+				if err := copyAttachments(d.cdb.fs, revTree[leafID], rev); err != nil {
 					return err
 				}
 			}
@@ -101,7 +102,7 @@ func (d *Document) Compact(ctx context.Context) error {
 	return nil
 }
 
-func copyAttachments(leaf, old *Revision) error {
+func copyAttachments(fs filesystem.Filesystem, leaf, old *Revision) error {
 	leafpath := strings.TrimSuffix(leaf.path, filepath.Ext(leaf.path)) + "/"
 	basepath := strings.TrimSuffix(old.path, filepath.Ext(old.path)) + "/"
 	for filename, att := range old.Attachments {
@@ -113,11 +114,11 @@ func copyAttachments(leaf, old *Revision) error {
 			if err := os.MkdirAll(leafpath, 0777); err != nil {
 				return err
 			}
-			if err := os.Link(att.path, filepath.Join(leafpath, name)); err != nil {
+			if err := fs.Link(att.path, filepath.Join(leafpath, name)); err != nil {
 				lerr := new(os.LinkError)
 				if xerrors.As(err, &lerr) {
 					if strings.HasSuffix(lerr.Error(), ": file exists") {
-						if err := os.Remove(att.path); err != nil {
+						if err := fs.Remove(att.path); err != nil {
 							return err
 						}
 						continue

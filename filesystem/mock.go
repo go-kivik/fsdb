@@ -12,6 +12,7 @@ type MockFS struct {
 	TempFileFunc func(string, string) (File, error)
 	RenameFunc   func(string, string) error
 	RemoveFunc   func(string) error
+	LinkFunc     func(string, string) error
 }
 
 var _ Filesystem = &MockFS{}
@@ -54,4 +55,9 @@ func (fs *MockFS) Rename(oldpath, newpath string) error {
 // Remove calls fs.RemoveFunc
 func (fs *MockFS) Remove(name string) error {
 	return fs.RemoveFunc(name)
+}
+
+// Link calls fs.LinkFunc
+func (fs *MockFS) Link(oldname, newname string) error {
+	return fs.LinkFunc(oldname, newname)
 }
