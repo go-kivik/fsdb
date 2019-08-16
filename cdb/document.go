@@ -198,14 +198,14 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 
 	revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), rev.Rev.String())
 	var dirMade bool
-	for attname, att := range rev.Attachments {
+	for filename, att := range rev.Attachments {
 		att.fs = d.cdb.fs
 		if err := ctx.Err(); err != nil {
 			return "", err
 		}
 		var oldatt *Attachment
 		if oldrev != nil {
-			oldatt = oldrev.Attachments[attname]
+			oldatt = oldrev.Attachments[filename]
 		}
 		if !att.Stub {
 			revpos := rev.Rev.Seq
@@ -216,7 +216,7 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 				}
 				dirMade = true
 			}
-			if err := att.persist(revpath, attname); err != nil {
+			if err := att.persist(revpath, filename); err != nil {
 				return "", err
 			}
 			if oldatt != nil && oldatt.Digest == att.Digest {
@@ -229,7 +229,6 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 			}
 			continue
 		}
-		filename := EscapeID(attname)
 		if oldrev == nil {
 			// Can't upload stubs if there's no previous revision
 			return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", filename), Err: err}
@@ -306,7 +305,7 @@ func (d *Document) persist(ctx context.Context) error {
 					// This attachment is part of another rev, so skip it
 					continue
 				}
-				newpath := filepath.Join(revpath, EscapeID(attname))
+				newpath := filepath.Join(revpath, attname)
 				if err := d.cdb.fs.Rename(att.path, newpath); err != nil {
 					return err
 				}
@@ -342,7 +341,7 @@ func (d *Document) persist(ctx context.Context) error {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		newpath := filepath.Join(winningPath, EscapeID(attname))
+		newpath := filepath.Join(winningPath, attname)
 		if err := d.cdb.fs.Rename(att.path, newpath); err != nil {
 			return err
 		}

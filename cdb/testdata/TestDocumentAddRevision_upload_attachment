@@ -18,7 +18,7 @@
             Content: ([]uint8) <nil>,
             Size: (int64) 17,
             Digest: (string) (len=28) "md5-2eNn4v/9o9ZdZp3E8/d4Cw==",
-            path: (string) (len=107) "<tmpdir>/.foo/1-1472ad25836971f236294ad7b19d9f65/%21foo.txt",
+            path: (string) (len=105) "<tmpdir>/.foo/1-1472ad25836971f236294ad7b19d9f65/!foo.txt",
             fs: (*filesystem.defaultFS)({
             }),
             outputStub: (bool) true
