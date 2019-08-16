@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/kivik"
 	"golang.org/x/xerrors"
 )
@@ -82,7 +83,7 @@ func (d *Document) Compact(ctx context.Context) error {
 		revID := rev.Rev.String()
 		if leafIDs, ok := index[revID]; ok {
 			for _, leafID := range leafIDs {
-				if err := copyAttachments(revTree[leafID], rev); err != nil {
+				if err := copyAttachments(d.cdb.fs, revTree[leafID], rev); err != nil {
 					return err
 				}
 			}
@@ -101,7 +102,7 @@ func (d *Document) Compact(ctx context.Context) error {
 	return nil
 }
 
-func copyAttachments(leaf, old *Revision) error {
+func copyAttachments(fs filesystem.Filesystem, leaf, old *Revision) error {
 	leafpath := strings.TrimSuffix(leaf.path, filepath.Ext(leaf.path)) + "/"
 	basepath := strings.TrimSuffix(old.path, filepath.Ext(old.path)) + "/"
 	for filename, att := range old.Attachments {
@@ -113,11 +114,11 @@ func copyAttachments(leaf, old *Revision) error {
 			if err := os.MkdirAll(leafpath, 0777); err != nil {
 				return err
 			}
-			if err := os.Link(att.path, filepath.Join(leafpath, name)); err != nil {
+			if err := fs.Link(att.path, filepath.Join(leafpath, name)); err != nil {
 				lerr := new(os.LinkError)
 				if xerrors.As(err, &lerr) {
 					if strings.HasSuffix(lerr.Error(), ": file exists") {
-						if err := os.Remove(att.path); err != nil {
+						if err := fs.Remove(att.path); err != nil {
 							return err
 						}
 						continue
@@ -301,7 +302,7 @@ func (d *Document) persist(ctx context.Context) error {
 			}
 			// First move attachments, since they can exit both places legally.
 			for attname, att := range rev.Attachments {
-				if !strings.HasPrefix(att.path, rev.path) {
+				if !strings.HasPrefix(att.path, rev.path+"/") {
 					// This attachment is part of another rev, so skip it
 					continue
 				}
@@ -311,10 +312,14 @@ func (d *Document) persist(ctx context.Context) error {
 				}
 				att.path = newpath
 			}
+			// Try to remove the attachments dir, but don't worry if we fail.
+			_ = d.cdb.fs.Remove(rev.path + "/")
 			// Then make the move final by moving the json doc
 			if err := d.cdb.fs.Rename(rev.path, revpath+filepath.Ext(rev.path)); err != nil {
 				return err
 			}
+			// And remove the old rev path, if it's empty
+			_ = d.cdb.fs.Remove(filepath.Dir(rev.path))
 			break
 		}
 	}
@@ -323,11 +328,12 @@ func (d *Document) persist(ctx context.Context) error {
 	if err := d.cdb.fs.Rename(winningRev.path, winningPath+filepath.Ext(winningRev.path)); err != nil {
 		return err
 	}
+	winningRev.path = winningPath + filepath.Ext(winningRev.path)
+
 	if err := d.cdb.fs.Mkdir(winningPath, 0777); err != nil && !os.IsExist(err) {
 		return err
 	}
-	revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), winningRev.Rev.String())
-	// First move attachments, since they can exit both places legally.
+	revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), winningRev.Rev.String()) + "/"
 	for attname, att := range winningRev.Attachments {
 		if !strings.HasPrefix(att.path, revpath) {
 			// This attachment is part of another rev, so skip it
@@ -342,7 +348,9 @@ func (d *Document) persist(ctx context.Context) error {
 		}
 		att.path = newpath
 	}
-	winningRev.path = winningPath + filepath.Ext(winningRev.path)
+	// And remove the old rev path, if it's empty
+	_ = d.cdb.fs.Remove(filepath.Dir(revpath))
+	_ = d.cdb.fs.Remove(filepath.Dir(filepath.Dir(revpath)))
 
 	return nil
 }
