@@ -295,7 +295,7 @@ func TestDocumentAddRevision(t *testing.T) {
 				"ids":   []string{"yyy", "xxx"},
 			},
 			"_attachments": map[string]interface{}{
-				"foo.txt": map[string]interface{}{
+				"!foo.txt": map[string]interface{}{
 					"content_type": "text/plain",
 					"data":         []byte("some test content"),
 				},
@@ -309,7 +309,7 @@ func TestDocumentAddRevision(t *testing.T) {
 			path:     tmpdir,
 			doc:      doc,
 			rev:      rev,
-			expected: "1-0d696002c4b5b08c525de1235479d839",
+			expected: "1-1472ad25836971f236294ad7b19d9f65",
 		}
 	})
 	tests.Add("re-upload identical attachment", func(t *testing.T) interface{} {

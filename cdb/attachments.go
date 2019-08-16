@@ -113,7 +113,7 @@ func (a *Attachment) setMetadata() {
 }
 
 func (a *Attachment) persist(path, attname string) error {
-	target := filepath.Join(path, EscapeID(attname))
+	target := filepath.Join(path, attname)
 	if err := atomicWriteFile(a.fs, target, bytes.NewReader(a.Content)); err != nil {
 		return err
 	}
