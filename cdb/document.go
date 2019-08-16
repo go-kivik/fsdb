@@ -302,7 +302,7 @@ func (d *Document) persist(ctx context.Context) error {
 			}
 			// First move attachments, since they can exit both places legally.
 			for attname, att := range rev.Attachments {
-				if !strings.HasPrefix(att.path, rev.path) {
+				if !strings.HasPrefix(att.path, rev.path+"/") {
 					// This attachment is part of another rev, so skip it
 					continue
 				}
@@ -312,10 +312,14 @@ func (d *Document) persist(ctx context.Context) error {
 				}
 				att.path = newpath
 			}
+			// Try to remove the attachments dir, but don't worry if we fail.
+			_ = d.cdb.fs.Remove(rev.path + "/")
 			// Then make the move final by moving the json doc
 			if err := d.cdb.fs.Rename(rev.path, revpath+filepath.Ext(rev.path)); err != nil {
 				return err
 			}
+			// And remove the old rev path, if it's empty
+			_ = d.cdb.fs.Remove(filepath.Dir(rev.path))
 			break
 		}
 	}
@@ -324,11 +328,12 @@ func (d *Document) persist(ctx context.Context) error {
 	if err := d.cdb.fs.Rename(winningRev.path, winningPath+filepath.Ext(winningRev.path)); err != nil {
 		return err
 	}
+	winningRev.path = winningPath + filepath.Ext(winningRev.path)
+
 	if err := d.cdb.fs.Mkdir(winningPath, 0777); err != nil && !os.IsExist(err) {
 		return err
 	}
-	revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), winningRev.Rev.String())
-	// First move attachments, since they can exit both places legally.
+	revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), winningRev.Rev.String()) + "/"
 	for attname, att := range winningRev.Attachments {
 		if !strings.HasPrefix(att.path, revpath) {
 			// This attachment is part of another rev, so skip it
@@ -343,7 +348,9 @@ func (d *Document) persist(ctx context.Context) error {
 		}
 		att.path = newpath
 	}
-	winningRev.path = winningPath + filepath.Ext(winningRev.path)
+	// And remove the old rev path, if it's empty
+	_ = d.cdb.fs.Remove(filepath.Dir(revpath))
+	_ = d.cdb.fs.Remove(filepath.Dir(filepath.Dir(revpath)))
 
 	return nil
 }
