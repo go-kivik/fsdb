@@ -371,6 +371,15 @@ func TestGet(t *testing.T) {
 			Rev:           "2-yyy",
 		},
 	})
+	tests.Add("non-standard filenames", tt{
+		path:   "testdata",
+		dbname: "db_nonascii",
+		id:     "note-i_ɪ",
+		expected: &driver.Document{
+			ContentLength: 1718,
+			Rev:           "1-",
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		dir := tt.path
