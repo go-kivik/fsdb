@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io"
-	"net/url"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/go-kivik/fsdb/filesystem"
@@ -26,24 +26,32 @@ var reservedKeys = map[string]struct{}{
 }
 
 // EscapeID escapes a document or database ID to be a safe filename.
-func EscapeID(id string) string {
-	if id == "" {
-		return id
+func EscapeID(s string) string {
+	if s == "" {
+		return s
 	}
-	id = url.PathEscape(id)
-	if id[0] == '.' {
-		return "%2E" + id[1:]
+	if strings.Contains(s, "/") || strings.Contains(s, "%2F") || strings.Contains(s, "%2f") {
+		s = strings.Replace(s, "%", "%25", -1)
+		s = strings.Replace(s, "/", "%2F", -1)
 	}
-	return id
+	return s
 }
 
 // UnescapeID unescapes a filename into a document or database ID.
-func UnescapeID(filename string) (string, error) {
-	return url.PathUnescape(filename)
+func UnescapeID(s string) string {
+	if s == "" {
+		return s
+	}
+	if strings.Contains(s, "%2F") || strings.Contains(s, "%2f") || strings.Contains(s, "%25") {
+		s = strings.Replace(s, "%2F", "/", -1)
+		s = strings.Replace(s, "%2f", "/", -1)
+		s = strings.Replace(s, "%25", "%", -1)
+	}
+	return s
 }
 
-// copyDigest works the same as io.Copy, but also returns the md5sum digest of
-// the copied file.
+// copyDigest works the same as io.Copy, but also returns the md5sum
+// digest of the copied file.
 func copyDigest(tgt io.Writer, dst io.Reader) (int64, string, error) {
 	h := md5.New()
 	tee := io.TeeReader(dst, h)

@@ -1,6 +1,7 @@
 package cdb
 
 import (
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -81,7 +82,7 @@ func (r *Revision) restoreAttachments() error {
 		if att.Size == 0 || att.Digest == "" {
 			f, err := r.openAttachment(attname)
 			if err != nil {
-				return err
+				return &kivik.Error{HTTPStatus: http.StatusInternalServerError, Err: err}
 			}
 			att.Size, att.Digest = digest(f)
 			_ = f.Close()

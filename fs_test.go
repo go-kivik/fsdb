@@ -29,6 +29,7 @@ func TestAllDBs(t *testing.T) {
 			"db_att",
 			"db_bar",
 			"db_foo",
+			"db_nonascii",
 			"db_put",
 			"get_nowinner",
 			"get_split_atts",
