@@ -39,5 +39,18 @@ This driver supports three types of connection strings to the New() method:
    two formats, with the final path element being the database name. Some
    client-level methods, such as AllDBs(), are unavailable, when using an empty
    connection string.
+
+Handling of Filenames
+
+CouchDB allows databases and document IDs to contain a slash (/)
+character. This is not permitted in most operating systems/filenames, to
+be stored directly on the filesystem this way. Therefore, it is necessary
+for this package to escape certain characters in filenames. This is done
+as conservatively as possible. The escaping rules are:
+
+ - It contains a slash (i.e. '_design/index'), or a URL-encoded slash
+   (i.e. '%2F' or '%2f')
+ - When escaping a literal slash (/) or a literal percent sign (%), are
+   escaped using standard URL escaping. No other characters are escaped.
 */
 package fs
