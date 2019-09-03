@@ -100,3 +100,36 @@ func TestFSOpenDocID(t *testing.T) {
 		}
 	})
 }
+
+func TestRestoreAttachments(t *testing.T) {
+	type tt struct {
+		r      *Revision
+		status int
+		err    string
+	}
+	tests := testy.NewTable()
+	tests.Add("missing attachment", tt{
+		r: &Revision{
+			options: kivik.Options{
+				"attachments": true,
+			},
+			RevMeta: RevMeta{
+				fs:         filesystem.Default(),
+				RevHistory: &RevHistory{},
+				Attachments: map[string]*Attachment{
+					"notfound.txt": {
+						fs:   filesystem.Default(),
+						path: "/somewhere/notfound.txt",
+					},
+				},
+			},
+		},
+		status: http.StatusInternalServerError,
+		err:    "attachment 'notfound.txt': missing",
+	})
+
+	tests.Run(t, func(t *testing.T, tt tt) {
+		err := tt.r.restoreAttachments()
+		testy.StatusError(t, tt.err, tt.status, err)
+	})
+}
