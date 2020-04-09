@@ -84,7 +84,7 @@ func TestClientdbPath(t *testing.T) {
 		root:   "",
 		dbname: "file:///%xxx",
 		status: http.StatusBadRequest,
-		err:    `parse file:///%xxx: invalid URL escape "%xx"`,
+		err:    `parse "file:///%xxx": invalid URL escape "%xx"`,
 	})
 	tests.Add("file:// url for db", tt{
 		root:   "",

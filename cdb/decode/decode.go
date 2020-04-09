@@ -1,6 +1,7 @@
 package decode
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -8,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/go-kivik/fsdb/filesystem"
-	"golang.org/x/xerrors"
 )
 
 type decoder interface {
@@ -47,7 +47,7 @@ func Decode(r io.Reader, ext string, i interface{}) error {
 	ext = strings.TrimPrefix(ext, ".")
 	dec, ok := decoders[ext]
 	if !ok {
-		return xerrors.Errorf("No decoder for %s", ext)
+		return fmt.Errorf("No decoder for %s", ext)
 	}
 	return dec.Decode(r, i)
 }

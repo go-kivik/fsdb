@@ -37,20 +37,13 @@ coverage:
         - dep ensure
         - ./script/coverage.sh
 
-go-1.10:
+go-1.13:
     <<: *test_template
-    stage: test
-    image: golang:1.10
+    image: golang:1.13
 
-go-1.11:
+go-1.14:
     <<: *test_template
-    stage: test
-    image: golang:1.11
-
-go-1.12:
-    <<: *test_template
-    stage: test
-    image: golang:1.12
+    image: golang:1.14
 
 go-rc:
     <<: *test_template

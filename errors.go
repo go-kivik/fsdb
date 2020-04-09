@@ -1,12 +1,12 @@
 package fs
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/go-kivik/kivik"
-	"golang.org/x/xerrors"
 )
 
 func illegalDBName(dbname string) error {
@@ -18,7 +18,7 @@ func kerr(err error) error {
 	if err == nil {
 		return nil
 	}
-	if xerrors.Is(err, &kivik.Error{}) {
+	if errors.Is(err, &kivik.Error{}) {
 		// Error has already been converted
 		return err
 	}
