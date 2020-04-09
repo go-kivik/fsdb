@@ -7,8 +7,8 @@ import (
 	"io"
 	"path/filepath"
 
-	"github.com/go-kivik/fsdb/filesystem"
-	"github.com/go-kivik/kivik/driver"
+	"github.com/go-kivik/fsdb/v3/filesystem"
+	"github.com/go-kivik/kivik/v3/driver"
 )
 
 /*

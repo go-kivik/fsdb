@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/go-kivik/fsdb/filesystem"
-	"github.com/go-kivik/kivik"
+	"github.com/go-kivik/fsdb/v3/filesystem"
+	"github.com/go-kivik/kivik/v3"
 	"gitlab.com/flimzy/testy"
 )
 

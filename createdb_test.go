@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/go-kivik/fsdb/filesystem"
-	"github.com/go-kivik/kivik/driver"
+	"github.com/go-kivik/fsdb/v3/filesystem"
+	"github.com/go-kivik/kivik/v3/driver"
 	"gitlab.com/flimzy/testy"
 )
 
