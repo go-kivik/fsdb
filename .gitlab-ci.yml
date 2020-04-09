@@ -16,7 +16,7 @@ variables:
 
 lint:
     stage: test
-    image: golang:1.12
+    image: golang:1.14
     script:
         - mkdir -p /go/src
         - ln -s /builds /go/src/github.com
@@ -28,7 +28,7 @@ lint:
 
 coverage:
     stage: test
-    image: golang:1.12
+    image: golang:1.14
     script:
         - mkdir -p /go/src
         - ln -s /builds /go/src/github.com
@@ -37,23 +37,23 @@ coverage:
         - dep ensure
         - ./script/coverage.sh
 
-go-1.10:
-    <<: *test_template
-    stage: test
-    image: golang:1.10
-
 go-1.11:
     <<: *test_template
-    stage: test
     image: golang:1.11
 
 go-1.12:
     <<: *test_template
-    stage: test
     image: golang:1.12
+
+go-1.13:
+    <<: *test_template
+    image: golang:1.13
+
+go-1.14:
+    <<: *test_template
+    image: golang:1.14
 
 go-rc:
     <<: *test_template
-    stage: test
     image: golang:rc
     allow_failure: true
