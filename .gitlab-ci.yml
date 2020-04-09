@@ -11,12 +11,12 @@ variables:
         - go mod download
         - go test -race -tags=livetest ./...
 
+
 lint:
     stage: test
-    image: golang:1.14
+    image: golangci/golangci-lint:v1.24
     script:
         - go mod download
-        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.17.1
         - golangci-lint run ./...
 
 coverage:
