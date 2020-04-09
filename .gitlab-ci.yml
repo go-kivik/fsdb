@@ -3,39 +3,36 @@ stages:
 
 variables:
     SRCDIR: /go/src/github.com/go-kivik/fsdb
+    GO111MODULE: "on"
 
 .test: &test_template
     stage: test
     script:
-        - mkdir -p /go/src
-        - ln -s /builds /go/src/github.com
-        - cd ${SRCDIR}
-        - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-        - dep ensure
+        - go mod download
         - go test -race -tags=livetest ./...
 
 lint:
     stage: test
-    image: golang:1.12
+    image: golang:1.14
     script:
-        - mkdir -p /go/src
-        - ln -s /builds /go/src/github.com
-        - cd ${SRCDIR}
-        - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-        - dep ensure
+        - go mod download
         - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.17.1
         - golangci-lint run ./...
 
 coverage:
     stage: test
-    image: golang:1.12
+    image: golang:1.14
     script:
-        - mkdir -p /go/src
-        - ln -s /builds /go/src/github.com
-        - cd ${SRCDIR}
-        - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-        - dep ensure
+        - go mod download
         - ./script/coverage.sh
+
+go-1.13:
+    <<: *test_template
+    image: golang:1.13
+
+go-1.14:
+    <<: *test_template
+    image: golang:1.14
 
 go-1.13:
     <<: *test_template
@@ -47,6 +44,5 @@ go-1.14:
 
 go-rc:
     <<: *test_template
-    stage: test
     image: golang:rc
     allow_failure: true
