@@ -72,7 +72,7 @@ func TestClientdbPath(t *testing.T) {
 		root:   "foo",
 		dbname: "/bar",
 		status: http.StatusBadRequest,
-		err:    "Name: '/bar'. Only lowercase characters (a-z), digits (0-9), and any of the characters _, $, (, ), +, -, and / are allowed. Must begin with a letter.",
+		err:    `^Name: '/bar'. Only lowercase characters`,
 	})
 	tests.Add("only db path", tt{
 		root:   "",
@@ -84,7 +84,7 @@ func TestClientdbPath(t *testing.T) {
 		root:   "",
 		dbname: "file:///%xxx",
 		status: http.StatusBadRequest,
-		err:    `parse "file:///%xxx": invalid URL escape "%xx"`,
+		err:    `parse "?file:///%xxx"?: invalid URL escape "%xx"`,
 	})
 	tests.Add("file:// url for db", tt{
 		root:   "",
@@ -96,7 +96,7 @@ func TestClientdbPath(t *testing.T) {
 		root:   "",
 		dbname: "file:///foo/bar.baz",
 		status: http.StatusBadRequest,
-		err:    `Name: 'bar.baz'. Only lowercase characters (a-z), digits (0-9), and any of the characters _, $, (, ), +, -, and / are allowed. Must begin with a letter.`,
+		err:    `^Name: 'bar.baz'. Only lowercase characters`,
 	})
 	tests.Add("dot", tt{
 		root:   "",
@@ -108,7 +108,7 @@ func TestClientdbPath(t *testing.T) {
 	tests.Run(t, func(t *testing.T, tt tt) {
 		c := &client{root: tt.root}
 		path, name, err := c.dbPath(tt.dbname)
-		testy.StatusError(t, tt.err, tt.status, err)
+		testy.StatusErrorRE(t, tt.err, tt.status, err)
 		if path != tt.path {
 			t.Errorf("Unexpected path: %s", path)
 		}
