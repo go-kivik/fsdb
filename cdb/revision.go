@@ -14,7 +14,6 @@ import (
 	"github.com/go-kivik/fsdb/filesystem"
 	"github.com/go-kivik/kivik"
 	"github.com/icza/dyno"
-	"golang.org/x/xerrors"
 )
 
 // RevMeta is the metadata stored in reach revision.
@@ -161,7 +160,7 @@ func (r *Revision) openAttachment(filename string) (filesystem.File, error) {
 			return f, err
 		}
 	}
-	return nil, xerrors.Errorf("attachment '%s': %w", filename, errNotFound)
+	return nil, fmt.Errorf("attachment '%s': %w", filename, errNotFound)
 }
 
 // Revisions is a sortable list of document revisions.
