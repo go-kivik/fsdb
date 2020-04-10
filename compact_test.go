@@ -10,8 +10,8 @@ import (
 
 	"gitlab.com/flimzy/testy"
 
-	"github.com/go-kivik/fsdb/filesystem"
-	"github.com/go-kivik/kivik"
+	"github.com/go-kivik/fsdb/v4/filesystem"
+	"github.com/go-kivik/kivik/v4"
 )
 
 func TestCompact(t *testing.T) {

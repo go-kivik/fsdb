@@ -12,10 +12,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/go-kivik/fsdb/cdb"
-	"github.com/go-kivik/fsdb/filesystem"
-	"github.com/go-kivik/kivik"
-	"github.com/go-kivik/kivik/driver"
+	"github.com/go-kivik/fsdb/v4/cdb"
+	"github.com/go-kivik/fsdb/v4/filesystem"
+	"github.com/go-kivik/kivik/v4"
+	"github.com/go-kivik/kivik/v4/driver"
 )
 
 const dirMode = os.FileMode(0700)

@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/go-kivik/fsdb/filesystem"
+	"github.com/go-kivik/fsdb/v4/filesystem"
 )
 
 type decoder interface {
