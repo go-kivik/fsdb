@@ -2,7 +2,6 @@ stages:
     - test
 
 variables:
-    SRCDIR: /go/src/github.com/go-kivik/fsdb
     GO111MODULE: "on"
 
 .test: &test_template
