@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/go-kivik/kivik"
+	"github.com/go-kivik/kivik/v4"
 )
 
 var (

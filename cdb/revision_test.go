@@ -3,7 +3,7 @@ package cdb
 import (
 	"testing"
 
-	"github.com/go-kivik/kivik"
+	"github.com/go-kivik/kivik/v4"
 	"gitlab.com/flimzy/testy"
 )
 

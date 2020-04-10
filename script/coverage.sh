@@ -1,6 +1,6 @@
 #!/bin/bash -euC
 
-pkgname=${SRCDIR#/go/src}
+pkgname=github.com/${CI_PROJECT_PATH}
 
 # Find all packages that depend on this package. We can pass this to -coverpkg
 # so that lines in these packages are counted as well.

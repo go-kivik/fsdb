@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/go-kivik/fsdb/cdb"
-	"github.com/go-kivik/fsdb/filesystem"
-	"github.com/go-kivik/kivik/driver"
-	"github.com/go-kivik/kivik/errors"
+	"github.com/go-kivik/fsdb/v4/cdb"
+	"github.com/go-kivik/fsdb/v4/filesystem"
+	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/go-kivik/kivik/v4/errors"
 )
 
 type db struct {

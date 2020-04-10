@@ -2,13 +2,13 @@
 
 # Kivik FSDB
 
-File system driver for [Kivik](https://github.com/go-kivik/fsdb).
+File system driver for [Kivik](https://github.com/go-kivik/fsdb) v4.
 
 This driver stores documents on a plain filesystem.
 
 # Status
 
-This is very much a work in progress; almost nothing is implemented yet.
+This is very much a work in progress. Things are expected to change quickly.
 
 ## Usage
 
@@ -25,8 +25,8 @@ package main
 import (
     "context"
 
-    "github.com/go-kivik/kivik"
-    _ "github.com/go-kivik/fsdb" // The File system driver
+    "github.com/go-kivik/kivik/v4"
+    _ "github.com/go-kivik/fsdb/v4" // The File system driver
 )
 
 func main() {

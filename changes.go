@@ -13,8 +13,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-kivik/fsdb/cdb/decode"
-	"github.com/go-kivik/kivik/driver"
+	"github.com/go-kivik/fsdb/v4/cdb/decode"
+	"github.com/go-kivik/kivik/v4/driver"
 )
 
 type changes struct {
