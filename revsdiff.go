@@ -8,8 +8,8 @@ import (
 
 	"gitlab.com/flimzy/ale/httperr"
 
-	"github.com/go-kivik/kivik"
-	"github.com/go-kivik/kivik/driver"
+	"github.com/go-kivik/kivik/v3"
+	"github.com/go-kivik/kivik/v3/driver"
 )
 
 var _ driver.RevsDiffer = &db{}

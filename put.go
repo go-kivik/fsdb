@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-kivik/fsdb/cdb"
-	"github.com/go-kivik/fsdb/cdb/decode"
-	"github.com/go-kivik/kivik"
+	"github.com/go-kivik/fsdb/v3/cdb"
+	"github.com/go-kivik/fsdb/v3/cdb/decode"
+	"github.com/go-kivik/kivik/v3"
 )
 
 func filename2id(filename string) (string, error) {

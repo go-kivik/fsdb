@@ -11,8 +11,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/go-kivik/fsdb/filesystem"
-	"github.com/go-kivik/kivik"
+	"github.com/go-kivik/fsdb/v3/filesystem"
+	"github.com/go-kivik/kivik/v3"
 	"github.com/icza/dyno"
 )
 

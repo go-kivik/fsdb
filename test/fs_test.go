@@ -7,10 +7,10 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/go-kivik/fsdb"
-	"github.com/go-kivik/kivik"
-	"github.com/go-kivik/kiviktest"
-	"github.com/go-kivik/kiviktest/kt"
+	_ "github.com/go-kivik/fsdb/v3"
+	"github.com/go-kivik/kivik/v3"
+	"github.com/go-kivik/kiviktest/v3"
+	"github.com/go-kivik/kiviktest/v3/kt"
 )
 
 func init() {

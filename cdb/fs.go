@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/go-kivik/fsdb/cdb/decode"
-	"github.com/go-kivik/fsdb/filesystem"
-	"github.com/go-kivik/kivik"
+	"github.com/go-kivik/fsdb/v3/cdb/decode"
+	"github.com/go-kivik/fsdb/v3/filesystem"
+	"github.com/go-kivik/kivik/v3"
 )
 
 // FS provides filesystem access to a
