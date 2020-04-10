@@ -14,8 +14,8 @@ directory on the local filesystem. Access control is managed by your filesystem
 permissions.
 
     import (
-        "github.com/go-kivik/kivik"
-        _ "github.com/go-kivik/fsdb" // The Filesystem driver
+        "github.com/go-kivik/kivik/v3"
+        _ "github.com/go-kivik/fsdb/v3" // The Filesystem driver
     )
 
     client, err := kivik.New("fs", "/home/user/some/path")
