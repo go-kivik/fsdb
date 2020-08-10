@@ -1,3 +1,15 @@
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not
+// use this file except in compliance with the License. You may obtain a copy of
+// the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations under
+// the License.
+
 package cdb
 
 import (
@@ -111,7 +123,7 @@ func copyAttachments(fs filesystem.Filesystem, leaf, old *Revision) error {
 		}
 		if strings.HasPrefix(att.path, basepath) {
 			name := filepath.Base(att.path)
-			if err := os.MkdirAll(leafpath, 0777); err != nil {
+			if err := os.MkdirAll(leafpath, 0o777); err != nil {
 				return err
 			}
 			if err := fs.Link(att.path, filepath.Join(leafpath, name)); err != nil {
@@ -211,7 +223,7 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 			revpos := rev.Rev.Seq
 			att.RevPos = &revpos
 			if !dirMade {
-				if err := d.cdb.fs.MkdirAll(revpath, 0777); err != nil && !os.IsExist(err) {
+				if err := d.cdb.fs.MkdirAll(revpath, 0o777); err != nil && !os.IsExist(err) {
 					return "", err
 				}
 				dirMade = true
@@ -296,7 +308,7 @@ func (d *Document) persist(ctx context.Context) error {
 			}
 			// We need to move this rev
 			revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), rev.Rev.String())
-			if err := d.cdb.fs.Mkdir(revpath, 0777); err != nil && !os.IsExist(err) {
+			if err := d.cdb.fs.Mkdir(revpath, 0o777); err != nil && !os.IsExist(err) {
 				return err
 			}
 			// First move attachments, since they can exit both places legally.
@@ -329,7 +341,7 @@ func (d *Document) persist(ctx context.Context) error {
 	}
 	winningRev.path = winningPath + filepath.Ext(winningRev.path)
 
-	if err := d.cdb.fs.Mkdir(winningPath, 0777); err != nil && !os.IsExist(err) {
+	if err := d.cdb.fs.Mkdir(winningPath, 0o777); err != nil && !os.IsExist(err) {
 		return err
 	}
 	revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), winningRev.Rev.String()) + "/"
