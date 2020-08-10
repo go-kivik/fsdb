@@ -1,3 +1,15 @@
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not
+// use this file except in compliance with the License. You may obtain a copy of
+// the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations under
+// the License.
+
 package fs
 
 import (
@@ -43,7 +55,7 @@ func TestPut(t *testing.T) {
 	tests.Add("create with revid", func(t *testing.T) interface{} {
 		tmpdir := tempDir(t)
 		tests.Cleanup(cleanTmpdir(tmpdir))
-		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
+		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0o777); err != nil {
 			t.Fatal(err)
 		}
 
@@ -59,7 +71,7 @@ func TestPut(t *testing.T) {
 	tests.Add("simple create", func(t *testing.T) interface{} {
 		tmpdir := tempDir(t)
 		tests.Cleanup(cleanTmpdir(tmpdir))
-		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
+		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0o777); err != nil {
 			t.Fatal(err)
 		}
 
@@ -135,7 +147,7 @@ func TestPut(t *testing.T) {
 	tests.Add("design doc", func(t *testing.T) interface{} {
 		tmpdir := tempDir(t)
 		tests.Cleanup(cleanTmpdir(tmpdir))
-		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
+		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0o777); err != nil {
 			t.Fatal(err)
 		}
 
@@ -169,7 +181,7 @@ func TestPut(t *testing.T) {
 	tests.Add("attachment", func(t *testing.T) interface{} {
 		tmpdir := tempDir(t)
 		tests.Cleanup(cleanTmpdir(tmpdir))
-		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
+		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0o777); err != nil {
 			t.Fatal(err)
 		}
 
@@ -192,7 +204,7 @@ func TestPut(t *testing.T) {
 	tests.Add("new_edits=false, no rev", func(t *testing.T) interface{} {
 		tmpdir := tempDir(t)
 		tests.Cleanup(cleanTmpdir(tmpdir))
-		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0777); err != nil {
+		if err := os.Mkdir(filepath.Join(tmpdir, "foo"), 0o777); err != nil {
 			t.Fatal(err)
 		}
 
