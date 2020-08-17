@@ -63,7 +63,7 @@ func (c *changes) Next(ch *driver.Change) error {
 				if ignoreDocID(docid) {
 					continue
 				}
-				rev, err := c.db.currentRev(candidate.Name(), ext)
+				rev, deleted, err := c.db.metadata(candidate.Name(), ext)
 				if err != nil {
 					return err
 				}
@@ -71,6 +71,7 @@ func (c *changes) Next(ch *driver.Change) error {
 					rev = "1-"
 				}
 				ch.ID = docid
+				ch.Deleted = deleted
 				ch.Changes = []string{rev}
 				return nil
 			}
