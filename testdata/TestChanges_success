@@ -26,6 +26,15 @@
         ],
         "doc": null
     },
+    "deleted": {
+        "id": "deleted",
+        "seq": "",
+        "deleted": true,
+        "changes": [
+            "3-"
+        ],
+        "doc": null
+    },
     "intrev": {
         "id": "intrev",
         "seq": "",

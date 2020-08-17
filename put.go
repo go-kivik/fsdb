@@ -16,21 +16,22 @@ func filename2id(filename string) (string, error) {
 	return url.PathUnescape(filename)
 }
 
-type revDoc struct {
-	Rev cdb.RevID `json:"_rev" yaml:"_rev"`
+type metaDoc struct {
+	Rev     cdb.RevID `json:"_rev" yaml:"_rev"`
+	Deleted bool      `json:"_deleted" yaml:"_deleted"`
 }
 
-func (d *db) currentRev(docID, ext string) (string, error) {
+func (d *db) metadata(docID, ext string) (rev string, deleted bool, err error) {
 	f, err := os.Open(d.path(docID))
 	if err != nil {
 		if os.IsNotExist(err) {
 			err = nil
 		}
-		return "", err
+		return "", false, err
 	}
-	rd := new(revDoc)
-	err = decode.Decode(f, ext, rd)
-	return rd.Rev.String(), err
+	md := new(metaDoc)
+	err = decode.Decode(f, ext, md)
+	return md.Rev.String(), md.Deleted, err
 }
 
 var reservedPrefixes = []string{"_local/", "_design/"}
