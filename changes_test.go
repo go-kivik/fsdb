@@ -29,7 +29,7 @@ func TestChanges(t *testing.T) {
 		changes, err := tt.db.Changes(context.TODO(), tt.options)
 		testy.StatusError(t, tt.err, tt.status, err)
 		defer changes.Close() // nolint: errcheck
-		result := make(map[string][]string)
+		result := make(map[string]driver.Change)
 		ch := &driver.Change{}
 		for {
 			if err := changes.Next(ch); err != nil {
@@ -38,7 +38,7 @@ func TestChanges(t *testing.T) {
 				}
 				t.Fatal(err)
 			}
-			result[ch.ID] = ch.Changes
+			result[ch.ID] = *ch
 		}
 		if d := testy.DiffAsJSON(testy.Snapshot(t), result); d != nil {
 			t.Error(d)
