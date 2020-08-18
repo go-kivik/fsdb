@@ -156,7 +156,7 @@ func (c *client) DestroyDB(ctx context.Context, dbName string, options map[strin
 	return os.RemoveAll(filepath.Join(c.root, cdb.EscapeID(dbName)))
 }
 
-func (c *client) DB(_ context.Context, dbName string, _ map[string]interface{}) (driver.DB, error) {
+func (c *client) DB(dbName string, _ map[string]interface{}) (driver.DB, error) {
 	return c.newDB(dbName)
 }
 
