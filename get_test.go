@@ -232,7 +232,7 @@ func TestGet(t *testing.T) {
 		id:      "wrongid",
 		options: map[string]interface{}{"revs": true},
 		expected: &driver.Document{
-			ContentLength: 93,
+			ContentLength: 144,
 			Rev:           "6-",
 		},
 	})
@@ -242,7 +242,7 @@ func TestGet(t *testing.T) {
 		id:      "noattach",
 		options: map[string]interface{}{"revs": true},
 		expected: &driver.Document{
-			ContentLength: 99,
+			ContentLength: 145,
 			Rev:           "1-xxxxxxxxxx",
 		},
 	})
@@ -283,7 +283,7 @@ func TestGet(t *testing.T) {
 		id:      "withrevs",
 		options: map[string]interface{}{"revs": true},
 		expected: &driver.Document{
-			ContentLength: 115,
+			ContentLength: 183,
 			Rev:           "8-asdf",
 		},
 	})
@@ -322,7 +322,7 @@ func TestGet(t *testing.T) {
 			"revs": true,
 		},
 		expected: &driver.Document{
-			ContentLength: 47,
+			ContentLength: 115,
 			Rev:           "8-asdf",
 		},
 	})

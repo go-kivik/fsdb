@@ -31,9 +31,12 @@ import (
 type Document struct {
 	ID        string    `json:"_id" yaml:"_id"`
 	Revisions Revisions `json:"-" yaml:"-"`
-	// RevsInfo is only used during JSON marshaling, and should never be
-	// consulted as authoritative.
+	// RevsInfo is only used during JSON marshaling when revs_info=true, and
+	// should never be consulted as authoritative.
 	RevsInfo []RevInfo `json:"_revs_info,omitempty" yaml:"-"`
+	// RevHistory is only used during JSON marshaling, when revs=true, and
+	// should never be consulted as authoritative.
+	RevHistory *RevHistory `json:"_revisions,omitempty" yaml:"-"`
 
 	Options kivik.Options `json:"-" yaml:"-"`
 
@@ -51,6 +54,7 @@ func (fs *FS) NewDocument(docID string) *Document {
 // MarshalJSON satisfies the json.Marshaler interface.
 func (d *Document) MarshalJSON() ([]byte, error) {
 	d.revsInfo()
+	d.revs()
 	rev := d.Revisions[0]
 	rev.options = d.Options
 	revJSON, err := json.Marshal(rev)
@@ -59,6 +63,18 @@ func (d *Document) MarshalJSON() ([]byte, error) {
 	}
 	docJSON, _ := json.Marshal(*d)
 	return joinJSON(docJSON, revJSON), nil
+}
+
+// revs populates the Rev
+func (d *Document) revs() {
+	d.RevHistory = nil
+	if ok, _ := d.Options["revs"].(bool); !ok {
+		return
+	}
+	if len(d.Revisions) < 1 {
+		return
+	}
+	d.RevHistory = d.Revisions[0].RevHistory
 }
 
 // revsInfo populates the RevsInfo field, if appropriate according to options.
