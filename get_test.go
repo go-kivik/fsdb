@@ -380,6 +380,25 @@ func TestGet(t *testing.T) {
 			Rev:           "1-",
 		},
 	})
+	tests.Add("deleted doc", tt{
+		path:   "testdata",
+		dbname: "db_foo",
+		id:     "deleted",
+		status: http.StatusNotFound,
+		err:    "deleted",
+	})
+	tests.Add("deleted doc, specific rev", tt{
+		path:   "testdata",
+		dbname: "db_foo",
+		id:     "deleted",
+		options: map[string]interface{}{
+			"rev": "3-",
+		},
+		expected: &driver.Document{
+			ContentLength: 46,
+			Rev:           "3-",
+		},
+	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		dir := tt.path

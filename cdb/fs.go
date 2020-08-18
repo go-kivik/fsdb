@@ -91,7 +91,7 @@ func (r *Revision) restoreAttachments() error {
 	return nil
 }
 
-func (fs *FS) openRevs(docID, revid string) ([]*Revision, error) {
+func (fs *FS) openRevs(docID, revid string) (Revisions, error) {
 	revs := make(Revisions, 0, 1)
 	base := EscapeID(docID)
 	rev, err := fs.readMainRev(filepath.Join(fs.root, base))
@@ -146,6 +146,9 @@ func (fs *FS) OpenDocID(docID string, opts kivik.Options) (*Document, error) {
 	revs, err := fs.openRevs(docID, rev)
 	if err != nil {
 		return nil, err
+	}
+	if rev == "" && revs.Deleted() {
+		return nil, &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "deleted"}
 	}
 	doc := &Document{
 		ID:        docID,
