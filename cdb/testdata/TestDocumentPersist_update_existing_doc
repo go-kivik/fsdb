@@ -56,6 +56,7 @@
     })
   },
   RevsInfo: ([]cdb.RevInfo) <nil>,
+  RevHistory: (*cdb.RevHistory)(<nil>),
   Options: (kivik.Options) <nil>,
   cdb: (*cdb.FS)({
     fs: (*filesystem.defaultFS)({
