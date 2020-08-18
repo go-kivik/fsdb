@@ -194,6 +194,15 @@ func (r Revisions) Swap(i, j int) {
 	r[i], r[j] = r[j], r[i]
 }
 
+// Deleted returns true if the winning revision is deleted.
+func (r Revisions) Deleted() bool {
+	if len(r) < 1 {
+		return true
+	}
+	deleted := r[0].Deleted
+	return deleted != nil && *deleted
+}
+
 // Delete deletes the revision.
 func (r *Revision) Delete(ctx context.Context) error {
 	if err := os.Remove(r.path); err != nil {
