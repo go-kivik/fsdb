@@ -46,7 +46,7 @@ func TestCreateDB(t *testing.T) {
 	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
-		client, err := tt.driver.NewClient(tt.path)
+		client, err := tt.driver.NewClient(tt.path, nil)
 		testy.StatusError(t, tt.err, tt.status, err)
 		if d := testy.DiffInterface(tt.want, client); d != nil {
 			t.Error(d)
