@@ -55,7 +55,7 @@ func TestAllDBs(t *testing.T) {
 
 	d := &fsDriver{}
 	tests.Run(t, func(t *testing.T, tt tt) {
-		c, _ := d.NewClient(tt.path)
+		c, _ := d.NewClient(tt.path, nil)
 		result, err := c.AllDBs(context.TODO(), tt.options)
 		testy.StatusError(t, tt.err, tt.status, err)
 		if d := testy.DiffInterface(tt.expected, result); d != nil {

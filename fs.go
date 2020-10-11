@@ -70,7 +70,7 @@ func parseFileURL(dir string) (string, error) {
 	return parsed.Path, nil
 }
 
-func (d *fsDriver) NewClient(dir string) (driver.Client, error) {
+func (d *fsDriver) NewClient(dir string, _ map[string]interface{}) (driver.Client, error) {
 	path, err := parseFileURL(dir)
 	if err != nil {
 		return nil, err
