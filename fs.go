@@ -160,8 +160,7 @@ func (c *client) DB(dbName string, _ map[string]interface{}) (driver.DB, error) 
 	return c.newDB(dbName)
 }
 
-// dbPath returns the full DB path and the dbname, or an error if the dbpath
-// conflicts with the client root path.
+// dbPath returns the full DB path and the dbname.
 func (c *client) dbPath(path string) (string, string, error) {
 	// As a special case, skip validation on this one
 	if c.root == "" && path == "." {
@@ -181,9 +180,6 @@ func (c *client) dbPath(path string) (string, string, error) {
 		}
 	} else {
 		path = filepath.Join(c.root, dbname)
-	}
-	if !validDBNameRE.MatchString(dbname) {
-		return "", "", illegalDBName(dbname)
 	}
 	return path, dbname, nil
 }

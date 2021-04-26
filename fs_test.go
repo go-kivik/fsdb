@@ -80,12 +80,6 @@ func TestClientdbPath(t *testing.T) {
 		path:   "/foo/bar/baz",
 		name:   "baz",
 	})
-	tests.Add("conflicting absolute paths", tt{
-		root:   "foo",
-		dbname: "/bar",
-		status: http.StatusBadRequest,
-		err:    `^Name: '/bar'. Only lowercase characters`,
-	})
 	tests.Add("only db path", tt{
 		root:   "",
 		dbname: "/foo/bar",
@@ -103,12 +97,6 @@ func TestClientdbPath(t *testing.T) {
 		dbname: "file:///foo/bar",
 		path:   "/foo/bar",
 		name:   "bar",
-	})
-	tests.Add("file:// url for db with invalid db name", tt{
-		root:   "",
-		dbname: "file:///foo/bar.baz",
-		status: http.StatusBadRequest,
-		err:    `^Name: 'bar.baz'. Only lowercase characters`,
 	})
 	tests.Add("dot", tt{
 		root:   "",
