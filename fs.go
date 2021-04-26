@@ -191,6 +191,7 @@ func (c *client) newDB(dbname string) (*db, error) {
 	}
 	return &db{
 		client: c,
+		dbPath: path,
 		dbName: name,
 		fs:     c.fs,
 		cdb:    cdb.New(path, c.fs),

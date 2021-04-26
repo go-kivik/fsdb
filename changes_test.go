@@ -33,8 +33,18 @@ func TestChanges(t *testing.T) {
 	tests.Add("success", tt{
 		db: &db{
 			client: &client{root: "testdata"},
+			dbPath: "testdata/db_foo",
 			dbName: "db_foo",
 		},
+	})
+	tests.Add("repl failure", tt{
+		db: &db{
+			client: &client{root: ""},
+			dbPath: "./testdata/source",
+			dbName: "source",
+		},
+		err:    `open testdata/source: no such file or directory`,
+		status: 500,
 	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {

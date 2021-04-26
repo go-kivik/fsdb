@@ -25,9 +25,9 @@ import (
 
 type db struct {
 	*client
-	dbName string
-	fs     filesystem.Filesystem
-	cdb    *cdb.FS
+	dbPath, dbName string
+	fs             filesystem.Filesystem
+	cdb            *cdb.FS
 }
 
 var _ driver.DB = &db{}
@@ -35,7 +35,7 @@ var _ driver.DB = &db{}
 var notYetImplemented = errors.Status(http.StatusNotImplemented, "kivik: not yet implemented in fs driver")
 
 func (d *db) path(parts ...string) string {
-	return filepath.Join(append([]string{d.client.root, d.dbName}, parts...)...)
+	return filepath.Join(append([]string{d.dbPath}, parts...)...)
 }
 
 func (d *db) AllDocs(_ context.Context, _ map[string]interface{}) (driver.Rows, error) {
