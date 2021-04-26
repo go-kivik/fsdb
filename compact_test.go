@@ -17,6 +17,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 
@@ -118,6 +119,7 @@ func TestCompact(t *testing.T) {
 		}
 		db := &db{
 			client: &client{root: tt.path},
+			dbPath: path.Join(tt.path, tt.dbname),
 			dbName: tt.dbname,
 		}
 		err := db.compact(context.Background(), fs)
