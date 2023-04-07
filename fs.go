@@ -16,7 +16,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -103,7 +102,7 @@ func (c *client) AllDBs(ctx context.Context, _ map[string]interface{}) ([]string
 	if c.root == "" {
 		return nil, &kivik.Error{Status: http.StatusBadRequest, Message: "no root path provided"}
 	}
-	files, err := ioutil.ReadDir(c.root)
+	files, err := os.ReadDir(c.root)
 	if err != nil {
 		return nil, err
 	}

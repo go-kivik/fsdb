@@ -13,7 +13,6 @@
 package fs
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,7 +23,7 @@ import (
 
 func tempDir(t *testing.T) string {
 	t.Helper()
-	dir, err := ioutil.TempDir("", "kivik-fsdb-")
+	dir, err := os.MkdirTemp("", "kivik-fsdb-")
 	if err != nil {
 		t.Fatal(err)
 	}

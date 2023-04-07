@@ -16,7 +16,6 @@
 package test
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -31,7 +30,7 @@ func init() {
 }
 
 func TestFS(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", "kivik.test.")
+	tempDir, err := os.MkdirTemp("", "kivik.test.")
 	if err != nil {
 		t.Errorf("Failed to create temp dir to test FS driver: %s\n", err)
 		return
