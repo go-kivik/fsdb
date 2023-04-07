@@ -10,7 +10,6 @@ variables:
         - go mod download
         - go test -race -tags=livetest ./...
 
-
 lint:
     stage: test
     image: golangci/golangci-lint:v1.24
