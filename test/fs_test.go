@@ -10,12 +10,12 @@
 // License for the specific language governing permissions and limitations under
 // the License.
 
+//go:build !js
 // +build !js
 
 package test
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -30,7 +30,7 @@ func init() {
 }
 
 func TestFS(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", "kivik.test.")
+	tempDir, err := os.MkdirTemp("", "kivik.test.")
 	if err != nil {
 		t.Errorf("Failed to create temp dir to test FS driver: %s\n", err)
 		return

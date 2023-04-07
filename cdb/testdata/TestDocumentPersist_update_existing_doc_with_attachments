@@ -18,7 +18,7 @@
             Content: ([]uint8) <nil>,
             Size: (int64) 18,
             Digest: (string) (len=28) "md5-gnmB5zRLleRxMgtaAnivSw==",
-            path: (string) (len=83) "<tmpdir>/bar/bar.txt",
+            path: (string) (len=X) "<tmpdir>/bar/bar.txt",
             fs: (*filesystem.defaultFS)({
             }),
             outputStub: (bool) true
@@ -45,7 +45,7 @@
           }
         }),
         isMain: (bool) false,
-        path: (string) (len=80) "<tmpdir>/bar.json",
+        path: (string) (len=X) "<tmpdir>/bar.json",
         fs: (*filesystem.defaultFS)({
         })
       },
@@ -73,7 +73,7 @@
             Content: ([]uint8) <nil>,
             Size: (int64) 13,
             Digest: (string) (len=28) "md5-EMUuEXyjHv9UCGbpjbnwxQ==",
-            path: (string) (len=83) "<tmpdir>/bar/foo.txt",
+            path: (string) (len=X) "<tmpdir>/bar/foo.txt",
             fs: (*filesystem.defaultFS)({
             }),
             outputStub: (bool) false
@@ -86,7 +86,7 @@
           }
         }),
         isMain: (bool) true,
-        path: (string) (len=80) "<tmpdir>/bar.yaml",
+        path: (string) (len=X) "<tmpdir>/bar.yaml",
         fs: (*filesystem.defaultFS)({
         })
       },
@@ -101,6 +101,6 @@
   cdb: (*cdb.FS)({
     fs: (*filesystem.defaultFS)({
     }),
-    root: (string) (len=71) "<tmpdir>"
+    root: (string) (len=X) "<tmpdir>"
   })
 })

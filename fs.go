@@ -16,7 +16,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -59,7 +58,7 @@ var _ driver.Client = &client{}
 func parseFileURL(dir string) (string, error) {
 	parsed, err := url.Parse(dir)
 	if parsed.Scheme != "" && parsed.Scheme != "file" {
-		return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("Unsupported URL scheme '%s'. Wrong driver?", parsed.Scheme)}
+		return "", &kivik.Error{Status: http.StatusBadRequest, Message: fmt.Sprintf("Unsupported URL scheme '%s'. Wrong driver?", parsed.Scheme)}
 	}
 	if !strings.HasPrefix("file://", dir) {
 		return dir, nil
@@ -101,9 +100,9 @@ var validDBNameRE = regexp.MustCompile("^[a-z_][a-z0-9_$()+/-]*$")
 // AllDBs returns a list of all DBs present in the configured root dir.
 func (c *client) AllDBs(ctx context.Context, _ map[string]interface{}) ([]string, error) {
 	if c.root == "" {
-		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no root path provided"}
+		return nil, &kivik.Error{Status: http.StatusBadRequest, Message: "no root path provided"}
 	}
-	files, err := ioutil.ReadDir(c.root)
+	files, err := os.ReadDir(c.root)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +125,7 @@ func (c *client) CreateDB(ctx context.Context, dbName string, options map[string
 		return err
 	}
 	if exists {
-		return &kivik.Error{HTTPStatus: http.StatusPreconditionFailed, Message: "database already exists"}
+		return &kivik.Error{Status: http.StatusPreconditionFailed, Message: "database already exists"}
 	}
 	return os.Mkdir(filepath.Join(c.root, cdb.EscapeID(dbName)), dirMode)
 }
@@ -150,7 +149,7 @@ func (c *client) DestroyDB(ctx context.Context, dbName string, options map[strin
 		return err
 	}
 	if !exists {
-		return &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "database does not exist"}
+		return &kivik.Error{Status: http.StatusNotFound, Message: "database does not exist"}
 	}
 	// FIXME #65: Be safer here about unrecognized files
 	return os.RemoveAll(filepath.Join(c.root, cdb.EscapeID(dbName)))
@@ -171,7 +170,7 @@ func (c *client) dbPath(path string) (string, string, error) {
 		if strings.HasPrefix(path, "file://") {
 			addr, err := url.Parse(path)
 			if err != nil {
-				return "", "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
+				return "", "", &kivik.Error{Status: http.StatusBadRequest, Err: err}
 			}
 			path = addr.Path
 		}

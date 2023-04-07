@@ -57,7 +57,7 @@ func validateID(id string) error {
 			return nil
 		}
 	}
-	return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "only reserved document ids may start with underscore"}
+	return &kivik.Error{Status: http.StatusBadRequest, Message: "only reserved document ids may start with underscore"}
 }
 
 /*
@@ -81,7 +81,7 @@ func (d *db) Put(ctx context.Context, docID string, i interface{}, opts map[stri
 	}
 	doc, err := d.cdb.OpenDocID(docID, opts)
 	switch {
-	case kivik.StatusCode(err) == http.StatusNotFound:
+	case kivik.HTTPStatus(err) == http.StatusNotFound:
 		// Crate new doc
 		doc = d.cdb.NewDocument(docID)
 	case err != nil:

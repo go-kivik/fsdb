@@ -13,7 +13,6 @@
 package fs
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,7 +23,7 @@ import (
 
 func tempDir(t *testing.T) string {
 	t.Helper()
-	dir, err := ioutil.TempDir("", "kivik-fsdb-")
+	dir, err := os.MkdirTemp("", "kivik-fsdb-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,9 +41,9 @@ func rmdir(t *testing.T, dir string) {
 // path is returned. The depth argument controls how deeply path is placed into
 // the temp dir. Examples:
 //
-//  copyDir(t, "/foo/bar/baz", 0) // copies /foo/bar/baz/* to /tmp-XXX/*
-//  copyDir(t, "/foo/bar/baz", 1) // copies /foo/bar/baz/* to /tmp-XXX/baz/*
-//  copyDir(t, "/foo/bar/baz", 3) // copies /foo/bar/baz/* to /tmp-XXX/foo/bar/baz/*
+//	copyDir(t, "/foo/bar/baz", 0) // copies /foo/bar/baz/* to /tmp-XXX/*
+//	copyDir(t, "/foo/bar/baz", 1) // copies /foo/bar/baz/* to /tmp-XXX/baz/*
+//	copyDir(t, "/foo/bar/baz", 3) // copies /foo/bar/baz/* to /tmp-XXX/foo/bar/baz/*
 func copyDir(t *testing.T, source string, depth int) string { // nolint: unparam
 	t.Helper()
 	tmpdir := tempDir(t)

@@ -15,7 +15,6 @@ package filesystem
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 )
 
@@ -49,7 +48,7 @@ func (fs *defaultFS) Open(name string) (File, error) {
 }
 
 func (fs *defaultFS) TempFile(dir, pattern string) (File, error) {
-	return ioutil.TempFile(dir, pattern)
+	return os.CreateTemp(dir, pattern)
 }
 
 func (fs *defaultFS) Create(name string) (File, error) {

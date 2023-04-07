@@ -16,7 +16,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/go-kivik/kivik/v4"
@@ -33,7 +33,7 @@ import (
 // - open_revs
 func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
 	if docID == "" {
-		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no docid specified"}
+		return nil, &kivik.Error{Status: http.StatusBadRequest, Message: "no docid specified"}
 	}
 	doc, err := d.cdb.OpenDocID(docID, opts)
 	if err != nil {
@@ -50,7 +50,7 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 	}
 	return &driver.Document{
 		Rev:           doc.Revisions[0].Rev.String(),
-		Body:          ioutil.NopCloser(buf),
+		Body:          io.NopCloser(buf),
 		ContentLength: int64(buf.Len()),
 		Attachments:   attsIter,
 	}, nil
