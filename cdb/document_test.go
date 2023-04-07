@@ -152,11 +152,7 @@ func TestDocumentPersist(t *testing.T) {
 	tests.Run(t, func(t *testing.T, tt tt) {
 		err := tt.doc.persist(context.TODO())
 		testy.StatusError(t, tt.err, tt.status, err)
-		re := testy.Replacement{
-			Regexp:      regexp.MustCompile(regexp.QuoteMeta(tt.path)),
-			Replacement: "<tmpdir>",
-		}
-		if d := testy.DiffInterface(testy.Snapshot(t), tt.doc, re); d != nil {
+		if d := testy.DiffInterface(testy.Snapshot(t), tt.doc, tmpdirRE(tt.path)); d != nil {
 			t.Error(d)
 		}
 		if d := testy.DiffAsJSON(testy.Snapshot(t, "fs"), testy.JSONDir{
@@ -167,6 +163,13 @@ func TestDocumentPersist(t *testing.T) {
 			t.Error(d)
 		}
 	})
+}
+
+func tmpdirRE(path string) testy.Replacement {
+	return testy.Replacement{
+		Regexp:      regexp.MustCompile(`len=\d+\) "` + regexp.QuoteMeta(path)),
+		Replacement: `len=X) "<tmpdir>`,
+	}
 }
 
 func TestDocumentAddRevision(t *testing.T) {
@@ -362,11 +365,7 @@ func TestDocumentAddRevision(t *testing.T) {
 		if revid != tt.expected {
 			t.Errorf("Unexpected revd: %s", revid)
 		}
-		re := testy.Replacement{
-			Regexp:      regexp.MustCompile(regexp.QuoteMeta(tt.path)),
-			Replacement: "<tmpdir>",
-		}
-		if d := testy.DiffInterface(testy.Snapshot(t), tt.doc, re); d != nil {
+		if d := testy.DiffInterface(testy.Snapshot(t), tt.doc, tmpdirRE(tt.path)); d != nil {
 			t.Error(d)
 		}
 		if d := testy.DiffAsJSON(testy.Snapshot(t, "fs"), testy.JSONDir{
