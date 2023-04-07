@@ -98,7 +98,7 @@ func (r *revDiffRows) next() (docID string, missing []string, err error) {
 		doc, err := r.db.cdb.OpenDocID(docID, kivik.Options{
 			"rev": rev,
 		})
-		if kivik.StatusCode(err) == http.StatusNotFound {
+		if kivik.HTTPStatus(err) == http.StatusNotFound {
 			missing = append(missing, rev)
 			continue
 		}

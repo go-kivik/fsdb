@@ -55,7 +55,7 @@ func TestGet(t *testing.T) {
 		return tt{
 			fs: &filesystem.MockFS{
 				OpenFunc: func(_ string) (filesystem.File, error) {
-					return nil, &kivik.Error{HTTPStatus: http.StatusForbidden, Err: errors.New("permission denied")}
+					return nil, &kivik.Error{Status: http.StatusForbidden, Err: errors.New("permission denied")}
 				},
 			},
 			dbname: "foo",

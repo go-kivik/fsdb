@@ -21,9 +21,9 @@ import (
 )
 
 var (
-	errNotFound         = &kivik.Error{HTTPStatus: http.StatusNotFound, Message: "missing"}
+	errNotFound         = &kivik.Error{Status: http.StatusNotFound, Message: "missing"}
 	errUnrecognizedFile = errors.New("unrecognized file")
-	errConflict         = &kivik.Error{HTTPStatus: http.StatusConflict, Message: "document update conflict"}
+	errConflict         = &kivik.Error{Status: http.StatusConflict, Message: "document update conflict"}
 )
 
 // missing transforms a NotExist error into a standard CouchDBesque 'missing'
@@ -44,10 +44,10 @@ func kerr(err error) error {
 		return err
 	}
 	if os.IsNotExist(err) {
-		return &kivik.Error{HTTPStatus: http.StatusNotFound, Err: err}
+		return &kivik.Error{Status: http.StatusNotFound, Err: err}
 	}
 	if os.IsPermission(err) {
-		return &kivik.Error{HTTPStatus: http.StatusForbidden, Err: err}
+		return &kivik.Error{Status: http.StatusForbidden, Err: err}
 	}
 	return err
 }

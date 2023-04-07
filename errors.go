@@ -29,10 +29,10 @@ func kerr(err error) error {
 		return err
 	}
 	if os.IsNotExist(err) {
-		return &kivik.Error{HTTPStatus: http.StatusNotFound, Err: err}
+		return &kivik.Error{Status: http.StatusNotFound, Err: err}
 	}
 	if os.IsPermission(err) {
-		return &kivik.Error{HTTPStatus: http.StatusForbidden, Err: err}
+		return &kivik.Error{Status: http.StatusForbidden, Err: err}
 	}
 	return err
 }

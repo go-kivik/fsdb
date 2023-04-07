@@ -33,7 +33,7 @@ import (
 // - open_revs
 func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
 	if docID == "" {
-		return nil, &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "no docid specified"}
+		return nil, &kivik.Error{Status: http.StatusBadRequest, Message: "no docid specified"}
 	}
 	doc, err := d.cdb.OpenDocID(docID, opts)
 	if err != nil {

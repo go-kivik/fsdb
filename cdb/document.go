@@ -172,7 +172,7 @@ func (d *Document) AddRevision(ctx context.Context, rev *Revision, options kivik
 
 func (d *Document) addOldEdit(rev *Revision) (string, error) {
 	if rev.Rev.IsZero() {
-		return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "_rev required with new_edits=false"}
+		return "", &kivik.Error{Status: http.StatusBadRequest, Message: "_rev required with new_edits=false"}
 	}
 	for _, r := range d.Revisions {
 		if r.Rev.Equal(rev.Rev) {
@@ -195,7 +195,7 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 			return "", err
 		}
 		if !rev.Rev.IsZero() && rev.Rev.String() != newrev.String() {
-			return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document rev from request body and query string have different values"}
+			return "", &kivik.Error{Status: http.StatusBadRequest, Message: "document rev from request body and query string have different values"}
 		}
 		rev.Rev = newrev
 	}
@@ -259,13 +259,13 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 		}
 		if oldrev == nil {
 			// Can't upload stubs if there's no previous revision
-			return "", &kivik.Error{HTTPStatus: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", filename), Err: err}
+			return "", &kivik.Error{Status: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", filename), Err: err}
 		}
 		if att.Digest != "" && att.Digest != oldatt.Digest {
-			return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
+			return "", &kivik.Error{Status: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
 		}
 		if att.RevPos != nil && *att.RevPos != *oldatt.RevPos {
-			return "", &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
+			return "", &kivik.Error{Status: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
 		}
 	}
 
@@ -280,18 +280,19 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 	return rev.Rev.String(), nil
 }
 
-/* persist updates the current rev state on disk.
+/*
+	persist updates the current rev state on disk.
 
 Persist strategy:
 
-	- For every rev that doesn't exist on disk, create it in {db}/.{docid}/{rev}
-	- If winning rev does not exist in {db}/{docid}:
-		- Move old winning rev to {db}/.{docid}/{rev}
-		- Move new winning rev to {db}/{docid}
+  - For every rev that doesn't exist on disk, create it in {db}/.{docid}/{rev}
+  - If winning rev does not exist in {db}/{docid}:
+  - Move old winning rev to {db}/.{docid}/{rev}
+  - Move new winning rev to {db}/{docid}
 */
 func (d *Document) persist(ctx context.Context) error {
 	if d == nil || len(d.Revisions) == 0 {
-		return &kivik.Error{HTTPStatus: http.StatusBadRequest, Message: "document has no revisions"}
+		return &kivik.Error{Status: http.StatusBadRequest, Message: "document has no revisions"}
 	}
 	docID := EscapeID(d.ID)
 	for _, rev := range d.Revisions {
