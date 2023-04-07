@@ -18,7 +18,7 @@
           }
         }),
         isMain: (bool) false,
-        path: (string) (len=63) "<tmpdir>/foo.json",
+        path: (string) (len=X) "<tmpdir>/foo.json",
         fs: (*filesystem.defaultFS)({
         })
       },
@@ -45,7 +45,7 @@
           }
         }),
         isMain: (bool) true,
-        path: (string) (len=63) "<tmpdir>/foo.yaml",
+        path: (string) (len=X) "<tmpdir>/foo.yaml",
         fs: (*filesystem.defaultFS)({
         })
       },
@@ -61,6 +61,6 @@
   cdb: (*cdb.FS)({
     fs: (*filesystem.defaultFS)({
     }),
-    root: (string) (len=54) "<tmpdir>"
+    root: (string) (len=X) "<tmpdir>"
   })
 })

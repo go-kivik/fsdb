@@ -57,7 +57,7 @@
             Content: ([]uint8) <nil>,
             Size: (int64) 13,
             Digest: (string) (len=28) "md5-EMUuEXyjHv9UCGbpjbnwxQ==",
-            path: (string) (len=81) "<tmpdir>/bar/foo.txt",
+            path: (string) (len=X) "<tmpdir>/bar/foo.txt",
             fs: (*filesystem.defaultFS)({
             }),
             outputStub: (bool) false
@@ -70,7 +70,7 @@
           }
         }),
         isMain: (bool) true,
-        path: (string) (len=78) "<tmpdir>/bar.yaml",
+        path: (string) (len=X) "<tmpdir>/bar.yaml",
         fs: (*filesystem.defaultFS)({
         })
       },
@@ -85,6 +85,6 @@
   cdb: (*cdb.FS)({
     fs: (*filesystem.defaultFS)({
     }),
-    root: (string) (len=69) "<tmpdir>"
+    root: (string) (len=X) "<tmpdir>"
   })
 })
