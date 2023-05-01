@@ -24,11 +24,10 @@ github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1/go.
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-chi/chi/v5 v5.0.7/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
-github.com/go-kivik/kivik/v4 v4.0.0-20230330195943-0fcd5e6f5451/go.mod h1:WXlDuyGPIcNq7ejCME+bqYl7vzH/KpM9FLRPfsYEjZI=
-github.com/go-kivik/kivik/v4 v4.0.0-20230331074407-d84254814834 h1:09mIQDbdTiN7hNz0oy+MgkQSVhHE5H1R8pXDhEvOoHk=
-github.com/go-kivik/kivik/v4 v4.0.0-20230331074407-d84254814834/go.mod h1:WXlDuyGPIcNq7ejCME+bqYl7vzH/KpM9FLRPfsYEjZI=
-github.com/go-kivik/kiviktest/v4 v4.0.0-20230330202035-a6ae53d9f5a9 h1:B/9qQ+FU0fU2olMijOAqifmkxPmbuFs/QeO2vfFn1vk=
-github.com/go-kivik/kiviktest/v4 v4.0.0-20230330202035-a6ae53d9f5a9/go.mod h1:JHiJf1f4syQ2EW6QKkf6zPlaBU6Je6b8o67Lrp45Mmw=
+github.com/go-kivik/kivik/v4 v4.0.0-20230430194615-b7cdddca6372 h1:gEB7iUSCaNlCRI+IoCymAK6ghOWptXNwgEAcUsd/Pro=
+github.com/go-kivik/kivik/v4 v4.0.0-20230430194615-b7cdddca6372/go.mod h1:QpyDiYUPz1874EXJTfY8qZgLMzqqLQ22Pgmnplcjvng=
+github.com/go-kivik/kiviktest/v4 v4.0.0-20230430201722-e2a6a7954793 h1:lFLWw4qg/vJi3QhoNM9itPbjHI71BIEQ9yOtP4c1g48=
+github.com/go-kivik/kiviktest/v4 v4.0.0-20230430201722-e2a6a7954793/go.mod h1:E+BS0orKufwbkBRfIbnoSol9P0GoRSKkOPCzt9ba7ME=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfbm0A=
@@ -69,9 +68,11 @@ github.com/labstack/echo v3.3.10+incompatible/go.mod h1:0INS7j/VjnFxD4E2wkz67b8c
 github.com/labstack/echo/v4 v4.6.1/go.mod h1:RnjgMWNDB9g/HucVWhQYNQP9PvbYf6adqftqryo7s9k=
 github.com/labstack/echo/v4 v4.7.2/go.mod h1:xkCDAdFCIf8jsFQ5NnbK7oqaF/yU1A1X20Ltm0OvSks=
 github.com/labstack/echo/v4 v4.9.1 h1:GliPYSpzGKlyOhqIbG8nmHBo3i1saKWFOgh41AN3b+Y=
+github.com/labstack/echo/v4 v4.9.1/go.mod h1:Pop5HLc+xoc4qhTZ1ip6C0RtP7Z+4VzRLWZZFKqbbjo=
 github.com/labstack/gommon v0.3.0/go.mod h1:MULnywXg0yavhxWKc+lOruYdAhDwPK9wf0OL7NoOu+k=
 github.com/labstack/gommon v0.3.1/go.mod h1:uW6kP17uPlLJsD3ijUYn3/M5bAxtlZhMI6m3MFxTMTM=
 github.com/labstack/gommon v0.4.0 h1:y7cvthEAEbU0yHOf4axH8ZG2NH8knB9iNSoTO8dyIk8=
+github.com/labstack/gommon v0.4.0/go.mod h1:uW6kP17uPlLJsD3ijUYn3/M5bAxtlZhMI6m3MFxTMTM=
 github.com/mattn/go-colorable v0.1.2/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
 github.com/mattn/go-colorable v0.1.8/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
 github.com/mattn/go-colorable v0.1.11 h1:nQ+aFkoE2TMGc0b68U2OKSexC+eq46+XwZzWXHRmPYs=
@@ -108,7 +109,6 @@ github.com/valyala/fasttemplate v1.2.1 h1:TVEnxayobAdVkhQfrfes2IzOB6o+z4roRkPF52
 github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=
 gitlab.com/flimzy/ale v0.27.0 h1:Gko/DCLeAWGwzp4E5Vj1wPZDAzHwrj/46Vgi9wkouu8=
 gitlab.com/flimzy/ale v0.27.0/go.mod h1:OORa5rCs5yATP7daccYX8X41Ax7KeXfuNeEDwJ5zSJs=
-gitlab.com/flimzy/testy v0.9.1/go.mod h1:4Yy2aelUY6IgRmd3jHgGWewZLNMQZWQTlwyuMW642Mc=
 gitlab.com/flimzy/testy v0.12.0/go.mod h1:tcu652e6AyD5wS8q2JRUI+j5SlwIYsl3yq3ulHyuh8M=
 gitlab.com/flimzy/testy v0.12.4 h1:J2plNCG5d9FWfik30yOZrajcPrWbiDHrk0qw1nMstNU=
 gitlab.com/flimzy/testy v0.12.4/go.mod h1:9wPR98kErJw1lrq/aIJ8UZ6A0Dn7CHU0T6Qx4b2FiyQ=
