@@ -13,6 +13,7 @@
 package fs
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -121,9 +122,10 @@ func (r *revDiffRows) Next(row *driver.Row) error {
 		return err
 	}
 	row.ID = docID
-	row.Value, err = json.Marshal(map[string][]string{
+	value, err := json.Marshal(map[string][]string{
 		"missing": missing,
 	})
+	row.Value = bytes.NewReader(value)
 	return err
 }
 

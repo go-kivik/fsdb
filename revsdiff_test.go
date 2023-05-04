@@ -106,7 +106,9 @@ func TestRevsDiff(t *testing.T) {
 				rowErr = err
 				break
 			}
-			result[row.ID] = row.Value
+			var value json.RawMessage
+			_ = json.NewDecoder(row.Value).Decode(&value)
+			result[row.ID] = value
 		}
 		testy.StatusErrorRE(t, tt.rowErr, tt.rowStatus, rowErr)
 		if d := testy.DiffAsJSON(testy.Snapshot(t), result); d != nil {
