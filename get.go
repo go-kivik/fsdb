@@ -49,9 +49,8 @@ func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{})
 		return nil, err
 	}
 	return &driver.Document{
-		Rev:           doc.Revisions[0].Rev.String(),
-		Body:          io.NopCloser(buf),
-		ContentLength: int64(buf.Len()),
-		Attachments:   attsIter,
+		Rev:         doc.Revisions[0].Rev.String(),
+		Body:        io.NopCloser(buf),
+		Attachments: attsIter,
 	}, nil
 }
