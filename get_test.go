@@ -69,8 +69,7 @@ func TestGet(t *testing.T) {
 		dbname: "db_foo",
 		id:     "noattach",
 		expected: &driver.Document{
-			ContentLength: 53,
-			Rev:           "1-xxxxxxxxxx",
+			Rev: "1-xxxxxxxxxx",
 		},
 	})
 	tests.Add("success, attachment stub", tt{
@@ -78,8 +77,7 @@ func TestGet(t *testing.T) {
 		dbname: "db_foo",
 		id:     "withattach",
 		expected: &driver.Document{
-			ContentLength: 185,
-			Rev:           "2-yyyyyyyyy",
+			Rev: "2-yyyyyyyyy",
 		},
 	})
 	tests.Add("success, include mp attachments", tt{
@@ -88,8 +86,7 @@ func TestGet(t *testing.T) {
 		id:      "withattach",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{
-			ContentLength: 188,
-			Rev:           "2-yyyyyyyyy",
+			Rev: "2-yyyyyyyyy",
 		},
 	})
 	tests.Add("success, include inline attachments", tt{
@@ -101,8 +98,7 @@ func TestGet(t *testing.T) {
 			"header:accept": "application/json",
 		},
 		expected: &driver.Document{
-			ContentLength: 195,
-			Rev:           "2-yyyyyyyyy",
+			Rev: "2-yyyyyyyyy",
 		},
 	})
 	tests.Add("specify current rev", tt{
@@ -111,8 +107,7 @@ func TestGet(t *testing.T) {
 		id:      "noattach",
 		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
 		expected: &driver.Document{
-			ContentLength: 53,
-			Rev:           "1-xxxxxxxxxx",
+			Rev: "1-xxxxxxxxxx",
 		},
 	})
 	tests.Add("specify old rev", tt{
@@ -121,8 +116,7 @@ func TestGet(t *testing.T) {
 		id:      "withattach",
 		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
 		expected: &driver.Document{
-			ContentLength: 187,
-			Rev:           "1-xxxxxxxxxx",
+			Rev: "1-xxxxxxxxxx",
 		},
 	})
 	tests.Add("autorev", tt{
@@ -130,8 +124,7 @@ func TestGet(t *testing.T) {
 		dbname: "db_foo",
 		id:     "autorev",
 		expected: &driver.Document{
-			ContentLength: 42,
-			Rev:           "6-",
+			Rev: "6-",
 		},
 	})
 	tests.Add("intrev", tt{
@@ -139,8 +132,7 @@ func TestGet(t *testing.T) {
 		dbname: "db_foo",
 		id:     "intrev",
 		expected: &driver.Document{
-			ContentLength: 41,
-			Rev:           "6-",
+			Rev: "6-",
 		},
 	})
 	tests.Add("norev", tt{
@@ -148,8 +140,7 @@ func TestGet(t *testing.T) {
 		dbname: "db_foo",
 		id:     "norev",
 		expected: &driver.Document{
-			ContentLength: 40,
-			Rev:           "1-",
+			Rev: "1-",
 		},
 	})
 	tests.Add("noid", tt{
@@ -157,8 +148,7 @@ func TestGet(t *testing.T) {
 		dbname: "db_foo",
 		id:     "noid",
 		expected: &driver.Document{
-			ContentLength: 39,
-			Rev:           "6-",
+			Rev: "6-",
 		},
 	})
 	tests.Add("wrong id", tt{
@@ -166,8 +156,7 @@ func TestGet(t *testing.T) {
 		dbname: "db_foo",
 		id:     "wrongid",
 		expected: &driver.Document{
-			ContentLength: 42,
-			Rev:           "6-",
+			Rev: "6-",
 		},
 	})
 	tests.Add("yaml", tt{
@@ -175,8 +164,7 @@ func TestGet(t *testing.T) {
 		dbname: "db_foo",
 		id:     "yamltest",
 		expected: &driver.Document{
-			ContentLength: 43,
-			Rev:           "3-",
+			Rev: "3-",
 		},
 	})
 	tests.Add("specify current rev yaml", tt{
@@ -185,8 +173,7 @@ func TestGet(t *testing.T) {
 		id:      "yamltest",
 		options: map[string]interface{}{"rev": "3-"},
 		expected: &driver.Document{
-			ContentLength: 43,
-			Rev:           "3-",
+			Rev: "3-",
 		},
 	})
 	tests.Add("specify old rev yaml", tt{
@@ -195,8 +182,7 @@ func TestGet(t *testing.T) {
 		id:      "yamltest",
 		options: map[string]interface{}{"rev": "2-xxx"},
 		expected: &driver.Document{
-			ContentLength: 46,
-			Rev:           "2-xxx",
+			Rev: "2-xxx",
 		},
 	})
 	tests.Add("specify bogus rev yaml", tt{
@@ -212,8 +198,7 @@ func TestGet(t *testing.T) {
 		dbname: "db_foo",
 		id:     "_design/users",
 		expected: &driver.Document{
-			ContentLength: 115,
-			Rev:           "2-",
+			Rev: "2-",
 		},
 	})
 	tests.Add("ddoc rev yaml", tt{
@@ -222,8 +207,7 @@ func TestGet(t *testing.T) {
 		id:      "_design/users",
 		options: map[string]interface{}{"rev": "2-"},
 		expected: &driver.Document{
-			ContentLength: 115,
-			Rev:           "2-",
+			Rev: "2-",
 		},
 	})
 	tests.Add("revs", tt{
@@ -232,8 +216,7 @@ func TestGet(t *testing.T) {
 		id:      "wrongid",
 		options: map[string]interface{}{"revs": true},
 		expected: &driver.Document{
-			ContentLength: 144,
-			Rev:           "6-",
+			Rev: "6-",
 		},
 	})
 	tests.Add("revs real", tt{
@@ -242,8 +225,7 @@ func TestGet(t *testing.T) {
 		id:      "noattach",
 		options: map[string]interface{}{"revs": true},
 		expected: &driver.Document{
-			ContentLength: 145,
-			Rev:           "1-xxxxxxxxxx",
+			Rev: "1-xxxxxxxxxx",
 		},
 	})
 	tests.Add("note--XkWjFv13acvjJTt-CGJJ8hXlWE", tt{
@@ -251,8 +233,7 @@ func TestGet(t *testing.T) {
 		dbname: "db_att",
 		id:     "note--XkWjFv13acvjJTt-CGJJ8hXlWE",
 		expected: &driver.Document{
-			ContentLength: 849,
-			Rev:           "1-fbaabe005e0f4e5685a68f857c0777d6",
+			Rev: "1-fbaabe005e0f4e5685a68f857c0777d6",
 		},
 	})
 	tests.Add("note--XkWjFv13acvjJTt-CGJJ8hXlWE + attachments", tt{
@@ -261,8 +242,7 @@ func TestGet(t *testing.T) {
 		id:      "note--XkWjFv13acvjJTt-CGJJ8hXlWE",
 		options: kivik.Options{"attachments": true},
 		expected: &driver.Document{
-			ContentLength: 852,
-			Rev:           "1-fbaabe005e0f4e5685a68f857c0777d6",
+			Rev: "1-fbaabe005e0f4e5685a68f857c0777d6",
 		},
 	})
 	tests.Add("revs_info=true", tt{
@@ -273,8 +253,7 @@ func TestGet(t *testing.T) {
 			"revs_info": true,
 		},
 		expected: &driver.Document{
-			ContentLength: 91,
-			Rev:           "6-",
+			Rev: "6-",
 		},
 	})
 	tests.Add("revs, explicit", tt{
@@ -283,8 +262,7 @@ func TestGet(t *testing.T) {
 		id:      "withrevs",
 		options: map[string]interface{}{"revs": true},
 		expected: &driver.Document{
-			ContentLength: 183,
-			Rev:           "8-asdf",
+			Rev: "8-asdf",
 		},
 	})
 	tests.Add("specify current rev, revs_info=true", tt{
@@ -296,8 +274,7 @@ func TestGet(t *testing.T) {
 			"revs_info": true,
 		},
 		expected: &driver.Document{
-			ContentLength: 43,
-			Rev:           "3-",
+			Rev: "3-",
 		},
 	})
 	tests.Add("specify conflicting rev, revs_info=true", tt{
@@ -309,8 +286,7 @@ func TestGet(t *testing.T) {
 			"revs_info": true,
 		},
 		expected: &driver.Document{
-			ContentLength: 46,
-			Rev:           "2-xxx",
+			Rev: "2-xxx",
 		},
 	})
 	tests.Add("specify rev, revs=true", tt{
@@ -322,8 +298,7 @@ func TestGet(t *testing.T) {
 			"revs": true,
 		},
 		expected: &driver.Document{
-			ContentLength: 115,
-			Rev:           "8-asdf",
+			Rev: "8-asdf",
 		},
 	})
 	tests.Add("interrupted put", tt{
@@ -335,8 +310,7 @@ func TestGet(t *testing.T) {
 		id:      "abortedput",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{
-			ContentLength: 188,
-			Rev:           "2-yyyyyyyyy",
+			Rev: "2-yyyyyyyyy",
 		},
 	})
 	tests.Add("no winner, tied rev", tt{
@@ -347,8 +321,7 @@ func TestGet(t *testing.T) {
 		dbname: "get_nowinner",
 		id:     "foo",
 		expected: &driver.Document{
-			ContentLength: 42,
-			Rev:           "1-yyy",
+			Rev: "1-yyy",
 		},
 	})
 	tests.Add("no winner, greater rev", tt{
@@ -359,8 +332,7 @@ func TestGet(t *testing.T) {
 		dbname: "get_nowinner",
 		id:     "bar",
 		expected: &driver.Document{
-			ContentLength: 39,
-			Rev:           "2-yyy",
+			Rev: "2-yyy",
 		},
 	})
 	tests.Add("atts split between winning and revs dir", tt{
@@ -369,8 +341,7 @@ func TestGet(t *testing.T) {
 		id:      "foo",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{
-			ContentLength: 292,
-			Rev:           "2-zzz",
+			Rev: "2-zzz",
 		},
 	})
 	tests.Add("atts split between two revs", tt{
@@ -379,8 +350,7 @@ func TestGet(t *testing.T) {
 		id:      "bar",
 		options: map[string]interface{}{"attachments": true},
 		expected: &driver.Document{
-			ContentLength: 293,
-			Rev:           "2-yyy",
+			Rev: "2-yyy",
 		},
 	})
 	tests.Add("non-standard filenames", tt{
@@ -388,8 +358,7 @@ func TestGet(t *testing.T) {
 		dbname: "db_nonascii",
 		id:     "note-i_ɪ",
 		expected: &driver.Document{
-			ContentLength: 1718,
-			Rev:           "1-",
+			Rev: "1-",
 		},
 	})
 	tests.Add("deleted doc", tt{
@@ -407,8 +376,7 @@ func TestGet(t *testing.T) {
 			"rev": "3-",
 		},
 		expected: &driver.Document{
-			ContentLength: 46,
-			Rev:           "3-",
+			Rev: "3-",
 		},
 	})
 
