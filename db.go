@@ -53,7 +53,7 @@ func (d *db) CreateDoc(_ context.Context, doc interface{}, opts map[string]inter
 	return "", "", notYetImplemented
 }
 
-func (d *db) Delete(_ context.Context, docID, rev string, opts map[string]interface{}) (newRev string, err error) {
+func (d *db) Delete(_ context.Context, docID string, opts map[string]interface{}) (newRev string, err error) {
 	// FIXME: Unimplemented
 	return "", notYetImplemented
 }
@@ -73,12 +73,12 @@ func (d *db) ViewCleanup(_ context.Context) error {
 	return notYetImplemented
 }
 
-func (d *db) BulkDocs(_ context.Context, _ []interface{}) (driver.BulkResults, error) {
+func (d *db) BulkDocs(_ context.Context, _ []interface{}) ([]driver.BulkResult, error) {
 	// FIXME: Unimplemented
 	return nil, notYetImplemented
 }
 
-func (d *db) PutAttachment(_ context.Context, _, _ string, _ *driver.Attachment, _ map[string]interface{}) (string, error) {
+func (d *db) PutAttachment(_ context.Context, _ string, _ *driver.Attachment, _ map[string]interface{}) (string, error) {
 	// FIXME: Unimplemented
 	return "", notYetImplemented
 }
@@ -88,7 +88,7 @@ func (d *db) GetAttachment(ctx context.Context, docID, filename string, opts map
 	return nil, notYetImplemented
 }
 
-func (d *db) DeleteAttachment(ctx context.Context, docID, rev, filename string, opts map[string]interface{}) (newRev string, err error) {
+func (d *db) DeleteAttachment(ctx context.Context, docID, filename string, opts map[string]interface{}) (newRev string, err error) {
 	// FIXME: Unimplemented
 	return "", notYetImplemented
 }
