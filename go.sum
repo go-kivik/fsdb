@@ -24,10 +24,11 @@ github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1/go.
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-chi/chi/v5 v5.0.7/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
-github.com/go-kivik/kivik/v4 v4.0.0-20230508185852-2b883268ad9a h1:8tXU7EM2dY69MgM7pGeN3A+7vPFw3yDSrIOmL0/YKQg=
-github.com/go-kivik/kivik/v4 v4.0.0-20230508185852-2b883268ad9a/go.mod h1:UNIt4XnxFFNIJi0uJXBV2/BG13MP1F0QLo7x0QvwqbI=
-github.com/go-kivik/kiviktest/v4 v4.0.0-20230508191059-50d464e4a155 h1:8Nso5H4847ItG5ae48Yy39RJS03DVsbL90d1D8DDIq0=
-github.com/go-kivik/kiviktest/v4 v4.0.0-20230508191059-50d464e4a155/go.mod h1:GNSz9NvxjBg1IdPUJ+oe+/7FW2HgHJskoopgi+hQNdM=
+github.com/go-kivik/kivik/v4 v4.0.0-20230519204432-875898671a01/go.mod h1:UNIt4XnxFFNIJi0uJXBV2/BG13MP1F0QLo7x0QvwqbI=
+github.com/go-kivik/kivik/v4 v4.0.0-20230520201031-4f0dc37fe537 h1:3YjXJHb+3jYCsLXVtzmKLkTrm/iAS+JLqZVTEUL2kCk=
+github.com/go-kivik/kivik/v4 v4.0.0-20230520201031-4f0dc37fe537/go.mod h1:UNIt4XnxFFNIJi0uJXBV2/BG13MP1F0QLo7x0QvwqbI=
+github.com/go-kivik/kiviktest/v4 v4.0.0-20230520192751-0f6ef2bb17b3 h1:EAxvB0cwnOasFBQ+oeEzjKfwCs4oRU5gWeusmX6FOW0=
+github.com/go-kivik/kiviktest/v4 v4.0.0-20230520192751-0f6ef2bb17b3/go.mod h1:YCadzW5MGwJujDFzpXjSB/Ydbkru8Nmt78xvdp2yUwU=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfbm0A=

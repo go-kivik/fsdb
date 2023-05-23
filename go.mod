@@ -3,8 +3,8 @@ module github.com/go-kivik/fsdb/v4
 go 1.19
 
 require (
-	github.com/go-kivik/kivik/v4 v4.0.0-20230508185852-2b883268ad9a
-	github.com/go-kivik/kiviktest/v4 v4.0.0-20230508191059-50d464e4a155
+	github.com/go-kivik/kivik/v4 v4.0.0-20230520201031-4f0dc37fe537
+	github.com/go-kivik/kiviktest/v4 v4.0.0-20230520192751-0f6ef2bb17b3
 	github.com/icza/dyno v0.0.0-20230330125955-09f820a8d9c0
 	github.com/otiai10/copy v1.10.0
 	gitlab.com/flimzy/ale v0.27.0
