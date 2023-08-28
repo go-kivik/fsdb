@@ -15,8 +15,8 @@ package test
 import (
 	"net/http"
 
-	"github.com/go-kivik/kiviktest/v4"
-	"github.com/go-kivik/kiviktest/v4/kt"
+	"github.com/go-kivik/kivik/v4/kiviktest"
+	"github.com/go-kivik/kivik/v4/kiviktest/kt"
 )
 
 func registerFSSuite() {
