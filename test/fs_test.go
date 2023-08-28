@@ -21,8 +21,8 @@ import (
 
 	_ "github.com/go-kivik/fsdb/v4"
 	"github.com/go-kivik/kivik/v4"
-	"github.com/go-kivik/kiviktest/v4"
-	"github.com/go-kivik/kiviktest/v4/kt"
+	"github.com/go-kivik/kivik/v4/kiviktest"
+	"github.com/go-kivik/kivik/v4/kiviktest/kt"
 )
 
 func init() {
@@ -44,6 +44,7 @@ func TestFS(t *testing.T) {
 	clients := &kt.Context{
 		RW:    true,
 		Admin: client,
+		T:     t,
 	}
-	kiviktest.RunTestsInternal(clients, kiviktest.SuiteKivikFS, t)
+	kiviktest.RunTestsInternal(clients, kiviktest.SuiteKivikFS)
 }

@@ -19,8 +19,8 @@ import (
 
 	"github.com/go-kivik/fsdb/v4/cdb"
 	"github.com/go-kivik/fsdb/v4/filesystem"
+	"github.com/go-kivik/kivik/v4"
 	"github.com/go-kivik/kivik/v4/driver"
-	"github.com/go-kivik/kivik/v4/errors"
 )
 
 type db struct {
@@ -32,7 +32,7 @@ type db struct {
 
 var _ driver.DB = &db{}
 
-var notYetImplemented = errors.Status(http.StatusNotImplemented, "kivik: not yet implemented in fs driver")
+var notYetImplemented = &kivik.Error{Status: http.StatusNotImplemented, Message: "kivik: not yet implemented in fs driver"}
 
 func (d *db) path(parts ...string) string {
 	return filepath.Join(append([]string{d.dbPath}, parts...)...)

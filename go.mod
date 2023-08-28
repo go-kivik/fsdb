@@ -3,8 +3,7 @@ module github.com/go-kivik/fsdb/v4
 go 1.19
 
 require (
-	github.com/go-kivik/kivik/v4 v4.0.0-20230520201031-4f0dc37fe537
-	github.com/go-kivik/kiviktest/v4 v4.0.0-20230520192751-0f6ef2bb17b3
+	github.com/go-kivik/kivik/v4 v4.0.0-20230828083916-40cf6109d7f4
 	github.com/icza/dyno v0.0.0-20230330125955-09f820a8d9c0
 	github.com/otiai10/copy v1.10.0
 	gitlab.com/flimzy/ale v0.27.0
@@ -14,8 +13,9 @@ require (
 
 require (
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
+	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c // indirect
+	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
