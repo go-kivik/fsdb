@@ -17,9 +17,10 @@ import (
 	"fmt"
 	"testing"
 
+	"gitlab.com/flimzy/testy"
+
 	"github.com/go-kivik/fsdb/v4/filesystem"
 	"github.com/go-kivik/kivik/v4/driver"
-	"gitlab.com/flimzy/testy"
 )
 
 func TestCreateDB(t *testing.T) {

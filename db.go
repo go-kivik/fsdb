@@ -38,22 +38,22 @@ func (d *db) path(parts ...string) string {
 	return filepath.Join(append([]string{d.dbPath}, parts...)...)
 }
 
-func (d *db) AllDocs(_ context.Context, _ map[string]interface{}) (driver.Rows, error) {
+func (d *db) AllDocs(context.Context, map[string]interface{}) (driver.Rows, error) {
 	// FIXME: Unimplemented
 	return nil, notYetImplemented
 }
 
-func (d *db) Query(ctx context.Context, ddoc, view string, opts map[string]interface{}) (driver.Rows, error) {
+func (d *db) Query(context.Context, string, string, map[string]interface{}) (driver.Rows, error) {
 	// FIXME: Unimplemented
 	return nil, notYetImplemented
 }
 
-func (d *db) CreateDoc(_ context.Context, doc interface{}, opts map[string]interface{}) (docID, rev string, err error) {
+func (d *db) CreateDoc(context.Context, interface{}, map[string]interface{}) (docID, rev string, err error) {
 	// FIXME: Unimplemented
 	return "", "", notYetImplemented
 }
 
-func (d *db) Delete(_ context.Context, docID string, opts map[string]interface{}) (newRev string, err error) {
+func (d *db) Delete(context.Context, string, map[string]interface{}) (newRev string, err error) {
 	// FIXME: Unimplemented
 	return "", notYetImplemented
 }
@@ -63,32 +63,32 @@ func (d *db) Stats(_ context.Context) (*driver.DBStats, error) {
 	return nil, notYetImplemented
 }
 
-func (d *db) CompactView(_ context.Context, _ string) error {
+func (d *db) CompactView(context.Context, string) error {
 	// FIXME: Unimplemented
 	return notYetImplemented
 }
 
-func (d *db) ViewCleanup(_ context.Context) error {
+func (d *db) ViewCleanup(context.Context) error {
 	// FIXME: Unimplemented
 	return notYetImplemented
 }
 
-func (d *db) BulkDocs(_ context.Context, _ []interface{}) ([]driver.BulkResult, error) {
+func (d *db) BulkDocs(context.Context, []interface{}) ([]driver.BulkResult, error) {
 	// FIXME: Unimplemented
 	return nil, notYetImplemented
 }
 
-func (d *db) PutAttachment(_ context.Context, _ string, _ *driver.Attachment, _ map[string]interface{}) (string, error) {
+func (d *db) PutAttachment(context.Context, string, *driver.Attachment, map[string]interface{}) (string, error) {
 	// FIXME: Unimplemented
 	return "", notYetImplemented
 }
 
-func (d *db) GetAttachment(ctx context.Context, docID, filename string, opts map[string]interface{}) (*driver.Attachment, error) {
+func (d *db) GetAttachment(context.Context, string, string, map[string]interface{}) (*driver.Attachment, error) {
 	// FIXME: Unimplemented
 	return nil, notYetImplemented
 }
 
-func (d *db) DeleteAttachment(ctx context.Context, docID, filename string, opts map[string]interface{}) (newRev string, err error) {
+func (d *db) DeleteAttachment(context.Context, string, string, map[string]interface{}) (newRev string, err error) {
 	// FIXME: Unimplemented
 	return "", notYetImplemented
 }

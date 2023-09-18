@@ -43,8 +43,8 @@ func EscapeID(s string) string {
 		return s
 	}
 	if strings.Contains(s, "/") || strings.Contains(s, "%2F") || strings.Contains(s, "%2f") {
-		s = strings.Replace(s, "%", "%25", -1)
-		s = strings.Replace(s, "/", "%2F", -1)
+		s = strings.ReplaceAll(s, "%", "%25")
+		s = strings.ReplaceAll(s, "/", "%2F")
 	}
 	return s
 }
@@ -55,9 +55,9 @@ func UnescapeID(s string) string {
 		return s
 	}
 	if strings.Contains(s, "%2F") || strings.Contains(s, "%2f") || strings.Contains(s, "%25") {
-		s = strings.Replace(s, "%2F", "/", -1)
-		s = strings.Replace(s, "%2f", "/", -1)
-		s = strings.Replace(s, "%25", "%", -1)
+		s = strings.ReplaceAll(s, "%2F", "/")
+		s = strings.ReplaceAll(s, "%2f", "/")
+		s = strings.ReplaceAll(s, "%25", "%")
 	}
 	return s
 }

@@ -31,7 +31,7 @@ import (
 // - local_seq
 // - meta
 // - open_revs
-func (d *db) Get(ctx context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
+func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
 	if docID == "" {
 		return nil, statusError{status: http.StatusBadRequest, error: errors.New("no docid specified")}
 	}
