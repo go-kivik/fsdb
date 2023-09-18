@@ -52,7 +52,7 @@
       Data: (map[string]interface {}) (len=1) {
         (string) (len=5) "value": (string) (len=3) "bar"
       },
-      options: (kivik.Options) (len=1) {
+      options: (map[string]interface {}) (len=1) {
         (string) (len=4) "revs": (bool) true
       }
     }),
@@ -92,12 +92,12 @@
       },
       Data: (map[string]interface {}) {
       },
-      options: (kivik.Options) <nil>
+      options: (map[string]interface {}) <nil>
     })
   },
   RevsInfo: ([]cdb.RevInfo) <nil>,
   RevHistory: (*cdb.RevHistory)(<nil>),
-  Options: (kivik.Options) <nil>,
+  Options: (map[string]interface {}) <nil>,
   cdb: (*cdb.FS)({
     fs: (*filesystem.defaultFS)({
     }),

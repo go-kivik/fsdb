@@ -19,7 +19,6 @@ import (
 	"gitlab.com/flimzy/testy"
 
 	"github.com/go-kivik/fsdb/v4/filesystem"
-	"github.com/go-kivik/kivik/v4"
 )
 
 func TestAttachmentsIterator(t *testing.T) {
@@ -31,7 +30,7 @@ func TestAttachmentsIterator(t *testing.T) {
 	tests := testy.NewTable()
 	tests.Add("missing attachment", tt{
 		r: &Revision{
-			options: kivik.Options{
+			options: map[string]interface{}{
 				"attachments": true,
 			},
 			RevMeta: RevMeta{

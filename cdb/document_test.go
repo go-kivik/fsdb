@@ -68,7 +68,7 @@ func TestDocumentPersist(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, err := doc.AddRevision(context.TODO(), rev, nil); err != nil {
+		if _, err := doc.AddRevision(context.TODO(), rev, kivik.Params(nil)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -84,7 +84,7 @@ func TestDocumentPersist(t *testing.T) {
 		})
 
 		cdb := New(tmpdir)
-		doc, err := cdb.OpenDocID("foo", nil)
+		doc, err := cdb.OpenDocID("foo", kivik.Params(nil))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -99,7 +99,7 @@ func TestDocumentPersist(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, err := doc.AddRevision(context.TODO(), rev, nil); err != nil {
+		if _, err := doc.AddRevision(context.TODO(), rev, kivik.Params(nil)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -115,7 +115,7 @@ func TestDocumentPersist(t *testing.T) {
 		})
 
 		cdb := New(tmpdir)
-		doc, err := cdb.OpenDocID("bar", nil)
+		doc, err := cdb.OpenDocID("bar", kivik.Params(nil))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -140,7 +140,7 @@ func TestDocumentPersist(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, err := doc.addRevision(context.TODO(), rev, nil); err != nil {
+		if _, err := doc.addRevision(context.TODO(), rev, kivik.Params(nil)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -178,7 +178,7 @@ func TestDocumentAddRevision(t *testing.T) {
 		path     string
 		doc      *Document
 		rev      *Revision
-		options  kivik.Options
+		options  kivik.Option
 		status   int
 		err      string
 		expected string
@@ -191,7 +191,7 @@ func TestDocumentAddRevision(t *testing.T) {
 		})
 
 		cdb := New(tmpdir)
-		doc, err := cdb.OpenDocID("bar", nil)
+		doc, err := cdb.OpenDocID("bar", kivik.Params(nil))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -229,7 +229,7 @@ func TestDocumentAddRevision(t *testing.T) {
 		})
 
 		cdb := New(tmpdir)
-		doc, err := cdb.OpenDocID("bar", nil)
+		doc, err := cdb.OpenDocID("bar", kivik.Params(nil))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -267,7 +267,7 @@ func TestDocumentAddRevision(t *testing.T) {
 		})
 
 		cdb := New(tmpdir)
-		doc, err := cdb.OpenDocID("bar", nil)
+		doc, err := cdb.OpenDocID("bar", kivik.Params(nil))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -335,7 +335,7 @@ func TestDocumentAddRevision(t *testing.T) {
 		})
 
 		cdb := New(tmpdir)
-		doc, err := cdb.OpenDocID("bar", nil)
+		doc, err := cdb.OpenDocID("bar", kivik.Params(nil))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -361,7 +361,11 @@ func TestDocumentAddRevision(t *testing.T) {
 	})
 
 	tests.Run(t, func(t *testing.T, tt tt) {
-		revid, err := tt.doc.addRevision(context.TODO(), tt.rev, tt.options)
+		opts := tt.options
+		if opts == nil {
+			opts = kivik.Params(nil)
+		}
+		revid, err := tt.doc.addRevision(context.TODO(), tt.rev, opts)
 		testy.StatusError(t, tt.err, tt.status, err)
 		if revid != tt.expected {
 			t.Errorf("Unexpected revd: %s", revid)

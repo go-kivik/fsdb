@@ -18,12 +18,14 @@ import (
 	"testing"
 
 	"gitlab.com/flimzy/testy"
+
+	"github.com/go-kivik/kivik/v4"
 )
 
 func TestAllDBs(t *testing.T) {
 	type tt struct {
 		path     string
-		options  map[string]interface{}
+		options  kivik.Option
 		status   int
 		err      string
 		expected []string

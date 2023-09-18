@@ -22,7 +22,7 @@ import (
 
 	"github.com/go-kivik/fsdb/v4/cdb/decode"
 	"github.com/go-kivik/fsdb/v4/filesystem"
-	"github.com/go-kivik/kivik/v4"
+	"github.com/go-kivik/kivik/v4/driver"
 )
 
 // FS provides filesystem access to a
@@ -154,7 +154,9 @@ func (fs *FS) openRevs(docID, revid string) (Revisions, error) {
 }
 
 // OpenDocID opens the requested document by ID (without file extension).
-func (fs *FS) OpenDocID(docID string, opts kivik.Options) (*Document, error) {
+func (fs *FS) OpenDocID(docID string, options driver.Options) (*Document, error) {
+	opts := map[string]interface{}{}
+	options.Apply(opts)
 	rev, _ := opts["rev"].(string)
 	revs, err := fs.openRevs(docID, rev)
 	if err != nil {

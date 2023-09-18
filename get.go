@@ -31,11 +31,13 @@ import (
 // - local_seq
 // - meta
 // - open_revs
-func (d *db) Get(_ context.Context, docID string, opts map[string]interface{}) (*driver.Document, error) {
+func (d *db) Get(_ context.Context, docID string, options driver.Options) (*driver.Document, error) {
+	opts := map[string]interface{}{}
+	options.Apply(opts)
 	if docID == "" {
 		return nil, statusError{status: http.StatusBadRequest, error: errors.New("no docid specified")}
 	}
-	doc, err := d.cdb.OpenDocID(docID, opts)
+	doc, err := d.cdb.OpenDocID(docID, options)
 	if err != nil {
 		return nil, err
 	}

@@ -70,7 +70,7 @@ func parseFileURL(dir string) (string, error) {
 	return parsed.Path, nil
 }
 
-func (d *fsDriver) NewClient(dir string, _ map[string]interface{}) (driver.Client, error) {
+func (d *fsDriver) NewClient(dir string, _ driver.Options) (driver.Client, error) {
 	path, err := parseFileURL(dir)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (c *client) Version(_ context.Context) (*driver.Version, error) {
 var validDBNameRE = regexp.MustCompile("^[a-z_][a-z0-9_$()+/-]*$")
 
 // AllDBs returns a list of all DBs present in the configured root dir.
-func (c *client) AllDBs(context.Context, map[string]interface{}) ([]string, error) {
+func (c *client) AllDBs(context.Context, driver.Options) ([]string, error) {
 	if c.root == "" {
 		return nil, statusError{status: http.StatusBadRequest, error: errors.New("no root path provided")}
 	}
@@ -120,7 +120,7 @@ func (c *client) AllDBs(context.Context, map[string]interface{}) ([]string, erro
 }
 
 // CreateDB creates a database
-func (c *client) CreateDB(ctx context.Context, dbName string, options map[string]interface{}) error {
+func (c *client) CreateDB(ctx context.Context, dbName string, options driver.Options) error {
 	exists, err := c.DBExists(ctx, dbName, options)
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (c *client) CreateDB(ctx context.Context, dbName string, options map[string
 }
 
 // DBExistsreturns true if the database exists.
-func (c *client) DBExists(_ context.Context, dbName string, _ map[string]interface{}) (bool, error) {
+func (c *client) DBExists(_ context.Context, dbName string, _ driver.Options) (bool, error) {
 	_, err := os.Stat(filepath.Join(c.root, cdb.EscapeID(dbName)))
 	if err == nil {
 		return true, nil
@@ -144,7 +144,7 @@ func (c *client) DBExists(_ context.Context, dbName string, _ map[string]interfa
 }
 
 // DestroyDB destroys the database
-func (c *client) DestroyDB(ctx context.Context, dbName string, options map[string]interface{}) error {
+func (c *client) DestroyDB(ctx context.Context, dbName string, options driver.Options) error {
 	exists, err := c.DBExists(ctx, dbName, options)
 	if err != nil {
 		return err
@@ -156,7 +156,7 @@ func (c *client) DestroyDB(ctx context.Context, dbName string, options map[strin
 	return os.RemoveAll(filepath.Join(c.root, cdb.EscapeID(dbName)))
 }
 
-func (c *client) DB(dbName string, _ map[string]interface{}) (driver.DB, error) {
+func (c *client) DB(dbName string, _ driver.Options) (driver.DB, error) {
 	return c.newDB(dbName)
 }
 

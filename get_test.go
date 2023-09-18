@@ -33,7 +33,7 @@ func TestGet(t *testing.T) {
 		final        func(*testing.T, *db)
 		path, dbname string
 		id           string
-		options      map[string]interface{}
+		options      kivik.Option
 		expected     *driver.Document
 		status       int
 		err          string
@@ -84,7 +84,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_foo",
 		id:      "withattach",
-		options: map[string]interface{}{"attachments": true},
+		options: kivik.Param("attachments", true),
 		expected: &driver.Document{
 			Rev: "2-yyyyyyyyy",
 		},
@@ -93,10 +93,10 @@ func TestGet(t *testing.T) {
 		path:   "testdata",
 		dbname: "db_foo",
 		id:     "withattach",
-		options: map[string]interface{}{
+		options: kivik.Params(map[string]interface{}{
 			"attachments":   true,
 			"header:accept": "application/json",
-		},
+		}),
 		expected: &driver.Document{
 			Rev: "2-yyyyyyyyy",
 		},
@@ -105,7 +105,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_foo",
 		id:      "noattach",
-		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
+		options: kivik.Rev("1-xxxxxxxxxx"),
 		expected: &driver.Document{
 			Rev: "1-xxxxxxxxxx",
 		},
@@ -114,7 +114,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_foo",
 		id:      "withattach",
-		options: map[string]interface{}{"rev": "1-xxxxxxxxxx"},
+		options: kivik.Rev("1-xxxxxxxxxx"),
 		expected: &driver.Document{
 			Rev: "1-xxxxxxxxxx",
 		},
@@ -171,7 +171,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_foo",
 		id:      "yamltest",
-		options: map[string]interface{}{"rev": "3-"},
+		options: kivik.Rev("3-"),
 		expected: &driver.Document{
 			Rev: "3-",
 		},
@@ -180,7 +180,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_foo",
 		id:      "yamltest",
-		options: map[string]interface{}{"rev": "2-xxx"},
+		options: kivik.Rev("2-xxx"),
 		expected: &driver.Document{
 			Rev: "2-xxx",
 		},
@@ -189,7 +189,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_foo",
 		id:      "yamltest",
-		options: map[string]interface{}{"rev": "1-oink"},
+		options: kivik.Rev("1-oink"),
 		status:  http.StatusNotFound,
 		err:     "missing",
 	})
@@ -205,7 +205,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_foo",
 		id:      "_design/users",
-		options: map[string]interface{}{"rev": "2-"},
+		options: kivik.Rev("2-"),
 		expected: &driver.Document{
 			Rev: "2-",
 		},
@@ -214,7 +214,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_foo",
 		id:      "wrongid",
-		options: map[string]interface{}{"revs": true},
+		options: kivik.Param("revs", true),
 		expected: &driver.Document{
 			Rev: "6-",
 		},
@@ -223,7 +223,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_foo",
 		id:      "noattach",
-		options: map[string]interface{}{"revs": true},
+		options: kivik.Param("revs", true),
 		expected: &driver.Document{
 			Rev: "1-xxxxxxxxxx",
 		},
@@ -240,18 +240,16 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_att",
 		id:      "note--XkWjFv13acvjJTt-CGJJ8hXlWE",
-		options: kivik.Options{"attachments": true},
+		options: kivik.Param("attachments", true),
 		expected: &driver.Document{
 			Rev: "1-fbaabe005e0f4e5685a68f857c0777d6",
 		},
 	})
 	tests.Add("revs_info=true", tt{
-		path:   "testdata",
-		dbname: "db_foo",
-		id:     "autorev",
-		options: kivik.Options{
-			"revs_info": true,
-		},
+		path:    "testdata",
+		dbname:  "db_foo",
+		id:      "autorev",
+		options: kivik.Param("revs_info", true),
 		expected: &driver.Document{
 			Rev: "6-",
 		},
@@ -260,7 +258,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_foo",
 		id:      "withrevs",
-		options: map[string]interface{}{"revs": true},
+		options: kivik.Param("revs", true),
 		expected: &driver.Document{
 			Rev: "8-asdf",
 		},
@@ -269,10 +267,10 @@ func TestGet(t *testing.T) {
 		path:   "testdata",
 		dbname: "db_foo",
 		id:     "yamltest",
-		options: map[string]interface{}{
+		options: kivik.Params(map[string]interface{}{
 			"rev":       "3-",
 			"revs_info": true,
-		},
+		}),
 		expected: &driver.Document{
 			Rev: "3-",
 		},
@@ -281,10 +279,10 @@ func TestGet(t *testing.T) {
 		path:   "testdata",
 		dbname: "db_foo",
 		id:     "yamltest",
-		options: map[string]interface{}{
+		options: kivik.Params(map[string]interface{}{
 			"rev":       "2-xxx",
 			"revs_info": true,
-		},
+		}),
 		expected: &driver.Document{
 			Rev: "2-xxx",
 		},
@@ -293,10 +291,10 @@ func TestGet(t *testing.T) {
 		path:   "testdata",
 		dbname: "db_foo",
 		id:     "withrevs",
-		options: map[string]interface{}{
+		options: kivik.Params(map[string]interface{}{
 			"rev":  "8-asdf",
 			"revs": true,
-		},
+		}),
 		expected: &driver.Document{
 			Rev: "8-asdf",
 		},
@@ -308,7 +306,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "db_foo",
 		id:      "abortedput",
-		options: map[string]interface{}{"attachments": true},
+		options: kivik.Param("attachments", true),
 		expected: &driver.Document{
 			Rev: "2-yyyyyyyyy",
 		},
@@ -339,7 +337,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "get_split_atts",
 		id:      "foo",
-		options: map[string]interface{}{"attachments": true},
+		options: kivik.Param("attachments", true),
 		expected: &driver.Document{
 			Rev: "2-zzz",
 		},
@@ -348,7 +346,7 @@ func TestGet(t *testing.T) {
 		path:    "testdata",
 		dbname:  "get_split_atts",
 		id:      "bar",
-		options: map[string]interface{}{"attachments": true},
+		options: kivik.Param("attachments", true),
 		expected: &driver.Document{
 			Rev: "2-yyy",
 		},
@@ -369,12 +367,10 @@ func TestGet(t *testing.T) {
 		err:    "deleted",
 	})
 	tests.Add("deleted doc, specific rev", tt{
-		path:   "testdata",
-		dbname: "db_foo",
-		id:     "deleted",
-		options: map[string]interface{}{
-			"rev": "3-",
-		},
+		path:    "testdata",
+		dbname:  "db_foo",
+		id:      "deleted",
+		options: kivik.Rev("3-"),
 		expected: &driver.Document{
 			Rev: "3-",
 		},
@@ -398,7 +394,11 @@ func TestGet(t *testing.T) {
 		if tt.setup != nil {
 			tt.setup(t, db)
 		}
-		doc, err := db.Get(context.Background(), tt.id, tt.options)
+		opts := tt.options
+		if opts == nil {
+			opts = kivik.Params(nil)
+		}
+		doc, err := db.Get(context.Background(), tt.id, opts)
 		testy.StatusErrorRE(t, tt.err, tt.status, err)
 		defer doc.Body.Close() // nolint: errcheck
 		if d := testy.DiffAsJSON(testy.Snapshot(t), doc.Body); d != nil {
