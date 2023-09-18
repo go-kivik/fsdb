@@ -61,7 +61,7 @@ func parseFileURL(dir string) (string, error) {
 	if parsed.Scheme != "" && parsed.Scheme != "file" {
 		return "", statusError{status: http.StatusBadRequest, error: fmt.Errorf("Unsupported URL scheme '%s'. Wrong driver?", parsed.Scheme)}
 	}
-	if !strings.HasPrefix("file://", dir) {
+	if !strings.HasPrefix(dir, "file://") {
 		return dir, nil
 	}
 	if err != nil {
@@ -99,7 +99,7 @@ func (c *client) Version(_ context.Context) (*driver.Version, error) {
 var validDBNameRE = regexp.MustCompile("^[a-z_][a-z0-9_$()+/-]*$")
 
 // AllDBs returns a list of all DBs present in the configured root dir.
-func (c *client) AllDBs(ctx context.Context, _ map[string]interface{}) ([]string, error) {
+func (c *client) AllDBs(context.Context, map[string]interface{}) ([]string, error) {
 	if c.root == "" {
 		return nil, statusError{status: http.StatusBadRequest, error: errors.New("no root path provided")}
 	}

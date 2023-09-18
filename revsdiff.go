@@ -26,8 +26,7 @@ import (
 var _ driver.RevsDiffer = &db{}
 
 func toRevmap(i interface{}) (map[string][]string, error) {
-	switch t := i.(type) {
-	case map[string][]string:
+	if t, ok := i.(map[string][]string); ok {
 		return t, nil
 	}
 	encoded, err := json.Marshal(i)

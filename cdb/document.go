@@ -130,6 +130,8 @@ func (d *Document) Compact(ctx context.Context) error {
 	return nil
 }
 
+const tempPerms = 0o777
+
 func copyAttachments(fs filesystem.Filesystem, leaf, old *Revision) error {
 	leafpath := strings.TrimSuffix(leaf.path, filepath.Ext(leaf.path)) + "/"
 	basepath := strings.TrimSuffix(old.path, filepath.Ext(old.path)) + "/"
@@ -139,7 +141,7 @@ func copyAttachments(fs filesystem.Filesystem, leaf, old *Revision) error {
 		}
 		if strings.HasPrefix(att.path, basepath) {
 			name := filepath.Base(att.path)
-			if err := os.MkdirAll(leafpath, 0o777); err != nil {
+			if err := os.MkdirAll(leafpath, tempPerms); err != nil {
 				return err
 			}
 			if err := fs.Link(att.path, filepath.Join(leafpath, name)); err != nil {
@@ -239,7 +241,7 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 			revpos := rev.Rev.Seq
 			att.RevPos = &revpos
 			if !dirMade {
-				if err := d.cdb.fs.MkdirAll(revpath, 0o777); err != nil && !os.IsExist(err) {
+				if err := d.cdb.fs.MkdirAll(revpath, tempPerms); err != nil && !os.IsExist(err) {
 					return "", err
 				}
 				dirMade = true
@@ -325,7 +327,7 @@ func (d *Document) persist(ctx context.Context) error {
 			}
 			// We need to move this rev
 			revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), rev.Rev.String())
-			if err := d.cdb.fs.Mkdir(revpath, 0o777); err != nil && !os.IsExist(err) {
+			if err := d.cdb.fs.Mkdir(revpath, tempPerms); err != nil && !os.IsExist(err) {
 				return err
 			}
 			// First move attachments, since they can exit both places legally.
@@ -358,7 +360,7 @@ func (d *Document) persist(ctx context.Context) error {
 	}
 	winningRev.path = winningPath + filepath.Ext(winningRev.path)
 
-	if err := d.cdb.fs.Mkdir(winningPath, 0o777); err != nil && !os.IsExist(err) {
+	if err := d.cdb.fs.Mkdir(winningPath, tempPerms); err != nil && !os.IsExist(err) {
 		return err
 	}
 	revpath := filepath.Join(d.cdb.root, "."+EscapeID(d.ID), winningRev.Rev.String()) + "/"

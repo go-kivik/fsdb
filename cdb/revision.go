@@ -23,9 +23,10 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/icza/dyno"
+
 	"github.com/go-kivik/fsdb/v4/filesystem"
 	"github.com/go-kivik/kivik/v4"
-	"github.com/icza/dyno"
 )
 
 // RevMeta is the metadata stored in reach revision.
@@ -204,7 +205,7 @@ func (r Revisions) Deleted() bool {
 }
 
 // Delete deletes the revision.
-func (r *Revision) Delete(ctx context.Context) error {
+func (r *Revision) Delete(context.Context) error {
 	if err := os.Remove(r.path); err != nil {
 		return err
 	}
@@ -233,7 +234,7 @@ func (fs *FS) NewRevision(i interface{}) (*Revision, error) {
 }
 
 func (r *Revision) persist(ctx context.Context, path string) error {
-	if err := r.fs.Mkdir(filepath.Dir(path), 0o777); err != nil && !os.IsExist(err) {
+	if err := r.fs.Mkdir(filepath.Dir(path), tempPerms); err != nil && !os.IsExist(err) {
 		return err
 	}
 	var dirMade bool
@@ -245,7 +246,7 @@ func (r *Revision) persist(ctx context.Context, path string) error {
 			return err
 		}
 		if !dirMade {
-			if err := r.fs.Mkdir(path, 0o777); err != nil && !os.IsExist(err) {
+			if err := r.fs.Mkdir(path, tempPerms); err != nil && !os.IsExist(err) {
 				return err
 			}
 			dirMade = true

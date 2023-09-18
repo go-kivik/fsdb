@@ -16,9 +16,10 @@ import (
 	"net/http"
 	"testing"
 
+	"gitlab.com/flimzy/testy"
+
 	"github.com/go-kivik/fsdb/v4/filesystem"
 	"github.com/go-kivik/kivik/v4"
-	"gitlab.com/flimzy/testy"
 )
 
 func TestAttachmentsIterator(t *testing.T) {

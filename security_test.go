@@ -16,8 +16,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-kivik/fsdb/v4/filesystem"
 	"gitlab.com/flimzy/testy"
+
+	"github.com/go-kivik/fsdb/v4/filesystem"
 )
 
 func TestSecurity(t *testing.T) {

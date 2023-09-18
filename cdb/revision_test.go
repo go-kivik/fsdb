@@ -15,8 +15,9 @@ package cdb
 import (
 	"testing"
 
-	"github.com/go-kivik/kivik/v4"
 	"gitlab.com/flimzy/testy"
+
+	"github.com/go-kivik/kivik/v4"
 )
 
 func TestNewRevision(t *testing.T) {
