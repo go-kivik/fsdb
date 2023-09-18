@@ -24,7 +24,6 @@ import (
 	"gitlab.com/flimzy/testy"
 
 	"github.com/go-kivik/fsdb/v4/filesystem"
-	"github.com/go-kivik/kivik/v4"
 )
 
 func TestCompact(t *testing.T) {
@@ -59,7 +58,7 @@ func TestCompact(t *testing.T) {
 	tests.Add("permission denied", tt{
 		fs: &filesystem.MockFS{
 			OpenFunc: func(_ string) (filesystem.File, error) {
-				return nil, &kivik.Error{Status: http.StatusForbidden, Err: errors.New("permission denied")}
+				return nil, statusError{status: http.StatusForbidden, error: errors.New("permission denied")}
 			},
 		},
 		path:   "somepath",

@@ -53,7 +53,7 @@ func TestFSOpenDocID(t *testing.T) {
 	tests.Add("forbidden", tt{
 		fs: &filesystem.MockFS{
 			OpenFunc: func(_ string) (filesystem.File, error) {
-				return nil, &kivik.Error{Status: http.StatusForbidden, Err: errors.New("permission denied")}
+				return nil, statusError{status: http.StatusForbidden, error: errors.New("permission denied")}
 			},
 		},
 		root:   "doesntmatter",

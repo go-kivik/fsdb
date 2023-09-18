@@ -16,14 +16,12 @@ import (
 	"errors"
 	"net/http"
 	"os"
-
-	"github.com/go-kivik/kivik/v4"
 )
 
 var (
-	errNotFound         = &kivik.Error{Status: http.StatusNotFound, Message: "missing"}
+	errNotFound         = statusError{status: http.StatusNotFound, error: errors.New("missing")}
 	errUnrecognizedFile = errors.New("unrecognized file")
-	errConflict         = &kivik.Error{Status: http.StatusConflict, Message: "document update conflict"}
+	errConflict         = statusError{status: http.StatusConflict, error: errors.New("document update conflict")}
 )
 
 // missing transforms a NotExist error into a standard CouchDBesque 'missing'
@@ -39,15 +37,23 @@ func kerr(err error) error {
 	if err == nil {
 		return nil
 	}
-	if errors.Is(err, &kivik.Error{}) {
+	if errors.Is(err, &statusError{}) {
 		// Error has already been converted
 		return err
 	}
 	if os.IsNotExist(err) {
-		return &kivik.Error{Status: http.StatusNotFound, Err: err}
+		return statusError{status: http.StatusNotFound, error: err}
 	}
 	if os.IsPermission(err) {
-		return &kivik.Error{Status: http.StatusForbidden, Err: err}
+		return statusError{status: http.StatusForbidden, error: err}
 	}
 	return err
 }
+
+type statusError struct {
+	error
+	status int
+}
+
+func (e statusError) Unwrap() error   { return e.error }
+func (e statusError) HTTPStatus() int { return e.status }
