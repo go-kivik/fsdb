@@ -6,7 +6,6 @@ require (
 	github.com/go-kivik/kivik/v4 v4.0.0-20230828083916-40cf6109d7f4
 	github.com/icza/dyno v0.0.0-20230330125955-09f820a8d9c0
 	github.com/otiai10/copy v1.10.0
-	gitlab.com/flimzy/ale v0.27.0
 	gitlab.com/flimzy/testy v0.12.4
 	gopkg.in/yaml.v2 v2.4.0
 )

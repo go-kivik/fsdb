@@ -19,8 +19,6 @@ import (
 	"io"
 	"net/http"
 
-	"gitlab.com/flimzy/ale/httperr"
-
 	"github.com/go-kivik/kivik/v4"
 	"github.com/go-kivik/kivik/v4/driver"
 )
@@ -34,11 +32,11 @@ func toRevmap(i interface{}) (map[string][]string, error) {
 	}
 	encoded, err := json.Marshal(i)
 	if err != nil {
-		return nil, httperr.WithStatus(http.StatusBadRequest, err)
+		return nil, statusError{status: http.StatusBadRequest, error: err}
 	}
 	revmap := make(map[string][]string)
 	err = json.Unmarshal(encoded, &revmap)
-	return revmap, httperr.WithStatus(http.StatusBadRequest, err)
+	return revmap, statusError{status: http.StatusBadRequest, error: err}
 }
 
 func (d *db) RevsDiff(ctx context.Context, revMap interface{}) (driver.Rows, error) {

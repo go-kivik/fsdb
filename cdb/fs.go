@@ -13,6 +13,7 @@
 package cdb
 
 import (
+	"errors"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -94,7 +95,7 @@ func (r *Revision) restoreAttachments() error {
 		if att.Size == 0 || att.Digest == "" {
 			f, err := r.openAttachment(attname)
 			if err != nil {
-				return &kivik.Error{Status: http.StatusInternalServerError, Err: err}
+				return statusError{status: http.StatusInternalServerError, error: err}
 			}
 			att.Size, att.Digest = digest(f)
 			_ = f.Close()
@@ -160,7 +161,7 @@ func (fs *FS) OpenDocID(docID string, opts kivik.Options) (*Document, error) {
 		return nil, err
 	}
 	if rev == "" && revs.Deleted() {
-		return nil, &kivik.Error{Status: http.StatusNotFound, Message: "deleted"}
+		return nil, statusError{status: http.StatusNotFound, error: errors.New("deleted")}
 	}
 	doc := &Document{
 		ID:        docID,

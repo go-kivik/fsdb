@@ -14,6 +14,7 @@ package fs
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/url"
 	"os"
@@ -57,7 +58,7 @@ func validateID(id string) error {
 			return nil
 		}
 	}
-	return &kivik.Error{Status: http.StatusBadRequest, Message: "only reserved document ids may start with underscore"}
+	return statusError{status: http.StatusBadRequest, error: errors.New("only reserved document ids may start with underscore")}
 }
 
 /*

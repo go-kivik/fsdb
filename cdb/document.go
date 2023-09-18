@@ -172,7 +172,7 @@ func (d *Document) AddRevision(ctx context.Context, rev *Revision, options kivik
 
 func (d *Document) addOldEdit(rev *Revision) (string, error) {
 	if rev.Rev.IsZero() {
-		return "", &kivik.Error{Status: http.StatusBadRequest, Message: "_rev required with new_edits=false"}
+		return "", statusError{status: http.StatusBadRequest, error: errors.New("_rev required with new_edits=false")}
 	}
 	for _, r := range d.Revisions {
 		if r.Rev.Equal(rev.Rev) {
@@ -195,7 +195,7 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 			return "", err
 		}
 		if !rev.Rev.IsZero() && rev.Rev.String() != newrev.String() {
-			return "", &kivik.Error{Status: http.StatusBadRequest, Message: "document rev from request body and query string have different values"}
+			return "", statusError{status: http.StatusBadRequest, error: errors.New("document rev from request body and query string have different values")}
 		}
 		rev.Rev = newrev
 	}
@@ -259,13 +259,13 @@ func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik
 		}
 		if oldrev == nil {
 			// Can't upload stubs if there's no previous revision
-			return "", &kivik.Error{Status: http.StatusInternalServerError, Message: fmt.Sprintf("attachment %s:", filename), Err: err}
+			return "", statusError{status: http.StatusInternalServerError, error: fmt.Errorf("attachment %s: %w", filename, err)}
 		}
 		if att.Digest != "" && att.Digest != oldatt.Digest {
-			return "", &kivik.Error{Status: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
+			return "", statusError{status: http.StatusBadRequest, error: fmt.Errorf("invalid attachment data for %s", filename)}
 		}
 		if att.RevPos != nil && *att.RevPos != *oldatt.RevPos {
-			return "", &kivik.Error{Status: http.StatusBadRequest, Message: fmt.Sprintf("invalid attachment data for %s", filename)}
+			return "", statusError{status: http.StatusBadRequest, error: fmt.Errorf("invalid attachment data for %s", filename)}
 		}
 	}
 
@@ -292,7 +292,7 @@ Persist strategy:
 */
 func (d *Document) persist(ctx context.Context) error {
 	if d == nil || len(d.Revisions) == 0 {
-		return &kivik.Error{Status: http.StatusBadRequest, Message: "document has no revisions"}
+		return statusError{status: http.StatusBadRequest, error: errors.New("document has no revisions")}
 	}
 	docID := EscapeID(d.ID)
 	for _, rev := range d.Revisions {

@@ -216,12 +216,12 @@ func (r *Revision) Delete(ctx context.Context) error {
 func (fs *FS) NewRevision(i interface{}) (*Revision, error) {
 	data, err := json.Marshal(i)
 	if err != nil {
-		return nil, &kivik.Error{Status: http.StatusBadRequest, Err: err}
+		return nil, statusError{status: http.StatusBadRequest, error: err}
 	}
 	rev := new(Revision)
 	rev.fs = fs.fs
 	if err := json.Unmarshal(data, &rev); err != nil {
-		return nil, &kivik.Error{Status: http.StatusBadRequest, Err: err}
+		return nil, statusError{status: http.StatusBadRequest, error: err}
 	}
 	for _, att := range rev.Attachments {
 		if att.RevPos == nil {

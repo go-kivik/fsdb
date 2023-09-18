@@ -15,6 +15,7 @@ package fs
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -58,7 +59,7 @@ var _ driver.Client = &client{}
 func parseFileURL(dir string) (string, error) {
 	parsed, err := url.Parse(dir)
 	if parsed.Scheme != "" && parsed.Scheme != "file" {
-		return "", &kivik.Error{Status: http.StatusBadRequest, Message: fmt.Sprintf("Unsupported URL scheme '%s'. Wrong driver?", parsed.Scheme)}
+		return "", statusError{status: http.StatusBadRequest, error: fmt.Errorf("Unsupported URL scheme '%s'. Wrong driver?", parsed.Scheme)}
 	}
 	if !strings.HasPrefix("file://", dir) {
 		return dir, nil
@@ -100,7 +101,7 @@ var validDBNameRE = regexp.MustCompile("^[a-z_][a-z0-9_$()+/-]*$")
 // AllDBs returns a list of all DBs present in the configured root dir.
 func (c *client) AllDBs(ctx context.Context, _ map[string]interface{}) ([]string, error) {
 	if c.root == "" {
-		return nil, &kivik.Error{Status: http.StatusBadRequest, Message: "no root path provided"}
+		return nil, statusError{status: http.StatusBadRequest, error: errors.New("no root path provided")}
 	}
 	files, err := os.ReadDir(c.root)
 	if err != nil {
@@ -125,7 +126,7 @@ func (c *client) CreateDB(ctx context.Context, dbName string, options map[string
 		return err
 	}
 	if exists {
-		return &kivik.Error{Status: http.StatusPreconditionFailed, Message: "database already exists"}
+		return statusError{status: http.StatusPreconditionFailed, error: errors.New("database already exists")}
 	}
 	return os.Mkdir(filepath.Join(c.root, cdb.EscapeID(dbName)), dirMode)
 }
@@ -149,7 +150,7 @@ func (c *client) DestroyDB(ctx context.Context, dbName string, options map[strin
 		return err
 	}
 	if !exists {
-		return &kivik.Error{Status: http.StatusNotFound, Message: "database does not exist"}
+		return statusError{status: http.StatusNotFound, error: errors.New("database does not exist")}
 	}
 	// FIXME #65: Be safer here about unrecognized files
 	return os.RemoveAll(filepath.Join(c.root, cdb.EscapeID(dbName)))
@@ -170,7 +171,7 @@ func (c *client) dbPath(path string) (string, string, error) {
 		if strings.HasPrefix(path, "file://") {
 			addr, err := url.Parse(path)
 			if err != nil {
-				return "", "", &kivik.Error{Status: http.StatusBadRequest, Err: err}
+				return "", "", statusError{status: http.StatusBadRequest, error: err}
 			}
 			path = addr.Path
 		}
