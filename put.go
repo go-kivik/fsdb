@@ -23,6 +23,7 @@ import (
 	"github.com/go-kivik/fsdb/v4/cdb"
 	"github.com/go-kivik/fsdb/v4/cdb/decode"
 	"github.com/go-kivik/kivik/v4"
+	"github.com/go-kivik/kivik/v4/driver"
 )
 
 func filename2id(filename string) (string, error) {
@@ -72,7 +73,7 @@ output_format?
 X-Couch-Full-Commit header/option
 */
 
-func (d *db) Put(ctx context.Context, docID string, i interface{}, opts map[string]interface{}) (string, error) {
+func (d *db) Put(ctx context.Context, docID string, i interface{}, options driver.Options) (string, error) {
 	if err := validateID(docID); err != nil {
 		return "", err
 	}
@@ -80,7 +81,7 @@ func (d *db) Put(ctx context.Context, docID string, i interface{}, opts map[stri
 	if err != nil {
 		return "", err
 	}
-	doc, err := d.cdb.OpenDocID(docID, opts)
+	doc, err := d.cdb.OpenDocID(docID, options)
 	switch {
 	case kivik.HTTPStatus(err) == http.StatusNotFound:
 		// Crate new doc
@@ -88,5 +89,5 @@ func (d *db) Put(ctx context.Context, docID string, i interface{}, opts map[stri
 	case err != nil:
 		return "", err
 	}
-	return doc.AddRevision(ctx, rev, opts)
+	return doc.AddRevision(ctx, rev, options)
 }

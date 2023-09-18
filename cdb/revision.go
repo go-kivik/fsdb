@@ -26,7 +26,6 @@ import (
 	"github.com/icza/dyno"
 
 	"github.com/go-kivik/fsdb/v4/filesystem"
-	"github.com/go-kivik/kivik/v4"
 )
 
 // RevMeta is the metadata stored in reach revision.
@@ -50,7 +49,7 @@ type Revision struct {
 	// Data is the normal payload
 	Data map[string]interface{} `json:"-" yaml:"-"`
 
-	options kivik.Options
+	options map[string]interface{}
 }
 
 // UnmarshalJSON satisfies the json.Unmarshaler interface.
@@ -258,7 +257,7 @@ func (r *Revision) persist(ctx context.Context, path string) error {
 	}
 	f := atomicFileWriter(r.fs, path+".json")
 	defer f.Close() // nolint: errcheck
-	r.options = kivik.Options{"revs": true}
+	r.options = map[string]interface{}{"revs": true}
 	if err := json.NewEncoder(f).Encode(r); err != nil {
 		return err
 	}

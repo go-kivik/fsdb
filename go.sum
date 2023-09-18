@@ -4,8 +4,8 @@ github.com/cenkalti/backoff/v4 v4.1.3 h1:cFAlzYUlVYDysBEH2T5hyJZMh3+5+WCBvSnK6Q8
 github.com/cenkalti/backoff/v4 v4.1.3/go.mod h1:scbssz8iZGpm3xbr14ovlUdkxfGXNInqkPWOWmG2CLw=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/go-kivik/kivik/v4 v4.0.0-20230828083916-40cf6109d7f4 h1:oTZvCG3u39NmT9wmgbNNnT0dUOGuX+yZZ4uTTKktqA8=
-github.com/go-kivik/kivik/v4 v4.0.0-20230828083916-40cf6109d7f4/go.mod h1:dqboVWsEnxgVcd5pjfj0Imfdd3Km+X+oMooha4Oa5tk=
+github.com/go-kivik/kivik/v4 v4.0.0-20230918092746-102b906e0679 h1:mB1AVQUB/8FUFi2eycTpJIj9ssP94jn3CzKpMCynAiI=
+github.com/go-kivik/kivik/v4 v4.0.0-20230918092746-102b906e0679/go.mod h1:5plLEDoE+VF85zFngh9m1V4QrAAoDGO+URgmiFcIhUw=
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
 github.com/gopherjs/gopherjs v1.17.2 h1:fQnZVsXk8uxXIStYb0N4bGk7jeyTalG/wsZjQ25dO0g=
 github.com/gopherjs/gopherjs v1.17.2/go.mod h1:pRRIvn/QzFLrKfvEz3qUuEhtE/zLCWfreZ6J5gM2i+k=
@@ -29,10 +29,10 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/fasttemplate v1.2.1 h1:TVEnxayobAdVkhQfrfes2IzOB6o+z4roRkPF52WA1u4=
-gitlab.com/flimzy/testy v0.12.4 h1:J2plNCG5d9FWfik30yOZrajcPrWbiDHrk0qw1nMstNU=
-gitlab.com/flimzy/testy v0.12.4/go.mod h1:9wPR98kErJw1lrq/aIJ8UZ6A0Dn7CHU0T6Qx4b2FiyQ=
+gitlab.com/flimzy/testy v0.12.6 h1:bTm0PplqCXml6D0etXaUkieskzmFyXrbw3ri+mg7Q7A=
+gitlab.com/flimzy/testy v0.12.6/go.mod h1:m3aGuwdXc+N3QgnH+2Ar2zf1yg0UxNdIaXKvC5SlfMk=
 golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 h1:HWj/xjIHfjYU5nVXpTM0s39J9CbLn7Cc5a7IC5rwsMQ=
-golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f h1:OfiFi4JbukWwe3lzw+xunroH1mnC1e2Gy5cxNJApiSY=
+golang.org/x/net v0.15.0 h1:ugBLEUaxABaB5AJqW9enI0ACdci2RUd4eP51NTBvuJ8=
 golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 h1:0A+M6Uqn+Eje4kHMK80dtF3JCXC4ykBgQG4Fe06QRhQ=
 golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/text v0.3.7 h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk=

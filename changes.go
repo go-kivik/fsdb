@@ -95,7 +95,7 @@ func (c *changes) Close() error {
 	return nil
 }
 
-func (d *db) Changes(ctx context.Context, _ map[string]interface{}) (driver.Changes, error) {
+func (d *db) Changes(ctx context.Context, _ driver.Options) (driver.Changes, error) {
 	f, err := os.Open(d.path())
 	if err != nil {
 		return nil, err

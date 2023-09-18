@@ -28,7 +28,7 @@ func TestFSOpenDocID(t *testing.T) {
 		fs      filesystem.Filesystem
 		root    string
 		docID   string
-		options kivik.Options
+		options kivik.Option
 		status  int
 		err     string
 	}
@@ -100,9 +100,13 @@ func TestFSOpenDocID(t *testing.T) {
 
 	tests.Run(t, func(t *testing.T, tt tt) {
 		fs := New(tt.root, tt.fs)
-		result, err := fs.OpenDocID(tt.docID, tt.options)
+		opts := tt.options
+		if opts == nil {
+			opts = kivik.Params(nil)
+		}
+		result, err := fs.OpenDocID(tt.docID, opts)
 		testy.StatusError(t, tt.err, tt.status, err)
-		result.Options = kivik.Options{
+		result.Options = map[string]interface{}{
 			"revs":          true,
 			"attachments":   true,
 			"header:accept": "application/json",
@@ -122,7 +126,7 @@ func TestRestoreAttachments(t *testing.T) {
 	tests := testy.NewTable()
 	tests.Add("missing attachment", tt{
 		r: &Revision{
-			options: kivik.Options{
+			options: map[string]interface{}{
 				"attachments": true,
 			},
 			RevMeta: RevMeta{

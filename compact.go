@@ -19,6 +19,7 @@ import (
 	"github.com/go-kivik/fsdb/v4/cdb"
 	"github.com/go-kivik/fsdb/v4/cdb/decode"
 	"github.com/go-kivik/fsdb/v4/filesystem"
+	"github.com/go-kivik/kivik/v4"
 )
 
 type docIndex map[string]*cdb.Document
@@ -57,7 +58,7 @@ func (i docIndex) readIndex(ctx context.Context, fs filesystem.Filesystem, path 
 			// We've already read this one
 			continue
 		}
-		doc, err := c.OpenDocID(docID, nil)
+		doc, err := c.OpenDocID(docID, kivik.Params(nil))
 		if err != nil {
 			return err
 		}

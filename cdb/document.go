@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/go-kivik/fsdb/v4/filesystem"
-	"github.com/go-kivik/kivik/v4"
+	"github.com/go-kivik/kivik/v4/driver"
 )
 
 // Document is a CouchDB document.
@@ -38,7 +38,7 @@ type Document struct {
 	// should never be consulted as authoritative.
 	RevHistory *RevHistory `json:"_revisions,omitempty" yaml:"-"`
 
-	Options kivik.Options `json:"-" yaml:"-"`
+	Options map[string]interface{} `json:"-" yaml:"-"`
 
 	cdb *FS
 }
@@ -163,7 +163,7 @@ func copyAttachments(fs filesystem.Filesystem, leaf, old *Revision) error {
 
 // AddRevision adds rev to the existing document, according to options, and
 // persists it to disk. The return value is the new revision ID.
-func (d *Document) AddRevision(ctx context.Context, rev *Revision, options kivik.Options) (string, error) {
+func (d *Document) AddRevision(ctx context.Context, rev *Revision, options driver.Options) (string, error) {
 	revid, err := d.addRevision(ctx, rev, options)
 	if err != nil {
 		return "", err
@@ -187,11 +187,13 @@ func (d *Document) addOldEdit(rev *Revision) (string, error) {
 	return rev.Rev.String(), nil
 }
 
-func (d *Document) addRevision(ctx context.Context, rev *Revision, options kivik.Options) (string, error) {
-	if newEdits, ok := options["new_edits"].(bool); ok && !newEdits {
+func (d *Document) addRevision(ctx context.Context, rev *Revision, options driver.Options) (string, error) {
+	opts := map[string]interface{}{}
+	options.Apply(opts)
+	if newEdits, ok := opts["new_edits"].(bool); ok && !newEdits {
 		return d.addOldEdit(rev)
 	}
-	if revid, ok := options["rev"].(string); ok {
+	if revid, ok := opts["rev"].(string); ok {
 		var newrev RevID
 		if err := newrev.UnmarshalText([]byte(revid)); err != nil {
 			return "", err

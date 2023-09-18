@@ -3,10 +3,10 @@ module github.com/go-kivik/fsdb/v4
 go 1.20
 
 require (
-	github.com/go-kivik/kivik/v4 v4.0.0-20230828083916-40cf6109d7f4
+	github.com/go-kivik/kivik/v4 v4.0.0-20230918092746-102b906e0679
 	github.com/icza/dyno v0.0.0-20230330125955-09f820a8d9c0
 	github.com/otiai10/copy v1.10.0
-	gitlab.com/flimzy/testy v0.12.4
+	gitlab.com/flimzy/testy v0.12.6
 	gopkg.in/yaml.v2 v2.4.0
 )
 

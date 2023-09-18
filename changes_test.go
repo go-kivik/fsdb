@@ -19,13 +19,14 @@ import (
 
 	"gitlab.com/flimzy/testy"
 
+	"github.com/go-kivik/kivik/v4"
 	"github.com/go-kivik/kivik/v4/driver"
 )
 
 func TestChanges(t *testing.T) {
 	type tt struct {
 		db      *db
-		options map[string]interface{}
+		options kivik.Option
 		status  int
 		err     string
 	}

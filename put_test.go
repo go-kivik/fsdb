@@ -32,7 +32,7 @@ func TestPut(t *testing.T) {
 		dbname   string
 		id       string
 		doc      interface{}
-		options  map[string]interface{}
+		options  kivik.Option
 		status   int
 		err      string
 		expected string
@@ -106,7 +106,7 @@ func TestPut(t *testing.T) {
 			dbname:  "db_put",
 			id:      "foo",
 			doc:     map[string]string{"foo": "bar"},
-			options: map[string]interface{}{"rev": "2-asdf"},
+			options: kivik.Rev("2-asdf"),
 			status:  http.StatusConflict,
 			err:     "document update conflict",
 		}
@@ -129,7 +129,7 @@ func TestPut(t *testing.T) {
 		dbname:  "doesntmatter",
 		id:      "foo",
 		doc:     map[string]string{"foo": "bar", "_rev": "2-asdf"},
-		options: kivik.Options{"rev": "3-asdf"},
+		options: kivik.Rev("3-asdf"),
 		status:  http.StatusBadRequest,
 		err:     "document rev from request body and query string have different values",
 	})
@@ -216,7 +216,7 @@ func TestPut(t *testing.T) {
 			doc: map[string]string{
 				"foo": "bar",
 			},
-			options: map[string]interface{}{"new_edits": false},
+			options: kivik.Param("new_edits", false),
 			status:  http.StatusBadRequest,
 			err:     "_rev required with new_edits=false",
 		}
@@ -233,7 +233,7 @@ func TestPut(t *testing.T) {
 				"_rev": "1-beea34a62a215ab051862d1e5d93162e",
 				"foo":  "bar",
 			},
-			options:  map[string]interface{}{"new_edits": false},
+			options:  kivik.Param("new_edits", false),
 			expected: "1-beea34a62a215ab051862d1e5d93162e",
 		}
 	})
@@ -249,7 +249,7 @@ func TestPut(t *testing.T) {
 				"_rev": "1-other",
 				"foo":  "bar",
 			},
-			options:  map[string]interface{}{"new_edits": false},
+			options:  kivik.Param("new_edits", false),
 			expected: "1-other",
 		}
 	})
@@ -267,7 +267,11 @@ func TestPut(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		rev, err := db.Put(context.Background(), tt.id, tt.doc, tt.options)
+		opts := tt.options
+		if opts == nil {
+			opts = kivik.Params(nil)
+		}
+		rev, err := db.Put(context.Background(), tt.id, tt.doc, opts)
 		testy.StatusError(t, tt.err, tt.status, err)
 		if rev != tt.expected {
 			t.Errorf("Unexpected rev returned: %s", rev)

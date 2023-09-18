@@ -38,7 +38,7 @@
       },
       Data: (map[string]interface {}) {
       },
-      options: (kivik.Options) <nil>
+      options: (map[string]interface {}) <nil>
     }),
     (*cdb.Revision)({
       RevMeta: (cdb.RevMeta) {
@@ -76,12 +76,12 @@
       },
       Data: (map[string]interface {}) {
       },
-      options: (kivik.Options) <nil>
+      options: (map[string]interface {}) <nil>
     })
   },
   RevsInfo: ([]cdb.RevInfo) <nil>,
   RevHistory: (*cdb.RevHistory)(<nil>),
-  Options: (kivik.Options) <nil>,
+  Options: (map[string]interface {}) <nil>,
   cdb: (*cdb.FS)({
     fs: (*filesystem.defaultFS)({
     }),

@@ -93,9 +93,7 @@ func (r *revDiffRows) next() (docID string, missing []string, err error) {
 	for len(revs) > 0 {
 		rev := maxRev(revs)
 		delete(revs, rev)
-		doc, err := r.db.cdb.OpenDocID(docID, kivik.Options{
-			"rev": rev,
-		})
+		doc, err := r.db.cdb.OpenDocID(docID, kivik.Rev(rev))
 		if kivik.HTTPStatus(err) == http.StatusNotFound {
 			missing = append(missing, rev)
 			continue
