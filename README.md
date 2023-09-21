@@ -1,3 +1,7 @@
+This code has moved to [github.com/go-kivik/kivik/v4/fsdb](https://github.com/go-kivik/kivik/tree/master/fsdb).
+
+<hr>
+
 [![Build Status](https://travis-ci.org/go-kivik/fsdb.svg?branch=master)](https://travis-ci.org/go-kivik/fsdb) [![Codecov](https://img.shields.io/codecov/c/github/go-kivik/fsdb.svg?style=flat)](https://codecov.io/gh/go-kivik/fsdb) [![GoDoc](https://godoc.org/github.com/go-kivik/fsdb?status.svg)](http://godoc.org/github.com/go-kivik/fsdb)
 
 # Kivik FSDB

@@ -1,3 +1,4 @@
+// Deprecated: Use [github.com/go-kivik/kivik/v4/fsdb] instead.
 module github.com/go-kivik/fsdb/v4
 
 go 1.20
